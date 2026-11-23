@@ -180,6 +180,19 @@ Acceptance:
 - [self] Get It lists official pages only, each once.
 Status: done
 
+### S-030 Find games already on this Mac
+As the user, RenChan finds the Ren'Py games already in my Applications, Games, Downloads and Desktop folders, and I add the ones I want at once.
+Screens: find-games, library-empty
+UX:
+- Flow: File › Find Games on This Mac… (⇧⌘O) or the empty library's button → sheet "Find Games on This Mac" while it looks → each new game with a checkbox (all on), its Ren'Py version and path → "Add 2 Games" (Return). "Look in Another Folder…" scans a folder I pick.
+- Surface: a sheet (one short task); the scan reads only and never opens a game.
+- States: looking (spinner and words); nothing new "No New Games Found"; games already in the library are left out; RenChan's own copies are never listed.
+- Words: "Find Games on This Mac…" / « Trouver les jeux sur ce Mac… », "Add 2 Games" / « Ajouter 2 jeux ».
+Acceptance:
+- [unit] Finds Mac builds and game folders (game/ with renpy/ or lib/) two levels down; skips other apps, bare game/ folders and RenChan's folder.
+- [self] Finds a folder game and a Mac build; adds only the chosen ones.
+Status: done
+
 ## M3 Screen filters (0.3.0)
 
 ### S-014 Turn on a filter

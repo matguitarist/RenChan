@@ -35,6 +35,8 @@ struct RenChanApp: App {
             CommandGroup(replacing: .newItem) {
                 Button("Add Game…") { model.addWithPanel() }
                     .keyboardShortcut("o")
+                Button("Find Games on This Mac…") { model.sidebar = .library; model.findGames() }
+                    .keyboardShortcut("o", modifiers: [.command, .shift])
             }
             CommandGroup(after: .sidebar) {
                 Button("as Grid") { model.sidebar = .library; model.layout = .grid }

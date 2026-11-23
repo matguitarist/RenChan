@@ -161,6 +161,26 @@
         }
       }
     },
+    "Add %lld Games": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter %lld jeux"
+          }
+        }
+      }
+    },
+    "Add 1 Game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter 1 jeu"
+          }
+        }
+      }
+    },
     "Add Game": {
       "localizations": {
         "fr": {
@@ -391,6 +411,16 @@
         }
       }
     },
+    "Choose a folder to look for Ren'Py games in.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez un dossier où chercher des jeux Ren’Py."
+          }
+        }
+      }
+    },
     "Choose a game folder, a Mac .app, or a zip.": {
       "localizations": {
         "fr": {
@@ -591,6 +621,16 @@
         }
       }
     },
+    "Drop a game on the window, or look in another folder.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déposez un jeu sur la fenêtre, ou cherchez dans un autre dossier."
+          }
+        }
+      }
+    },
     "Fan release": {
       "localizations": {
         "fr": {
@@ -627,6 +667,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Des filtres sont actifs : modifiez-les ou effacez-les"
+          }
+        }
+      }
+    },
+    "Find Games on This Mac": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouver les jeux sur ce Mac"
+          }
+        }
+      }
+    },
+    "Find Games on This Mac…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouver les jeux sur ce Mac…"
           }
         }
       }
@@ -921,6 +981,46 @@
         }
       }
     },
+    "Look Here": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher ici"
+          }
+        }
+      }
+    },
+    "Look in Another Folder…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher dans un autre dossier…"
+          }
+        }
+      }
+    },
+    "Looked in %@. Games already in your library aren't listed.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recherche dans %@. Les jeux déjà dans votre bibliothèque ne sont pas listés."
+          }
+        }
+      }
+    },
+    "Looking for Ren'Py games…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recherche de jeux Ren’Py…"
+          }
+        }
+      }
+    },
     "Looks once a day for a new version on GitHub.": {
       "localizations": {
         "fr": {
@@ -1057,6 +1157,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun journal pour l’instant"
+          }
+        }
+      }
+    },
+    "No New Games Found": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun nouveau jeu trouvé"
           }
         }
       }

@@ -29,6 +29,9 @@ struct ContentView: View {
         .sheet(item: Binding(get: { model.showBackups.map(BackupsSheetItem.init) }, set: { if $0 == nil { model.showBackups = nil } })) { item in
             SaveBackupsSheet(gameID: item.id).environment(model).themed()
         }
+        .sheet(item: Binding(get: { model.findGames.map(FindGamesSheetItem.init) }, set: { if $0 == nil { model.findGames = nil } })) { item in
+            FindGamesSheet(initial: item.state).environment(model).themed()
+        }
         .sheet(item: $model.launchError) { failure in
             LaunchErrorSheet(failure: failure).environment(model).themed()
         }
@@ -106,6 +109,11 @@ struct ContentView: View {
                 .navigationTitle(SidebarItem.log.title)
         }
     }
+}
+
+private struct FindGamesSheetItem: Identifiable {
+    let state: FindGamesState
+    var id: String { "find" }
 }
 
 private struct BackupsSheetItem: Identifiable {

@@ -57,6 +57,7 @@ struct EmptyLibrary: View {
             Text("A game folder, a Mac .app, or a zip. RenChan plays it on this Mac without changing it.")
         } actions: {
             Button("Add Game…") { model.addWithPanel() }
+            Button("Find Games on This Mac…") { model.findGames() }
         }
     }
 }

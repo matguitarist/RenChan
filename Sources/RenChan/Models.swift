@@ -52,6 +52,8 @@ final class AppModel {
     var confirmUpdate: UpdateRequest?
     /// Discover (S-028): the search, releases by VNDB id, and the entry whose download page was opened last.
     var discover = DiscoverState()
+    /// The Find Games sheet (S-030).
+    var findGames: FindGamesState?
     var releases: [String: [VNDBRelease]] = [:]
     var releasesLoading: Set<String> = []
     @ObservationIgnored var cameFromDiscover: (info: VNDBInfo, opened: Date)?

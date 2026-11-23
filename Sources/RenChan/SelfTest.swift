@@ -232,6 +232,22 @@ enum SelfTest {
                                                 links: [VNDBRelease.Link(label: "Fan site", url: URL(string: "https://example.org/fan")!)])]
         check("S-029 Get It lists the official download pages only", model.downloadLinks("v90001").map(\.label) == ["Itch.io"])
 
+        // S-030 Find games on this Mac: only games not in the library, never RenChan's own copies
+        // Outside RenChan's data folder, which the scan skips.
+        let shelf = Store.url.deletingLastPathComponent().appending(path: "RenChan-self-shelf", directoryHint: .isDirectory)
+        try? FileManager.default.removeItem(at: shelf)
+        Fixtures.game("Lantern_Night-1.0-pc", in: shelf, files: ["renpy/__init__.py": ""])
+        Fixtures.game("Old Letters.app/Contents/Resources/autorun", in: shelf, files: [:])
+        model.findGames(in: [shelf, Store.dataFolder])
+        for _ in 0..<50 where model.findGames?.scanning == true { try? await Task.sleep(for: .milliseconds(100)) }
+        check("S-030 finds a game folder and a Mac build on this Mac",
+              model.findGames?.found.map(\.title).sorted() == ["Lantern Night 1.0", "Old Letters"], "\(model.findGames?.found.map(\.title) ?? [])")
+        let before030 = model.games.count
+        let lantern = Set(model.findGames?.found.filter { $0.title == "Lantern Night 1.0" }.map(\.url) ?? [])
+        model.findGames?.chosen = lantern
+        model.addFoundGames()
+        check("S-030 Add Games adds only the chosen ones", model.games.count == before030 + 1 && model.findGames == nil)
+
         // S-008 Remove a game
         model.remove(first.id)
         check("removing deletes the working copy and keeps the original and saves",
