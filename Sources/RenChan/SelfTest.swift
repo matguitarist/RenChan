@@ -164,6 +164,53 @@ enum SelfTest {
         await waitUntilStopped(model, first.id)
         check("S-014 turning the filter off takes it out of the copy", !FileManager.default.fileExists(atPath: filterFile.path))
 
+        // S-017 to S-021 Mods
+        func modFolder(_ name: String, _ files: [String: String]) -> URL {
+            let folder = root.appending(path: "ModSources/\(name)", directoryHint: .isDirectory)
+            for (path, text) in files {
+                let url = folder.appending(path: path)
+                try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try? text.write(to: url, atomically: true, encoding: .utf8)
+            }
+            return folder
+        }
+        model.addMod(modFolder("Question_Walkthrough", ["Question-7.0/game/walkthrough.rpy": "screen choice(items): pass"]), to: first.id)
+        model.addMod(modFolder("URM", ["0x52_URM.rpy": "screen choice(items): pass"]), to: first.id)
+        check("S-017 a mod is added to the game and kept by RenChan",
+              model.mods.count == 2 && model.game(first.id)?.mods.count == 2
+              && FileManager.default.fileExists(atPath: Store.modsFolder.appending(path: "mods.json").path))
+        check("S-019 two mods that change the same screen are reported", model.modConflicts(model.game(first.id)!).count == 1)
+        let moddedBackupsBefore = model.backups(first.id).filter { $0.reason == .beforeMods }.count
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        let modded = Store.moddedCopy(first.id)
+        check("S-018 the mods are in the modded copy only, never the plain copy or the original",
+              FileManager.default.fileExists(atPath: modded.appending(path: "game/walkthrough.rpy").path)
+              && !FileManager.default.fileExists(atPath: copy.appending(path: "game/walkthrough.rpy").path)
+              && !FileManager.default.fileExists(atPath: question.appending(path: "game/walkthrough.rpy").path)
+              && digest(question) == before)
+        let moddedSave = Store.moddedSaves(first.id).appending(path: "\(model.game(first.id)?.saveDirectory ?? "")/1-1-LT1.save")
+        check("S-020 modded play keeps its saves apart, after one backup",
+              FileManager.default.fileExists(atPath: moddedSave.path)
+              && model.backups(first.id).filter { $0.reason == .beforeMods }.count == moddedBackupsBefore + 1)
+        let urm = model.mods.first { $0.name == "URM" }!.id
+        model.setMod(urm, enabled: false, in: first.id)
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        check("S-018 turning a mod off takes its files out before launch",
+              !FileManager.default.fileExists(atPath: modded.appending(path: "game/0x52_URM.rpy").path)
+              && FileManager.default.fileExists(atPath: modded.appending(path: "game/walkthrough.rpy").path))
+        // S-021: URM, added once, goes on another game with one click.
+        if let other = model.games.first(where: { $0.id != first.id }) {
+            model.attachMod(urm, to: other.id)
+            check("S-021 a library mod goes on another game in one step", model.game(other.id)?.mods.first?.mod == urm)
+            model.removeMod(urm, from: other.id)
+        }
+        let walkthrough = model.mods.first { $0.name != "URM" }!.id
+        model.removeMod(walkthrough, from: first.id)
+        model.removeMod(urm, from: first.id)
+        check("S-017 a mod no game uses leaves the library", model.mods.isEmpty)
+
         // S-005 See why a game didn't start
         let broken = Fixtures.game("Broken-1.0-pc", in: root, files: [
             "game/script.rpy": "label start:\n    $ crash()\n",
@@ -200,9 +247,10 @@ enum SelfTest {
         if let saves = model.saveFolder(first) {
             model.backUpSaves(first.id)
             check("S-012 Back Up Saves makes a dated backup in RenChan's folder",
-                  model.backups(first.id).count == 1 && model.backups(first.id).first?.saveCount == 1)
+                  model.backups(first.id).filter { $0.reason == .manual }.count == 1
+                  && model.backups(first.id).first { $0.reason == .manual }?.saveCount == 1)
             try? "later".write(to: saves.appending(path: "2-1-LT1.save"), atomically: true, encoding: .utf8)
-            if let backup = model.backups(first.id).first { model.restore(backup, for: first.id) }
+            if let backup = model.backups(first.id).first(where: { $0.reason == .manual }) { model.restore(backup, for: first.id) }
             check("S-012 a restore brings back the saves and backs up the ones it replaced",
                   !FileManager.default.fileExists(atPath: saves.appending(path: "2-1-LT1.save").path)
                   && model.backups(first.id).first?.reason == .beforeRestore && model.backups(first.id).first?.saveCount == 2)

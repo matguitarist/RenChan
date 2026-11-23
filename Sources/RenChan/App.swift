@@ -150,9 +150,15 @@ enum Store {
     /// One folder per game: play/ (the working copy), source/ (an unpacked zip), run.log.
     static func gameFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Games/\(id.uuidString)", directoryHint: .isDirectory) }
     static func workingCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play", directoryHint: .isDirectory) }
-    /// Save backups, one folder per game. Kept when a game is removed (S-012).
+    /// A second clone, for play with mods on, so mods never touch the plain copy or its game/saves (S-018, S-020).
+    static func moddedCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play-modded", directoryHint: .isDirectory) }
+    /// Where modded play keeps its saves, through RENPY_PATH_TO_SAVES (S-020).
+    static func moddedSaves(_ id: UUID) -> URL { gameFolder(id).appending(path: "Modded Saves", directoryHint: .isDirectory) }
+    /// The mod library (S-017).
+    static var modsFolder: URL { dataFolder.appending(path: "Mods", directoryHint: .isDirectory) }
     /// The person's own .glsl filters (S-016).
     static var filtersFolder: URL { dataFolder.appending(path: "Filters", directoryHint: .isDirectory) }
+    /// Save backups, one folder per game. Kept when a game is removed (S-012).
     static func backupsFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Backups/\(id.uuidString)", directoryHint: .isDirectory) }
     /// The cover from VNDB or one the person chose (S-010).
     static func coverFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "cover") }

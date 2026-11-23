@@ -106,7 +106,7 @@ extension AppModel {
     /// S-015: while the game runs, its filter reads this strength within a second.
     func tuneFilter(_ id: Game.ID, strength: Double) {
         guard playing.contains(id) else { return }
-        FilterLoader.writeStrength(strength, copy: Store.workingCopy(id))
+        FilterLoader.writeStrength(strength, copy: runningCopies[id] ?? Store.workingCopy(id))
     }
 }
 

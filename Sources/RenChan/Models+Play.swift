@@ -25,7 +25,7 @@ extension AppModel {
             startDownload(version, then: id)
             return
         }
-        let copy = Store.workingCopy(id)
+        let copy = playCopy(game)
         let hasCopy = FileManager.default.fileExists(atPath: copy.appending(path: "game").path)
         if !hasCopy, !WorkingCopy.sameVolume(game.baseURL, copy), confirmFullCopy?.id != id {
             confirmFullCopy = FullCopyRequest(id: id, size: WorkingCopy.size(of: game.baseURL))
@@ -40,8 +40,11 @@ extension AppModel {
         confirmFullCopy = nil
     }
 
+    /// The plain copy, or the modded one when any mod is on.
+    func playCopy(_ game: Game) -> URL { game.hasModsOn ? Store.moddedCopy(game.id) : Store.workingCopy(game.id) }
+
     private func launch(_ game: Game, on runtime: Runtime, allowFullCopy: Bool) {
-        let copy = Store.workingCopy(game.id)
+        let copy = playCopy(game)
         do {
             let outcome = try WorkingCopy.prepare(base: game.baseURL, copy: copy, allowFullCopy: allowFullCopy)
             if outcome != .reused { log.post(.info, "Made a working copy of \(game.title) (\(outcome == .cloned ? "APFS clone" : "full copy"))", source: "Play") }
@@ -56,7 +59,7 @@ extension AppModel {
                     log.post(.info, "\(game.title): filter \(filter.name) at \(Int(filter.strength * 100))% (\(tier == .camera ? "camera" : "layer transform"))", source: "Play")
                 }
             }
-            var environment: [String: String] = [:]
+            var environment = try prepareMods(game, copy: copy)
             if Store.isOverridden { environment["HOME"] = Store.renpyHome.path }
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: Store.gameFolder(game.id).appending(path: "run.log"),
                                   environment: environment)
@@ -69,6 +72,7 @@ extension AppModel {
             }
             try process.run()
             processes[game.id] = process
+            runningCopies[game.id] = copy
             playing.insert(game.id)
             PlaySession.begin(at: started, file: Store.sessionFile(game.id))
             update(game.id) { $0.markPlayed(at: started) }
@@ -82,6 +86,7 @@ extension AppModel {
 
     private func finished(_ id: Game.ID, status: Int32, plan: LaunchPlan, started: Date) {
         processes[id] = nil
+        runningCopies[id] = nil
         playing.remove(id)
         let seconds = PlaySession.end(at: .now, file: Store.sessionFile(id))
         update(id) { $0.playtime += seconds }

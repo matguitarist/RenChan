@@ -41,6 +41,11 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var notes = ""
     /// The screen filter it plays with (S-014).
     public var filter: FilterSetting?
+    /// Its mods, in load order (S-017, S-018).
+    public var mods: [ModUse] = []
+    /// Saves were backed up before the first modded launch (S-020).
+    public var backedUpBeforeMods = false
+    public var hasModsOn: Bool { mods.contains(where: \.enabled) }
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
                 version: RenPyVersion? = nil, pythonLine: PythonLine? = nil, versionSource: VersionSource? = nil,
@@ -83,6 +88,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         labels = try c.decodeIfPresent([String].self, forKey: .labels) ?? []
         notes = try c.decodeIfPresent(String.self, forKey: .notes) ?? ""
         filter = try c.decodeIfPresent(FilterSetting.self, forKey: .filter)
+        mods = try c.decodeIfPresent([ModUse].self, forKey: .mods) ?? []
+        backedUpBeforeMods = try c.decodeIfPresent(Bool.self, forKey: .backedUpBeforeMods) ?? false
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

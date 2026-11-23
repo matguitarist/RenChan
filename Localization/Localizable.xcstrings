@@ -11,12 +11,52 @@
         }
       }
     },
+    "%@ all change the screen “%@”; Ren'Py uses the one it loads last.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ modifient tous l’écran « %2$@ » ; Ren’Py utilise celui qu’il charge en dernier."
+          }
+        }
+      }
+    },
     "%@ already plays this version.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "%@ utilise déjà cette version."
+          }
+        }
+      }
+    },
+    "%@ and %@ both have %@; %@'s is used.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ et %2$@ ont tous deux %3$@ ; celui de %4$@ est utilisé."
+          }
+        }
+      }
+    },
+    "%@ has no Ren'Py files (.rpy, .rpyc or .rpa), so it can't change the game.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ne contient aucun fichier Ren’Py (.rpy, .rpyc ou .rpa) : il ne peut pas modifier le jeu."
+          }
+        }
+      }
+    },
+    "%@ isn't a mod RenChan can add. Choose a zip, a folder, or .rpy, .rpyc or .rpa files.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ n’est pas un mod que RenChan peut ajouter. Choisissez un zip, un dossier, ou des fichiers .rpy, .rpyc ou .rpa."
           }
         }
       }
@@ -41,6 +81,16 @@
         }
       }
     },
+    "%@ was refused: it would write outside its folder (%@).": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ a été refusé : il écrirait hors de son dossier (%2$@)."
+          }
+        }
+      }
+    },
     "%lld Saves": {
       "localizations": {
         "fr": {
@@ -57,6 +107,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld étoiles ou plus"
+          }
+        }
+      }
+    },
+    "%lld files": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld fichiers"
           }
         }
       }
@@ -87,6 +147,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 sauvegarde"
+          }
+        }
+      }
+    },
+    "1 file": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 fichier"
           }
         }
       }
@@ -241,6 +311,26 @@
         }
       }
     },
+    "Add Mod": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter le mod"
+          }
+        }
+      }
+    },
+    "Add Mod…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un mod…"
+          }
+        }
+      }
+    },
     "Add Task": {
       "localizations": {
         "fr": {
@@ -277,6 +367,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter une étiquette"
+          }
+        }
+      }
+    },
+    "Add a mod or walkthrough to this game: a zip, a folder, or .rpy, .rpyc or .rpa files": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un mod ou une soluce à ce jeu : un zip, un dossier, ou des fichiers .rpy, .rpyc ou .rpa"
+          }
+        }
+      }
+    },
+    "Add a mod you already added to another game, such as Universal Ren'Py Mod": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un mod déjà ajouté à un autre jeu, comme Universal Ren’Py Mod"
+          }
+        }
+      }
+    },
+    "Add from Library": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter depuis la bibliothèque"
           }
         }
       }
@@ -391,6 +511,16 @@
         }
       }
     },
+    "Before mods": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant les mods"
+          }
+        }
+      }
+    },
     "Before restore": {
       "localizations": {
         "fr": {
@@ -497,6 +627,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisissez un dossier de jeu, une app Mac ou un zip."
+          }
+        }
+      }
+    },
+    "Choose a mod: a zip, a folder, or .rpy, .rpyc or .rpa files. RenChan keeps its own copy.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez un mod : un zip, un dossier, ou des fichiers .rpy, .rpyc ou .rpa. RenChan garde sa propre copie."
           }
         }
       }
@@ -727,6 +867,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Déposez un jeu sur la fenêtre, ou cherchez dans un autre dossier."
+          }
+        }
+      }
+    },
+    "Drop a mod's zip, folder or .rpy file here, such as a walkthrough. Mods go in RenChan's copy, never in the game.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déposez ici le zip, le dossier ou le fichier .rpy d’un mod, comme une soluce. Les mods vont dans la copie de RenChan, jamais dans le jeu."
           }
         }
       }
@@ -1181,6 +1331,36 @@
         }
       }
     },
+    "Modded play keeps its own saves; yours are backed up before the first modded launch.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le jeu avec mods garde ses propres sauvegardes ; les vôtres sont copiées avant le premier lancement avec mods."
+          }
+        }
+      }
+    },
+    "Modded play keeps its own saves; yours were backed up before the first modded launch.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le jeu avec mods garde ses propres sauvegardes ; les vôtres ont été copiées avant le premier lancement avec mods."
+          }
+        }
+      }
+    },
+    "Mods": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mods"
+          }
+        }
+      }
+    },
     "More": {
       "localizations": {
         "fr": {
@@ -1197,6 +1377,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Autres actions"
+          }
+        }
+      }
+    },
+    "Move Down": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descendre"
+          }
+        }
+      }
+    },
+    "Move Up": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monter"
           }
         }
       }
@@ -1717,6 +1917,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Retirer de la bibliothèque…"
+          }
+        }
+      }
+    },
+    "Remove from This Game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retirer de ce jeu"
           }
         }
       }

@@ -249,27 +249,44 @@ Status: done
 As the user, I drop a mod (zip, `.rpa`, `.rpy`) on a game and it appears in that game's Mods list, stored by RenChan, not in the game. Walkthrough mods are mods: the same import covers them.
 Acceptance:
 - [unit] Zip Slip is refused; a zip's `game/` folder is found at any depth.
-Status: todo
+- [self] A mod is added and kept by RenChan; a mod no game uses leaves the library.
+UX:
+- Flow: inspector › Mods › Add Mod… (zip, folder, .rpy/.rpyc/.rpa) or drop on the Mods section → copied to RenChan's Mods folder → on, last in the list.
+- States: empty explains drop and that the game is never changed; not a mod / no scripts / Zip Slip → a notice saying why.
+- Words: "Add Mod…" / « Ajouter un mod… », "Remove from This Game" / « Retirer de ce jeu ».
+Status: done
 
 ### S-018 Turn mods on and off, and order them
 As the user, I switch each mod on or off and drag to set load order; the next launch uses exactly that set.
 Acceptance:
 - [self] Turning a mod off removes its files from the working copy before launch.
-Status: todo
+- [unit] A later mod wins a shared file; turning mods off brings back the game's own files.
+- [live] A placed mod runs in real Ren'Py 7.8.7 and 8.6.1.
+UX:
+- Flow: a switch per mod; drag rows, or Move Up / Move Down in the context menu, to set the order. Mods on → the game plays from a second clone (play-modded).
+Status: done
 
 ### S-019 Conflicts
 As the user, I'm warned when two enabled mods replace the same file or screen, and told which one wins.
-Status: todo
+- [unit] Shared files (with the winner) and shared screen names are found.
+UX:
+- States: an orange line per conflict under the list, also written to the log at launch.
+Status: done
 
 ### S-020 Modded saves stay apart
 As the user, modded play keeps its own saves by default, and my saves are backed up before the first modded launch.
 Acceptance:
 - [unit] Launch sets `RENPY_PATH_TO_SAVES` to the game's modded save folder when any mod is on.
-Status: todo
+- [live] Saves land in the modded saves folder, not ~/Library/RenPy.
+- [self] Modded saves stay apart, after one "Before mods" backup.
+Status: done
 
 ### S-021 Install URM
 As the user, I add my own copy of Universal Ren'Py Mod once and turn it on for any game with one switch.
-Status: todo
+- [self] A library mod goes on another game in one step.
+UX:
+- Flow: Mods › Add from Library › Universal Ren'Py Mod. One copy in the library serves every game.
+Status: done
 
 ## M5 Mod API and tools (0.5.0)
 

@@ -32,7 +32,8 @@ enum Fixtures {
         base="$3"
         touch "$base/game/script.rpyc"
         saves=$(sed -n 's/.*save_directory = "\\(.*\\)".*/\\1/p' "$base/game/options.rpy" 2>/dev/null)
-        [ -n "$saves" ] && mkdir -p "$HOME/Library/RenPy/$saves" && touch "$HOME/Library/RenPy/$saves/1-1-LT1.save"
+        root="${RENPY_PATH_TO_SAVES:-$HOME/Library/RenPy}"
+        [ -n "$saves" ] && mkdir -p "$root/$saves" && touch "$root/$saves/1-1-LT1.save"
         if grep -q crash "$base/game/script.rpy"; then
           printf 'I am sorry, but an uncaught exception occurred.\\n\\n  File "game/script.rpy", line 2, in script\\nNameError: name '"'"'crash'"'"' is not defined\\n' > "$base/traceback.txt"
           exit 1
@@ -80,6 +81,20 @@ enum SeedData {
                 .write(to: root.appending(path: "Sepia.glsl"), atomically: true, encoding: .utf8)
             _ = try? CustomFilters.add(root.appending(path: "Sepia.glsl"), to: Store.filtersFolder)
             model.customFilters = CustomFilters.list(in: Store.filtersFolder)
+            if model.games.count > 1 {
+                let modsRoot = Store.dataFolder.appending(path: "SeedMods", directoryHint: .isDirectory)
+                for (name, files) in [("Moonlit_Letters_Walkthrough_Mod", ["game/walkthrough.rpy": "screen choice(items): pass", "game/screens.rpy": ""]),
+                                      ("Gallery_Unlocker", ["screens.rpy": "", "unlock.rpy": "init: pass"]),
+                                      ("0x52_URM", ["0x52_URM.rpa": "rpa"])] {
+                    let folder = modsRoot.appending(path: name)
+                    for (path, text) in files {
+                        try? FileManager.default.createDirectory(at: folder.appending(path: path).deletingLastPathComponent(), withIntermediateDirectories: true)
+                        try? text.write(to: folder.appending(path: path), atomically: true, encoding: .utf8)
+                    }
+                    model.addMod(folder, to: model.games[1].id)
+                }
+                if let urm = model.mods.last { model.setMod(urm.id, enabled: false, in: model.games[1].id) }
+            }
             if model.games.count > 2 {
                 model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }
                 model.update(model.games[1].id) { $0.labels = ["Short"] }

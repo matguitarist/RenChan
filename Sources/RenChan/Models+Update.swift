@@ -82,6 +82,7 @@ extension AppModel {
         }
         // The working copy is a clone of the old files; an unpacked old zip is RenChan's own and goes too.
         try? FileManager.default.removeItem(at: Store.workingCopy(old.id))
+        try? FileManager.default.removeItem(at: Store.moddedCopy(old.id))
         if old.kind == .zip, let oldFolder = Self.topFolder(of: old.basePath, in: folder), oldFolder != unpacked?.lastPathComponent {
             try? FileManager.default.removeItem(at: folder.appending(path: oldFolder, directoryHint: .isDirectory))
         }

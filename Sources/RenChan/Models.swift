@@ -56,6 +56,10 @@ final class AppModel {
     var findGames: FindGamesState?
     /// The person's own filters, from Store.filtersFolder (S-016).
     var customFilters: [CustomFilter] = []
+    /// The mod library (S-017).
+    var mods: [Mod] = []
+    /// The copy each running game plays from.
+    var runningCopies: [Game.ID: URL] = [:]
     var releases: [String: [VNDBRelease]] = [:]
     var releasesLoading: Set<String> = []
     @ObservationIgnored var cameFromDiscover: (info: VNDBInfo, opened: Date)?
@@ -81,6 +85,7 @@ final class AppModel {
         loadLibrary()
         recoverSessions()
         customFilters = CustomFilters.list(in: Store.filtersFolder)
+        mods = ModLibrary.load(Store.modsFolder)
     }
 
     var runtimeStore: RuntimeStore { RuntimeStore(folder: Store.runtimesFolder) }

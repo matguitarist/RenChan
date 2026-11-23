@@ -169,6 +169,41 @@ struct Live {
         #expect(brown.r > brown.g && brown.g > brown.b && brown.g > 40, "sepia: \(brown)")
     }
 
+    /// S-018, S-020: a mod placed by ModInstaller runs in real Ren'Py, and RENPY_PATH_TO_SAVES takes the saves.
+    @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
+    func aModRunsAndModdedSavesStayApart(version: String) async throws {
+        if Self.store.runtime(version) == nil {
+            try await RuntimeDownload.install(version, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        let marker = root.appending(path: "mod-ran.txt")
+        let base = Fixture.game(at: root.appending(path: "Base"), files: [
+            "game/options.rpy": "define config.save_directory = \"renchan-mod-test\"\n",
+            "game/script.rpy": "label start:\n    $ renpy.save(\"1-1\")\n    $ renpy.quit()\n",
+        ])
+        let source = root.appending(path: "Walkthrough")
+        try FileManager.default.createDirectory(at: source.appending(path: "game"), withIntermediateDirectories: true)
+        try "init python:\n    open(\"\(marker.path)\", \"w\").write(\"yes\")\n".write(to: source.appending(path: "game/walkthrough.rpy"), atomically: true, encoding: .utf8)
+        let library = root.appending(path: "Mods")
+        let mod = try ModLibrary.importMod(source, into: library)
+        let copy = root.appending(path: "play-modded")
+        try WorkingCopy.prepare(base: base, copy: copy, allowFullCopy: true)
+        try ModInstaller.apply([mod], root: library, base: base, copy: copy)
+        let saves = root.appending(path: "Modded Saves")
+        let home = root.appending(path: "home")
+        let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"),
+                              environment: ModInstaller.environment(modded: true, saves: saves).merging(["HOME": home.path]) { a, _ in a })
+        let process = try plan.makeProcess()
+        try process.run()
+        let deadline = Date().addingTimeInterval(60)
+        while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
+        let log = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
+        #expect(FileManager.default.fileExists(atPath: marker.path), "the mod didn't run: \(log.suffix(1500))")
+        #expect(FileManager.default.fileExists(atPath: saves.appending(path: "renchan-mod-test/1-1-LT1.save").path), "\(log.suffix(800))")
+        #expect(!FileManager.default.fileExists(atPath: home.appending(path: "Library/RenPy/renchan-mod-test/1-1-LT1.save").path))
+    }
+
     @Test func playsARealGameFromAClone() async throws {
         let game = ProcessInfo.processInfo.environment["RENCHAN_LIVE_GAME"].map { URL(fileURLWithPath: $0) }
         let base = try #require(game, "set RENCHAN_LIVE_GAME to a game's base folder")

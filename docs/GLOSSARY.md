@@ -22,3 +22,7 @@ One name per thing, in every button, menu, title, tooltip and error.
 | Restore | Put a backup's saves back in place of the current ones | revert, load | Restaurer |
 | Screen filter | A shader RenChan lays over the whole game, in its copy only | Effect, shader, mod | Filtre d’écran |
 | Strength | How much of a filter shows, 0 to 100% | Intensity, amount | Intensité |
+| Mod | Files RenChan puts under a game's game/ folder in its own copy: a walkthrough, URM, a patch | add-on, plugin, patch | Mod |
+| Mod library | RenChan's one copy of every mod added, shared by the games that use it | mod store | Bibliothèque (de mods) |
+| Load order | The order of a game's mods; a later mod wins a file both have | priority | Ordre de chargement |
+| Modded saves | The saves of play with mods on, kept apart from the game's | mod saves | Sauvegardes avec mods |

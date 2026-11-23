@@ -61,6 +61,8 @@ enum Snapshot {
             model.sidebar = .library
             await shoot("library-list", { model.layout = .list }, { model.layout = .grid })
             await shoot("game-details", { model.showInspector = true }, {})
+            await shoot("game-mods", { model.selection = model.games.count > 1 ? model.games[1].id : nil; model.showInspector = true },
+                        { model.selection = model.games.first?.id })
             await shoot("library-filtered", { model.filter = LibraryFilter(labels: ["Romance"]) }, { model.filter = LibraryFilter() })
             let saved = model.games
             await shoot("library-empty", { model.games = [] }, { model.games = saved })

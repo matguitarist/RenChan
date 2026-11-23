@@ -29,7 +29,7 @@ struct SaveBackupsSheet: View {
                         TableColumn("Date") { backup in Text(backup.date, format: .dateTime.day().month().year().hour().minute()) }
                             .width(min: 150, ideal: 180)
                         TableColumn("Kind") { backup in
-                            Text(backup.reason == .manual ? String(localized: "Backup") : String(localized: "Before restore"))
+                            Text(backup.reason.title)
                                 .foregroundStyle(backup.reason == .manual ? .primary : .secondary)
                         }
                         .width(min: 100, ideal: 120)
@@ -96,6 +96,16 @@ struct BackupRow: View {
                 .help("Copy the saves into RenChan's backups (Option-Command-B)")
             Button("Backups…") { model.showBackups = game.id }
                 .help("See, restore or remove backups of the saves")
+        }
+    }
+}
+
+extension SaveBackup.Reason {
+    var title: String {
+        switch self {
+        case .manual: String(localized: "Backup")
+        case .beforeRestore: String(localized: "Before restore")
+        case .beforeMods: String(localized: "Before mods")
         }
     }
 }

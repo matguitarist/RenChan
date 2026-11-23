@@ -37,6 +37,7 @@ struct GameDetails: View {
                 }
             }
             FilterSection(game: game)
+            ModsSection(game: game)
             Section("Saves") {
                 LabeledContent("Folder") {
                     if game.saveDirectory != nil {
