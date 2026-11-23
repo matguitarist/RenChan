@@ -64,6 +64,9 @@ final class AppModel {
     var findGames: FindGamesState?
     /// The person's own filters, from Store.filtersFolder (S-016).
     var customFilters: [CustomFilter] = []
+    /// Shader errors from running games, while a filter is being changed live.
+    var filterErrors: [Game.ID: String] = [:]
+    @ObservationIgnored var filterWatch: Task<Void, Never>?
     /// The mod library (S-017).
     var mods: [Mod] = []
     /// The copy each running game plays from.

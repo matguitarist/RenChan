@@ -29,8 +29,7 @@ struct FilterSection: View {
         Section("Screen Filter") {
             Picker("Filter", selection: Binding(get: { FilterChoice(game.filter) }, set: { new in
                 model.update(game.id) { $0.filter = new.setting(strength: game.filter?.strength ?? 1) }
-                // None while playing fades the running filter out now; another filter waits for the next launch.
-                if new == .none { model.tuneFilter(game.id, strength: 0) }
+                model.applyFilterLive(game.id)
             })) {
                 Text("None").tag(FilterChoice.none)
                 Divider()
@@ -55,7 +54,7 @@ struct FilterSection: View {
                 LabeledContent("Strength") {
                     Slider(value: Binding(get: { setting.strength }, set: { value in
                         model.update(game.id) { $0.filter?.strength = value }
-                        model.tuneFilter(game.id, strength: value)
+                        model.applyFilterLive(game.id)
                     }), in: 0...1)
                     .frame(maxWidth: 180)
                 }
@@ -67,9 +66,14 @@ struct FilterSection: View {
                     Text("This filter's file is gone from RenChan's Filters folder, so the game plays without it.")
                         .font(.caption).foregroundStyle(.orange)
                 }
-                Text(model.playing.contains(game.id) ? "Strength changes show in the game right away. Another filter shows the next time you play."
-                                                     : "Applies when you play. The game itself isn't changed.")
+                Text(model.playing.contains(game.id) ? "Changes show in the game within a second, including edits saved to your own filter's file."
+                                                     : "Applies when you play, and can be changed while the game runs. The game itself isn't changed.")
                     .font(.caption).foregroundStyle(.secondary)
+            }
+            if model.playing.contains(game.id), let error = model.filterErrors[game.id] {
+                Label("The game kept the last filter: this one didn't compile. \(error)", systemImage: "exclamationmark.triangle")
+                    .font(.caption).foregroundStyle(.orange)
+                    .textSelection(.enabled)
             }
             if tier != .unsupported {
                 HStack {
@@ -103,10 +107,33 @@ enum FilterChoice: Hashable {
 }
 
 extension AppModel {
-    /// S-015: while the game runs, its filter reads this strength within a second.
-    func tuneFilter(_ id: Game.ID, strength: Double) {
-        guard playing.contains(id) else { return }
-        FilterLoader.writeStrength(strength, copy: runningCopies[id] ?? Store.workingCopy(id))
+    /// S-015: while the game runs, its filter follows the inspector within a second: another filter, None, the strength.
+    func applyFilterLive(_ id: Game.ID) {
+        guard playing.contains(id), let game = game(id) else { return }
+        FilterLoader.update(game.filter, custom: customFilters, copy: runningCopies[id] ?? Store.workingCopy(id))
+    }
+
+    /// While games play: picks up edits to the person's .glsl files and reports shaders Ren'Py couldn't compile,
+    /// so a filter can be written with the game open beside it.
+    func startFilterWatch() {
+        guard filterWatch == nil else { return }
+        filterWatch = Task { [weak self] in
+            while let self, !self.playing.isEmpty, !Task.isCancelled {
+                let found = CustomFilters.list(in: Store.filtersFolder)
+                if found != self.customFilters { self.customFilters = found }
+                for id in self.playing {
+                    self.applyFilterLive(id)
+                    let error = FilterLoader.lastError(copy: self.runningCopies[id] ?? Store.workingCopy(id))
+                    if self.filterErrors[id] != error {
+                        self.filterErrors[id] = error
+                        if let error, let game = self.game(id) { self.log.post(.warning, "\(game.title): filter \(game.filter?.name ?? "") didn't compile; kept the last one. \(error)", source: "Filters") }
+                    }
+                }
+                try? await Task.sleep(for: .seconds(1))
+            }
+            self?.filterErrors = [:]
+            self?.filterWatch = nil
+        }
     }
 }
 

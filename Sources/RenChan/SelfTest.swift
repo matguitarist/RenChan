@@ -143,12 +143,15 @@ enum SelfTest {
         check("S-014 a filter is written into the working copy, never the original",
               FileManager.default.fileExists(atPath: filterFile.path) && digest(question) == before)
         let live = FilterLoader.liveFile(copy)
-        check("S-015 the strength file starts at the game's strength",
-              (try? String(contentsOf: live, encoding: .utf8)) == "0.600")
+        func liveText() -> String { (try? String(contentsOf: live, encoding: .utf8)) ?? "" }
+        check("S-015 the filter state starts at the game's filter and strength",
+              liveText().contains("\"strength\":0.6") && liveText().contains("\"name\":\"crt\""))
         model.playing.insert(first.id)
-        model.tuneFilter(first.id, strength: 0.25)
+        model.update(first.id) { $0.filter = FilterSetting(filter: .grayscale, strength: 0.25) }
+        model.applyFilterLive(first.id)
         model.playing.remove(first.id)
-        check("S-015 moving Strength while playing writes it for the game", (try? String(contentsOf: live, encoding: .utf8)) == "0.250")
+        check("S-015 another filter or strength while playing is written for the game",
+              liveText().contains("\"strength\":0.25") && liveText().contains("\"name\":\"grayscale\""))
         // S-016 Add my own shader
         let sepiaFile = root.appending(path: "Sepia.glsl")
         try? "// {\"name\": \"Sepia\"}\nc = mix(c, vec3(dot(c, vec3(0.393, 0.769, 0.189))), s);".write(to: sepiaFile, atomically: true, encoding: .utf8)
@@ -159,11 +162,11 @@ enum SelfTest {
         await waitUntilStopped(model, first.id)
         check("S-016 my own filter is listed and played",
               model.customFilters.map(\.name) == ["Sepia"]
-              && ((try? String(contentsOf: filterFile, encoding: .utf8)) ?? "").contains("0.393, 0.769, 0.189"))
+              && liveText().contains("0.393, 0.769, 0.189"))
         model.update(first.id) { $0.filter = nil }
         model.play(first.id)
         await waitUntilStopped(model, first.id)
-        check("S-014 turning the filter off takes it out of the copy", !FileManager.default.fileExists(atPath: filterFile.path))
+        check("S-014 turning the filter off draws nothing", !FileManager.default.fileExists(atPath: filterFile.path) || liveText().contains("\"passes\":[]"))
 
         // S-017 to S-021 Mods
         func modFolder(_ name: String, _ files: [String: String]) -> URL {

@@ -76,6 +76,7 @@ extension AppModel {
             processes[game.id] = process
             runningCopies[game.id] = copy
             playing.insert(game.id)
+            if tier != .unsupported { startFilterWatch() }
             PlaySession.begin(at: started, file: Store.sessionFile(game.id))
             update(game.id) { $0.markPlayed(at: started) }
             let rosetta = runtime.isUniversal ? "" : " under Rosetta"

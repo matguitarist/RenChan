@@ -83,7 +83,7 @@ struct Live {
                 $ renpy.screenshot(\"\(shot.path)\")
                 $ renpy.quit()
             """])
-            #expect(try FilterLoader.install(setting, runtime: version, copy: copy, custom: [sepia]) == (setting == nil ? .unsupported : .layerTransforms))
+            #expect(try FilterLoader.install(setting, runtime: version, copy: copy, custom: [sepia]) == .layerTransforms)
             let home = root.appending(path: "home")
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"), environment: ["HOME": home.path])
             let process = try plan.makeProcess()
@@ -117,6 +117,25 @@ struct Live {
         let tuned = try shoot(FilterSetting(filter: .grayscale, strength: 0), name: "live",
                               then: "$ open(\"\(live.path)\", \"w\").write(\"1.0\")")
         #expect(abs(tuned.r - tuned.g) < 12 && tuned.r < 120, "after tuning live: \(tuned)")
+        // Switching while the game runs: Grayscale, then Sepia, which the loader compiles on the spot.
+        let swapCopy = root.appending(path: "play-swap")
+        let sepiaState = root.appending(path: "sepia-state.json")
+        FilterLoader.update(FilterSetting(custom: "Sepia.glsl"), custom: [sepia], copy: root)
+        try FileManager.default.moveItem(at: FilterLoader.liveFile(root), to: sepiaState)
+        let swapped = try shoot(FilterSetting(filter: .grayscale), name: "swap",
+                                then: "$ open(\"\(FilterLoader.liveFile(swapCopy).path)\", \"w\").write(open(\"\(sepiaState.path)\").read())")
+        #expect(swapped.r > swapped.g && swapped.g > swapped.b && swapped.g > 40, "after switching to sepia live: \(swapped)")
+        // A shader with a mistake doesn't stop the game: it keeps Grayscale, and the error is there for RenChan.
+        let brokenCopy = root.appending(path: "play-broken")
+        let brokenState = root.appending(path: "broken-state.json")
+        let broken = try CustomFilter.parse("// {\"name\": \"Broken\"}\nc = vec3(oops);", file: "Broken.glsl")
+        FilterLoader.update(FilterSetting(custom: "Broken.glsl"), custom: [broken], copy: root)
+        try FileManager.default.moveItem(at: FilterLoader.liveFile(root), to: brokenState)
+        let kept = try shoot(FilterSetting(filter: .grayscale), name: "broken",
+                             then: "$ open(\"\(FilterLoader.liveFile(brokenCopy).path)\", \"w\").write(open(\"\(brokenState.path)\").read())")
+        #expect(abs(kept.r - kept.g) < 12 && kept.r > 40, "a broken shader kept grayscale: \(kept)")
+        #expect(FilterLoader.lastError(copy: brokenCopy)?.contains("oops") == true, "the error names the mistake: \(FilterLoader.lastError(copy: brokenCopy) ?? "none")")
+        print("broken shader error: \(FilterLoader.lastError(copy: brokenCopy) ?? "none")")
         // S-031: FSR Upscale draws from the game's resolution: a 640×360 game in a 1920×1080 window keeps a hard edge
         // narrower than Ren'Py's own bilinear scaling.
         func edgeWidth(_ setting: FilterSetting?) throws -> Int {

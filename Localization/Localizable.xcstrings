@@ -481,6 +481,16 @@
         }
       }
     },
+    "Applies when you play, and can be changed while the game runs. The game itself isn't changed.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S’applique quand vous jouez, et peut être changé pendant la partie. Le jeu lui-même n’est pas modifié."
+          }
+        }
+      }
+    },
     "Applies when you play. The game itself isn't changed.": {
       "localizations": {
         "fr": {
@@ -657,6 +667,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modifiée, pas encore enregistrée"
+          }
+        }
+      }
+    },
+    "Changes show in the game within a second, including edits saved to your own filter's file.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les changements apparaissent dans le jeu en moins d’une seconde, y compris les modifications enregistrées dans le fichier de votre propre filtre."
           }
         }
       }
@@ -3537,6 +3557,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le jeu est sur un autre disque, RenChan doit donc en faire une copie complète (%@) dans son propre dossier. L’original reste tel quel."
+          }
+        }
+      }
+    },
+    "The game kept the last filter: this one didn't compile. %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le jeu a gardé le filtre précédent : celui-ci n’a pas compilé. %@"
           }
         }
       }

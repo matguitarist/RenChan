@@ -209,15 +209,15 @@ UX:
 Status: done
 
 ### S-015 Tune a filter live
-As the user, I change a filter's strength while the game runs and see it change in the game.
+As the user, I change a filter, its strength, or my own filter's code while the game runs and see it change in the game.
 Acceptance:
-- [unit] RenChan writes parameters to a file the loader reads each second.
-- [live] Grayscale started at 0 turns the running game gray once the file says 1 (7.8.7 and 8.6.1).
-- [self] Moving Strength while playing writes the file.
+- [unit] RenChan writes the filter's state (strength, passes, a key that changes with the code) to a file the loader reads twice a second; None keeps the loader on 7.7+ and 8.2+, drawing nothing.
+- [live] Grayscale started at 0 turns gray once the file says 1; Grayscale switches to Sepia while the game runs; a shader with a mistake keeps Grayscale and reports the compiler's error (7.8.7 and 8.6.1).
+- [self] Another filter or strength while playing is written for the game.
 UX:
-- Flow: game playing → inspector › Screen Filter › Strength slider → the game changes within a second. Filter › None fades it out now; another filter waits for the next launch, and the note says so.
-- Surface: the same inline slider as S-014.
-- Words: "Strength changes show in the game right away. Another filter shows the next time you play."
+- Flow: game playing → inspector › Screen Filter › Filter or Strength → the game changes within a second. Saving your own .glsl file while the game runs does the same. A shader that doesn't compile keeps the last filter, and an orange note under the filter shows the compiler's error (also in the Log).
+- Surface: the same inline picker and slider as S-014.
+- Words: "Changes show in the game within a second, including edits saved to your own filter's file." / "The game kept the last filter: this one didn't compile. …"
 Status: done
 
 ### S-016 Add my own shader
