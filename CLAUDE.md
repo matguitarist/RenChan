@@ -30,5 +30,8 @@ Shared rules for how every project is laid out and named:
 
 ## Checks specific to this app
 
+- `RENCHAN_LIVE=1 swift test --filter Live` downloads the real runtimes from renpy.org into $TMPDIR and checks them; add `RENCHAN_LIVE_GAME=<base folder>` to play a real game for six seconds with HOME in a temp folder.
+- The self-test and snapshots use pretend runtimes (`Fixtures.runtime`): shell scripts in place of Ren'Py's Python.
+
 - `APP_SNAPSHOT_MIN=1 tools/snap.sh` shoots the window at its smallest size.
 - Never test against the real library in `~/Library/Application Support/RenChan/` or the real `~/Library/RenPy`.

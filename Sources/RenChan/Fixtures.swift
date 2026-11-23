@@ -1,0 +1,77 @@
+import Foundation
+import RenChanKit
+
+/// Tiny Ren'Py games and pretend runtimes in a test folder, for seed data and the self-test. Never used on a real library.
+enum Fixtures {
+    @discardableResult
+    static func game(_ name: String, in root: URL, files: [String: String]) -> URL {
+        let base = root.appending(path: name, directoryHint: .isDirectory)
+        var all = ["game/script.rpy": "label start:\n    \"Hello.\"\n    return\n"]
+        for (path, text) in files { all[path] = text }
+        for (path, text) in all {
+            let file = base.appending(path: path)
+            try? FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? text.write(to: file, atomically: true, encoding: .utf8)
+        }
+        return base
+    }
+
+    static func options(name: String, saves: String) -> String {
+        "define config.name = _(\"\(name)\")\ndefine config.save_directory = \"\(saves)\"\n"
+    }
+
+    /// A runtime whose "python" is a script: it compiles nothing, writes a save, and fails with a
+    /// traceback when the game's script says crash. Ren'Py's real arguments: -EO renpy.py <base>.
+    static func runtime(_ version: String, folder: String, in store: URL) {
+        let sdk = store.appending(path: version, directoryHint: .isDirectory)
+        let python = sdk.appending(path: "lib/\(folder)/python")
+        try? FileManager.default.createDirectory(at: python.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let script = """
+        #!/bin/sh
+        base="$3"
+        touch "$base/game/script.rpyc"
+        saves=$(sed -n 's/.*save_directory = "\\(.*\\)".*/\\1/p' "$base/game/options.rpy" 2>/dev/null)
+        [ -n "$saves" ] && mkdir -p "$HOME/Library/RenPy/$saves" && touch "$HOME/Library/RenPy/$saves/1-1-LT1.save"
+        if grep -q crash "$base/game/script.rpy"; then
+          printf 'I am sorry, but an uncaught exception occurred.\\n\\n  File "game/script.rpy", line 2, in script\\nNameError: name '"'"'crash'"'"' is not defined\\n' > "$base/traceback.txt"
+          exit 1
+        fi
+        echo "Ren'Py \(version) ran $base"
+        """
+        try? script.write(to: python, atomically: true, encoding: .utf8)
+        try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: python.path)
+        try? "".write(to: sdk.appending(path: "renpy.py"), atomically: true, encoding: .utf8)
+    }
+}
+
+/// Seed data for snapshots (APP_SEED=1 with APP_STORE): a few games, two runtimes, a morning of log.
+enum SeedData {
+    static func addIfRequested(model: AppModel) {
+        guard ProcessInfo.processInfo.environment["APP_SEED"] == "1", Store.isOverridden, model.games.isEmpty else { return }
+        let root = Store.dataFolder.appending(path: "SeedGames", directoryHint: .isDirectory)
+        Fixtures.runtime(RuntimeCatalog.python3, folder: "py3-mac-universal", in: Store.runtimesFolder)
+        Fixtures.runtime("7.4.11", folder: "mac-x86_64", in: Store.runtimesFolder)
+        let games: [(String, String, [String: String])] = [
+            ("The_Question-7.0-pc", "The Question", ["renpy/vc_version.py": "version = '8.6.1.26111705'\n"]),
+            ("Moonlit_Letters-1.2-pc", "Moonlit Letters", ["game/script_version.txt": "(7, 4, 11)"]),
+            ("Harbor_Lights-0.9-pc", "Harbor Lights", ["renpy/vc_version.py": "version = '8.3.7.25031702'\n"]),
+            ("Paper_Cranes-2.0-mac", "Paper Cranes", ["lib/py2-mac-universal/readme": ""]),
+            ("Seven_Days-1.0-pc", "Seven Days", ["log.txt": "Ren'Py 6.99.14.3.3347\n"]),
+        ]
+        for (folder, title, files) in games {
+            var all = files
+            all["game/options.rpy"] = Fixtures.options(name: title, saves: folder)
+            model.addFolder(Fixtures.game(folder, in: root, files: all))
+        }
+        if let first = model.games.first {
+            model.update(first.id) { $0.lastPlayed = Date(timeIntervalSinceNow: -3600) }
+            model.selection = first.id
+        }
+        model.runtimes = model.runtimeStore.installed()
+        model.log.post(.info, "Downloaded Ren'Py 8.6.1 (148 MB), checksum matches", source: "Runtimes")
+        model.log.post(.info, "Made a working copy of The Question (APFS clone)", source: "Play")
+        model.log.post(.info, "Started The Question on Ren'Py 8.6.1", source: "Play")
+        model.log.post(.warning, "Started Seven Days on Ren'Py 6.99.14.3 under Rosetta", source: "Play")
+        model.log.post(.error, "Seven Days quit with an error (exit 1) on Ren'Py 6.99.14.3", source: "Play")
+    }
+}

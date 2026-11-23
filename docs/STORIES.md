@@ -16,7 +16,7 @@ Acceptance:
 - [unit] Finds the base folder in a plain folder, a `.app` (`Contents/Resources/autorun`) and a zip with one top folder.
 - [unit] Zip extraction refuses paths that escape the target (Zip Slip).
 - [self] Dropping each fixture adds one game; dropping it again doesn't add a duplicate.
-Status: todo
+Status: done
 
 ### S-002 Detect the Ren'Py version
 As the user, I see each game's Ren'Py version and whether it is Python 2 or 3 in its details.
@@ -26,7 +26,8 @@ Acceptance:
 - [unit] Reads `vc_version.py` + `__init__.py`, then `log.txt`, `script_version.txt`, `lib/` names, then the `.rpyc` header, in that order, and says which one it used.
 - [unit] Every fixture version line (6.99, 7.4, 7.8, 8.0, 8.3, 8.6) is detected with the right Python line.
 - [live] 20 real games detected; none with the wrong Python line.
-Status: todo
+Waiting: the [live] line needs 20 real games (Plan › "Pick 20 real test games").
+Status: doing
 
 ### S-003 Get a runtime
 As the user, the first time I play a game, RenChan downloads the runtime it needs from renpy.org with progress, checks it, and keeps it for other games.
@@ -36,8 +37,8 @@ UX: a sheet with the version, size and progress; Cancel keeps nothing half-done;
 Acceptance:
 - [unit] Picks 7.8.7 for Python 2 games from 7.4 on, the newest 8.x for Python 3 games, and the exact version for older games.
 - [unit] A checksum mismatch deletes the download and reports it.
-- [live] Downloads and unpacks 7.8.7 and 8.6.1; their Python starts.
-Status: todo
+- [live] Downloads and unpacks 7.8.7 and 8.6.1; their Python starts. (`RENCHAN_LIVE=1 swift test --filter Live`, passed 2026-11-22)
+Status: done
 
 ### S-004 Play a game
 As the user, I press Play (⌘Return) and the game opens natively, running from a working copy so the original is never changed.
@@ -48,7 +49,8 @@ Acceptance:
 - [unit] The working copy is an APFS clone; on another volume, RenChan asks before a full copy.
 - [self] A fixture game launches, writes its `.rpyc` files only into the copy, and the original's checksum is unchanged.
 - [live] A Windows-only Ren'Py 8 game and a 7.x game play on Apple Silicon.
-Status: todo
+Waiting: the [live] line needs a real Windows-only Ren'Py 8 game and a 7.x game.
+Status: doing
 
 ### S-005 See why a game didn't start
 As the user, when a game quits with an error, RenChan shows Ren'Py's traceback and log, with Copy and Show in Finder, and offers to try the game's exact Ren'Py version.
@@ -57,7 +59,7 @@ Depends: S-004
 Acceptance:
 - [self] A fixture with a broken script shows the traceback with file and line.
 - [unit] "Try exact version" is offered only when the default runtime differs from the detected one.
-Status: todo
+Status: done
 
 ### S-006 Library grid and list
 As the user, I browse games as a cover grid or a list (⌘1 / ⌘2), search by title (⌘F), and sort by title, added, or last played.
@@ -66,7 +68,7 @@ Depends: S-001
 Acceptance:
 - [snap] Grid and list in light and dark, English and French.
 - [self] Search narrows as I type; sort survives a relaunch.
-Status: todo
+Status: done
 
 ### S-007 Open saves
 As the user, I open a game's save folder from its details, and RenChan shows where the saves are and how many there are.
@@ -74,14 +76,14 @@ Screens: game-details
 Depends: S-002
 Acceptance:
 - [unit] Finds `config.save_directory` from `options.rpy`/`.rpyc` or the folder Ren'Py created.
-Status: todo
+Status: done
 
 ### S-008 Remove a game
 As the user, I remove a game from the library; RenChan deletes its working copy and asks separately before touching saves. The original is never deleted.
 Depends: S-004
 Acceptance:
 - [self] Removing deletes the copy, keeps saves, keeps the original.
-Status: todo
+Status: done
 
 ## M2 A library worth keeping (0.2.0)
 

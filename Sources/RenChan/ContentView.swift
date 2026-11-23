@@ -1,4 +1,5 @@
 import LogKitUI
+import RenChanKit
 import SwiftUI
 
 struct ContentView: View {
@@ -10,23 +11,72 @@ struct ContentView: View {
         NavigationSplitView {
             List(selection: $model.sidebar) {
                 ForEach(SidebarItem.allCases) { item in
-                    Label(item.title, systemImage: item.symbol).tag(item)
+                    Label(item.title, systemImage: item.symbol)
+                        .badge(item == .library ? model.games.count : 0)
+                        .tag(item)
                 }
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 220)
         } detail: {
-            page(model.sidebar ?? .overview)
+            page(model.sidebar ?? .library)
+        }
+        .sheet(item: Binding(get: { model.download.map(DownloadSheetItem.init) }, set: { _ in })) { item in
+            DownloadSheet(initial: item.state).environment(model).themed()
+        }
+        .sheet(item: $model.launchError) { failure in
+            LaunchErrorSheet(failure: failure).environment(model).themed()
+        }
+        .confirmationDialog(removeTitle, isPresented: Binding(get: { model.confirmRemove != nil }, set: { if !$0 { model.confirmRemove = nil } })) {
+            Button("Remove", role: .destructive) { if let id = model.confirmRemove { model.remove(id) } }
+        } message: {
+            Text("RenChan deletes its working copy. The game you added and your saves stay where they are.")
+        }
+        .confirmationDialog(copyTitle, isPresented: Binding(get: { model.confirmFullCopy != nil }, set: { if !$0 { model.confirmFullCopy = nil } })) {
+            Button("Copy and Play") { model.confirmCopyAndPlay() }
+        } message: {
+            Text("The game is on another disk, so RenChan needs a full copy (\(model.confirmFullCopy?.size.bytesText ?? "")) in its own folder. The original stays as it is.")
+        }
+        .confirmationDialog(zipTitle, isPresented: Binding(get: { model.confirmZip != nil }, set: { if !$0 { model.confirmZip = nil } })) {
+            Button("Unpack") { if let zip = model.confirmZip?.url { model.addZip(zip) } }
+        } message: {
+            Text(model.confirmZip?.size.map { String(localized: "RenChan unpacks it into its own folder (\($0.bytesText)). The zip stays as it is.") }
+                 ?? String(localized: "RenChan unpacks it into its own folder. The zip stays as it is."))
+        }
+        .confirmationDialog(runtimeTitle, isPresented: Binding(get: { model.confirmRemoveRuntime != nil }, set: { if !$0 { model.confirmRemoveRuntime = nil } })) {
+            Button("Remove", role: .destructive) { if let version = model.confirmRemoveRuntime { model.removeRuntime(version) } }
+        } message: {
+            Text("RenChan downloads it again the next time a game needs it.")
+        }
+        .alert("RenChan", isPresented: Binding(get: { model.notice != nil }, set: { if !$0 { model.notice = nil } })) {
+            Button("OK") { model.notice = nil }
+        } message: {
+            Text(model.notice ?? "")
         }
         .task {
+            SeedData.addIfRequested(model: model)
             SelfTest.runIfRequested(model: model)
             Snapshot.runIfRequested(model: model, openSettings: openSettings)
         }
     }
 
+    private var removeTitle: String {
+        String(localized: "Remove “\(model.game(model.confirmRemove)?.title ?? "")” from the library?")
+    }
+    private var copyTitle: String {
+        String(localized: "Copy “\(model.game(model.confirmFullCopy?.id)?.title ?? "")” to play it?")
+    }
+    private var zipTitle: String {
+        String(localized: "Unpack “\(model.confirmZip?.url.lastPathComponent ?? "")”?")
+    }
+    private var runtimeTitle: String {
+        String(localized: "Remove Ren'Py \(model.confirmRemoveRuntime ?? "")?")
+    }
+
     @ViewBuilder
     private func page(_ item: SidebarItem) -> some View {
         switch item {
-        case .overview: OverviewPage()
+        case .library: LibraryPage()
+        case .runtimes: RuntimesPage()
         case .log:
             LogViewer(model: model.logViewer, options: LogViewerOptions(
                 emptyTitle: String(localized: "No Log Yet"),
@@ -36,14 +86,8 @@ struct ContentView: View {
     }
 }
 
-/// The library comes in 0.1.0 (docs/STORIES.md, M1). Until then, what RenChan will do.
-struct OverviewPage: View {
-    var body: some View {
-        ContentUnavailableView {
-            Label("Your Ren'Py Library", systemImage: "books.vertical")
-        } description: {
-            Text("RenChan will keep your Ren'Py visual novels in one place and play any of them on this Mac, even games made only for Windows or Linux, with screen filters and mods that never change the game.")
-        }
-        .navigationTitle(SidebarItem.overview.title)
-    }
+/// The download sheet stays up for the whole download; its state changes underneath.
+private struct DownloadSheetItem: Identifiable {
+    let state: DownloadState
+    var id: String { state.version }
 }

@@ -1,0 +1,69 @@
+import Foundation
+
+/// What the person added to the library.
+public enum SourceKind: String, Codable, Sendable {
+    /// A folder with game/ in it, or one level down.
+    case folder
+    /// A Mac build: Game.app with Contents/Resources/autorun/game.
+    case app
+    /// A zip RenChan unpacked into its own folder.
+    case zip
+}
+
+/// One game in the library. Paths are plain strings so library.json reads well.
+public struct Game: Codable, Identifiable, Hashable, Sendable {
+    public var id: UUID
+    public var title: String
+    /// The folder, .app or zip the person added. Never written to.
+    public var sourcePath: String
+    public var kind: SourceKind
+    /// The folder that holds game/: inside the source, or the unpacked zip.
+    public var basePath: String
+    public var version: RenPyVersion?
+    public var pythonLine: PythonLine?
+    public var versionSource: VersionSource?
+    /// config.save_directory, the folder under ~/Library/RenPy.
+    public var saveDirectory: String?
+    public var added: Date
+    public var lastPlayed: Date?
+    /// A runtime picked by hand after a failure ("7.4.11"); nil uses RuntimeCatalog's choice.
+    public var runtimeOverride: String?
+
+    public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
+                version: RenPyVersion? = nil, pythonLine: PythonLine? = nil, versionSource: VersionSource? = nil,
+                saveDirectory: String? = nil, added: Date = .now, lastPlayed: Date? = nil, runtimeOverride: String? = nil) {
+        self.id = id
+        self.title = title
+        self.sourcePath = sourcePath
+        self.kind = kind
+        self.basePath = basePath
+        self.version = version
+        self.pythonLine = pythonLine
+        self.versionSource = versionSource
+        self.saveDirectory = saveDirectory
+        self.added = added
+        self.lastPlayed = lastPlayed
+        self.runtimeOverride = runtimeOverride
+    }
+
+    public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }
+    public var sourceURL: URL { URL(fileURLWithPath: sourcePath) }
+}
+
+/// library.json: every game, in the order they were added.
+public enum LibraryFile {
+    public static func load(_ url: URL) throws -> [Game] {
+        guard FileManager.default.fileExists(atPath: url.path) else { return [] }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode([Game].self, from: Data(contentsOf: url))
+    }
+
+    public static func save(_ games: [Game], to url: URL) throws {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try encoder.encode(games).write(to: url, options: .atomic)
+    }
+}

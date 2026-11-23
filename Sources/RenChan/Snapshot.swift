@@ -1,6 +1,6 @@
 import AppKit
 import IOKit.pwr_mgt
-import LogKit
+import RenChanKit
 import SwiftUI
 
 /// Screenshot mode for agents.
@@ -8,7 +8,8 @@ import SwiftUI
 /// writes <page>-light.png and <page>-dark.png for every sidebar page, and
 /// settings-<tab>-light.png and settings-<tab>-dark.png for every Settings tab, then quits.
 /// Each PNG gets a <page>-<mode>-layout.json with the grid probes (tools/check-layout.swift).
-/// APP_SNAPSHOT_PAGES=overview,log limits the pages. Add "settings" to include Settings.
+/// APP_SNAPSHOT_PAGES=library,runtimes,log limits the pages. Also: "library-list", "library-empty", "game-details",
+/// "runtime-download", "launch-error", "settings".
 /// Add APP_ACCENT=<id> to see the pages in another accent.
 /// Add APP_SNAPSHOT_MIN=1 to shrink the main window to its smallest size first.
 enum Snapshot {
@@ -31,7 +32,6 @@ enum Snapshot {
             IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep as CFString,
                                         IOPMAssertionLevel(kIOPMAssertionLevelOn), "Snapshots" as CFString, &awake)
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-            if env["APP_SEED"] == "1" { SeedData.log(model.log) }
             try? await Task.sleep(for: .seconds(1.5))
             if env["APP_SNAPSHOT_MIN"] != nil, let main = NSApp.windows.first(where: { $0.canBecomeMain && !$0.isSheet }) {
                 // The window clamps to its content's minimum size.
@@ -46,8 +46,33 @@ enum Snapshot {
                     capture(to: "\(dir)/\(page.rawValue)-\(mode).png")
                 }
             }
+            let main = { @MainActor in NSApp.windows.first { $0.canBecomeMain && !$0.isSheet } }
+            @MainActor func shoot(_ name: String, sheet: Bool = false, _ show: @MainActor () -> Void, _ hide: @MainActor () -> Void) async {
+                guard only == nil || only?.contains(name) == true else { return }
+                for mode in ["light", "dark"] {
+                    NSApp.appearance = NSAppearance(named: mode == "light" ? .aqua : .darkAqua)
+                    show()
+                    try? await Task.sleep(for: .seconds(1))
+                    capture(to: "\(dir)/\(name)-\(mode).png", window: sheet ? main()?.attachedSheet : nil)
+                    hide()
+                    try? await Task.sleep(for: .seconds(0.6))
+                }
+            }
+            model.sidebar = .library
+            await shoot("library-list", { model.layout = .list }, { model.layout = .grid })
+            await shoot("game-details", { model.showInspector = true }, {})
+            let saved = model.games
+            await shoot("library-empty", { model.games = [] }, { model.games = saved })
+            await shoot("runtime-download", sheet: true, {
+                model.download = DownloadState(version: "7.8.7", received: 61_000_000, total: 148_000_000)
+            }, { model.download = nil })
+            await shoot("launch-error", sheet: true, {
+                model.launchError = LaunchFailure(game: saved.first?.id ?? UUID(), title: "Seven Days",
+                    text: "I'm sorry, but an uncaught exception occurred.\n\nWhile running game code:\n  File \"game/script.rpy\", line 112, in script\n    $ renpy.pause(hard=True)\nTypeError: pause() got an unexpected keyword argument 'hard'\n",
+                    tracebackFile: nil, exactVersion: "6.99.14.3")
+            }, { model.launchError = nil })
             if only == nil || only?.contains("settings") == true {
-                let main = NSApp.windows.first { $0.canBecomeMain && !$0.isSheet }
+                let main = main()
                 openSettings()
                 try? await Task.sleep(for: .seconds(1))
                 for mode in ["light", "dark"] {
@@ -109,15 +134,3 @@ enum Snapshot {
     }
 }
 
-/// Seed data for snapshots: a morning of activity for the Log page.
-enum SeedData {
-    static func log(_ log: LogStore) {
-        guard Store.isOverridden, log.entries.count < 5 else { return }
-        log.post(.info, "Added The Question (Ren'Py 8.6.1, Python 3)", source: "Library")
-        log.post(.info, "Downloaded Ren'Py 8.6.1 (148 MB), checksum matches", source: "Runtimes")
-        log.post(.info, "Made a working copy of The Question with an APFS clone", source: "Play")
-        log.post(.info, "Started The Question on Ren'Py 8.6.1", source: "Play")
-        log.post(.warning, "Ren'Py 7.5.3 runs under Rosetta on this Mac", source: "Runtimes")
-        log.post(.error, "Old Game quit with an error: see traceback.txt", source: "Play")
-    }
-}

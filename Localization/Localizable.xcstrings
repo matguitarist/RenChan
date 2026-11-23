@@ -1,12 +1,82 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ of %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ sur %2$@"
+          }
+        }
+      }
+    },
+    "%@ quit with an error": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ s’est arrêté sur une erreur"
+          }
+        }
+      }
+    },
+    "%lld Saves": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sauvegardes"
+          }
+        }
+      }
+    },
+    "%lld games": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld jeux"
+          }
+        }
+      }
+    },
+    "1 Save": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sauvegarde"
+          }
+        }
+      }
+    },
+    "1 game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 jeu"
+          }
+        }
+      }
+    },
     "1 left": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "1 restante"
+          }
+        }
+      }
+    },
+    "A game folder, a Mac .app, or a zip. RenChan plays it on this Mac without changing it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un dossier de jeu, une app Mac (.app) ou un zip. RenChan le lance sur ce Mac sans le modifier."
           }
         }
       }
@@ -21,12 +91,52 @@
         }
       }
     },
+    "Add": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter"
+          }
+        }
+      }
+    },
+    "Add Game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un jeu"
+          }
+        }
+      }
+    },
+    "Add Game…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un jeu…"
+          }
+        }
+      }
+    },
     "Add Task": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter une tâche"
+          }
+        }
+      }
+    },
+    "Add a game folder, a Mac .app, or a zip (Command-O)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un dossier de jeu, une app Mac ou un zip (Commande-O)"
           }
         }
       }
@@ -47,6 +157,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mises à jour automatiques"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annuler"
           }
         }
       }
@@ -81,6 +201,106 @@
         }
       }
     },
+    "Choose a game folder, a Mac .app, or a zip.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez un dossier de jeu, une app Mac ou un zip."
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fermer"
+          }
+        }
+      }
+    },
+    "Copy": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier"
+          }
+        }
+      }
+    },
+    "Copy and Play": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier et jouer"
+          }
+        }
+      }
+    },
+    "Copy “%@” to play it?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier « %@ » pour y jouer ?"
+          }
+        }
+      }
+    },
+    "Date Added": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date d’ajout"
+          }
+        }
+      }
+    },
+    "Downloading Ren'Py %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Téléchargement de Ren’Py %@"
+          }
+        }
+      }
+    },
+    "Downloads from renpy.org the first time you play": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Téléchargé depuis renpy.org la première fois que vous jouez"
+          }
+        }
+      }
+    },
+    "Drop a Ren'Py Game Here": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déposez un jeu Ren’Py ici"
+          }
+        }
+      }
+    },
+    "Files": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fichiers"
+          }
+        }
+      }
+    },
     "Focus": {
       "localizations": {
         "fr": {
@@ -91,12 +311,62 @@
         }
       }
     },
+    "Found the first time you play": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouvées la première fois que vous jouez"
+          }
+        }
+      }
+    },
+    "From %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lu dans %@"
+          }
+        }
+      }
+    },
+    "From renpy.org, once. Every game that plays on Ren'Py %@ uses it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuis renpy.org, une seule fois. Tous les jeux qui tournent sur Ren’Py %@ l’utilisent."
+          }
+        }
+      }
+    },
+    "Game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeu"
+          }
+        }
+      }
+    },
     "General": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Général"
+          }
+        }
+      }
+    },
+    "Grid": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grille"
           }
         }
       }
@@ -117,6 +387,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Langue"
+          }
+        }
+      }
+    },
+    "Last Played": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dernière partie"
+          }
+        }
+      }
+    },
+    "Library": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bibliothèque"
+          }
+        }
+      }
+    },
+    "List": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste"
+          }
+        }
+      }
+    },
+    "Location": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emplacement"
           }
         }
       }
@@ -151,12 +461,82 @@
         }
       }
     },
+    "Native": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Natif"
+          }
+        }
+      }
+    },
+    "Native on this Mac": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Natif sur ce Mac"
+          }
+        }
+      }
+    },
+    "Never": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jamais"
+          }
+        }
+      }
+    },
+    "No Game Selected": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun jeu sélectionné"
+          }
+        }
+      }
+    },
     "No Log Yet": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Aucun journal pour l’instant"
+          }
+        }
+      }
+    },
+    "No Runtimes Yet": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune version de Ren’Py pour l’instant"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Open Saves Folder": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir le dossier des sauvegardes"
           }
         }
       }
@@ -171,12 +551,202 @@
         }
       }
     },
+    "Play": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouer"
+          }
+        }
+      }
+    },
+    "Play %@ (Command-Return)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouer à %@ (Commande-Retour)"
+          }
+        }
+      }
+    },
+    "Playing": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En cours"
+          }
+        }
+      }
+    },
+    "Plays on": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tourne sur"
+          }
+        }
+      }
+    },
     "Preview of the accent color": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Aperçu de la couleur d’accentuation"
+          }
+        }
+      }
+    },
+    "Python": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Python"
+          }
+        }
+      }
+    },
+    "Python 2": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Python 2"
+          }
+        }
+      }
+    },
+    "Python 3": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Python 3"
+          }
+        }
+      }
+    },
+    "Quit the game (Command-Period)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitter le jeu (Commande-Point)"
+          }
+        }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retirer"
+          }
+        }
+      }
+    },
+    "Remove Ren'Py %@?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer Ren’Py %@ ?"
+          }
+        }
+      }
+    },
+    "Remove from Library…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retirer de la bibliothèque…"
+          }
+        }
+      }
+    },
+    "Remove “%@” from the library?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retirer « %@ » de la bibliothèque ?"
+          }
+        }
+      }
+    },
+    "Remove…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer…"
+          }
+        }
+      }
+    },
+    "Ren'Py": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ren’Py"
+          }
+        }
+      }
+    },
+    "Ren'Py %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ren’Py %@"
+          }
+        }
+      }
+    },
+    "Ren'Py %@ couldn't be downloaded: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ren’Py %1$@ n’a pas pu être téléchargé : %2$@"
+          }
+        }
+      }
+    },
+    "Ren'Py version unknown": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version de Ren’Py inconnue"
+          }
+        }
+      }
+    },
+    "Ren'Py version unknown · %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version de Ren’Py inconnue · %@"
+          }
+        }
+      }
+    },
+    "Ren'Py wrote nothing.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ren’Py n’a rien écrit."
           }
         }
       }
@@ -191,12 +761,82 @@
         }
       }
     },
+    "RenChan couldn't save the library: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu enregistrer la bibliothèque : %@"
+          }
+        }
+      }
+    },
+    "RenChan couldn't start %@: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu lancer %1$@ : %2$@"
+          }
+        }
+      }
+    },
+    "RenChan deletes its working copy. The game you added and your saves stay where they are.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan supprime sa copie de travail. Le jeu que vous avez ajouté et vos sauvegardes restent où ils sont."
+          }
+        }
+      }
+    },
+    "RenChan downloads it again the next time a game needs it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan le téléchargera de nouveau quand un jeu en aura besoin."
+          }
+        }
+      }
+    },
+    "RenChan downloads the Ren'Py a game needs from renpy.org the first time you play it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan télécharge depuis renpy.org la version de Ren’Py dont un jeu a besoin la première fois que vous y jouez."
+          }
+        }
+      }
+    },
     "RenChan on GitHub": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "RenChan sur GitHub"
+          }
+        }
+      }
+    },
+    "RenChan unpacks it into its own folder (%@). The zip stays as it is.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan le décompresse dans son propre dossier (%@). Le zip reste tel quel."
+          }
+        }
+      }
+    },
+    "RenChan unpacks it into its own folder. The zip stays as it is.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan le décompresse dans son propre dossier. Le zip reste tel quel."
           }
         }
       }
@@ -221,6 +861,116 @@
         }
       }
     },
+    "Runs under Rosetta": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tourne avec Rosetta"
+          }
+        }
+      }
+    },
+    "Runtimes": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versions de Ren’Py"
+          }
+        }
+      }
+    },
+    "Saves": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sauvegardes"
+          }
+        }
+      }
+    },
+    "Search Games": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher un jeu"
+          }
+        }
+      }
+    },
+    "Select a game to see its Ren'Py version, saves, and files.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sélectionnez un jeu pour voir sa version de Ren’Py, ses sauvegardes et ses fichiers."
+          }
+        }
+      }
+    },
+    "Show games as a grid (Command-1) or a list (Command-2)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher les jeux en grille (Commande-1) ou en liste (Commande-2)"
+          }
+        }
+      }
+    },
+    "Show in Finder": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher dans le Finder"
+          }
+        }
+      }
+    },
+    "Sort": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trier"
+          }
+        }
+      }
+    },
+    "Sort By": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trier par"
+          }
+        }
+      }
+    },
+    "Sort the library": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trier la bibliothèque"
+          }
+        }
+      }
+    },
+    "Stop": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrêter"
+          }
+        }
+      }
+    },
     "System (%@)": {
       "localizations": {
         "fr": {
@@ -231,12 +981,142 @@
         }
       }
     },
+    "The download of Ren'Py %@ didn't match renpy.org's checksum, so it was deleted. Try again later.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le téléchargement de Ren’Py %@ ne correspondait pas à la somme de contrôle de renpy.org, il a donc été supprimé. Réessayez plus tard."
+          }
+        }
+      }
+    },
+    "The game is on another disk, so RenChan needs a full copy (%@) in its own folder. The original stays as it is.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le jeu est sur un autre disque, RenChan doit donc en faire une copie complète (%@) dans son propre dossier. L’original reste tel quel."
+          }
+        }
+      }
+    },
     "The new language applies after a restart.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "La nouvelle langue s’appliquera après un redémarrage."
+          }
+        }
+      }
+    },
+    "This is what Ren'Py wrote when it stopped.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici ce que Ren’Py a écrit en s’arrêtant."
+          }
+        }
+      }
+    },
+    "This is what Ren'Py wrote when it stopped. The game was made with Ren'Py %@: playing it on that version may help.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici ce que Ren’Py a écrit en s’arrêtant. Le jeu a été fait avec Ren’Py %@ : y jouer avec cette version peut aider."
+          }
+        }
+      }
+    },
+    "This isn't a Ren'Py game: its game folder has no Ren'Py scripts.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce n’est pas un jeu Ren’Py : son dossier game ne contient aucun script Ren’Py."
+          }
+        }
+      }
+    },
+    "This isn't a Ren'Py game: there is no game folder in it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce n’est pas un jeu Ren’Py : il ne contient pas de dossier game."
+          }
+        }
+      }
+    },
+    "This zip couldn't be opened: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce zip n’a pas pu être ouvert : %@"
+          }
+        }
+      }
+    },
+    "This zip was refused: it would write outside its folder (%@).": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce zip a été refusé : il écrirait hors de son dossier (%@)."
+          }
+        }
+      }
+    },
+    "Title": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titre"
+          }
+        }
+      }
+    },
+    "Try Ren'Py %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essayer Ren’Py %@"
+          }
+        }
+      }
+    },
+    "Unknown": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inconnue"
+          }
+        }
+      }
+    },
+    "Unpack": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Décompresser"
+          }
+        }
+      }
+    },
+    "Unpack “%@”?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Décompresser « %@ » ?"
           }
         }
       }
@@ -261,12 +1141,32 @@
         }
       }
     },
+    "Version": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        }
+      }
+    },
     "Version %@": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Version %@"
+          }
+        }
+      }
+    },
+    "View": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Présentation"
           }
         }
       }
@@ -287,6 +1187,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Votre bibliothèque Ren’Py"
+          }
+        }
+      }
+    },
+    "as Grid": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en grille"
+          }
+        }
+      }
+    },
+    "as List": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en liste"
+          }
+        }
+      }
+    },
+    "renpy.org has no Ren'Py %@ to download (error %lld).": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "renpy.org ne propose pas Ren’Py %1$@ au téléchargement (erreur %2$lld)."
           }
         }
       }

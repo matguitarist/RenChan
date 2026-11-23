@@ -16,6 +16,7 @@ import RenChanKit
 struct RenChanApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var model = AppModel(log: Store.log)
+    @ObservedObject private var menu = MenuState.shared
 
     var body: some Scene {
         Window("RenChan", id: "main") {
@@ -30,7 +31,36 @@ struct RenChanApp: App {
         .commands {
             SidebarCommands()
             ToolbarCommands()
-            CommandGroup(replacing: .newItem) {}
+            InspectorCommands()
+            CommandGroup(replacing: .newItem) {
+                Button("Add Game…") { model.addWithPanel() }
+                    .keyboardShortcut("o")
+            }
+            CommandGroup(after: .sidebar) {
+                Button("as Grid") { model.sidebar = .library; model.layout = .grid }
+                    .keyboardShortcut("1")
+                Button("as List") { model.sidebar = .library; model.layout = .list }
+                    .keyboardShortcut("2")
+                Divider()
+            }
+            CommandMenu("Game") {
+                Button("Play") { if let id = menu.selection { model.play(id) } }
+                    .keyboardShortcut(.return, modifiers: .command)
+                    .disabled(menu.selection == nil || menu.selectionPlaying)
+                Button("Stop") { if let id = menu.selection { model.stop(id) } }
+                    .keyboardShortcut(".")
+                    .disabled(!menu.selectionPlaying)
+                Divider()
+                Button("Show in Finder") { if let id = menu.selection { model.showInFinder(id) } }
+                    .keyboardShortcut("r", modifiers: [.command, .shift])
+                    .disabled(menu.selection == nil)
+                Button("Open Saves Folder") { if let id = menu.selection { model.openSaves(id) } }
+                    .keyboardShortcut("s", modifiers: [.command, .option])
+                    .disabled(menu.selection == nil)
+                Divider()
+                Button("Remove from Library…") { model.confirmRemove = menu.selection }
+                    .disabled(menu.selection == nil)
+            }
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates…") { Updater.shared.checkForUpdates() }
                     .disabled(!Updater.shared.isAvailable)
@@ -94,4 +124,23 @@ enum Store {
     }
 
     static let log = LogStore(fileURL: logURL)
+
+    /// Working copies, unpacked zips and runtimes: next to library.json, or next to APP_STORE in a test run.
+    static var dataFolder: URL {
+        isOverridden ? url.deletingLastPathComponent().appending(path: url.deletingPathExtension().lastPathComponent + "-data", directoryHint: .isDirectory)
+                     : folder
+    }
+
+    static var runtimesFolder: URL { dataFolder.appending(path: "Runtimes", directoryHint: .isDirectory) }
+
+    /// One folder per game: play/ (the working copy), source/ (an unpacked zip), run.log.
+    static func gameFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Games/\(id.uuidString)", directoryHint: .isDirectory) }
+    static func workingCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play", directoryHint: .isDirectory) }
+
+    /// The home Ren'Py writes ~/Library/RenPy under: the real one, or a folder in /tmp in a test run.
+    static var renpyHome: URL {
+        isOverridden ? dataFolder.appending(path: "home", directoryHint: .isDirectory) : FileManager.default.homeDirectoryForCurrentUser
+    }
+
+    static var saveRoot: URL { SaveFolder.root(home: renpyHome) }
 }

@@ -3,5 +3,5 @@
 set -u
 rm -rf ~/Library/Saved\ Application\ State/com.mathieuares.renchan.savedState
 store=/tmp/RenChan-self.json
-rm -f $store ${store:r}.log
+rm -rf $store ${store:r}.log ${store:r}-data
 APP_STORE=$store ~/Applications/RenChan.app/Contents/MacOS/RenChan --selftest
