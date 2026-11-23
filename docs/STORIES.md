@@ -143,7 +143,17 @@ Status: done
 
 ### S-013 Update a game to a new version
 As the user, I point a game at its new version's folder or zip; its labels, playtime, filter and mods carry over.
-Status: todo
+Screens: game-details
+UX:
+- Flow: Game › Update to New Version… (⇧⌘U), right-click, or the inspector's Files › Update… → a panel opens beside the current version → pick the new folder, .app or zip → "Update “Eternum 0.9.5” to Eternum-0.10-pc.zip?" with Update → the game keeps its place, playtime, status, rating, labels, notes, cover and save backups, and the next Play makes a fresh working copy.
+- Surface: an open panel, then a confirmation dialog (it changes which files the game plays).
+- States: playing "Quit Eternum before updating it."; the same version "Eternum already plays this version."; another game's files "This version is already in the library as …"; not a game or not a zip: the same one-line refusals as Add Game.
+- Words: "Update to New Version…" / « Mettre à jour vers une nouvelle version… », "Update" / « Mettre à jour ».
+- Access: the dialog's Update is the default button; Escape cancels.
+Acceptance:
+- [unit] An update keeps the id, playtime, status, rating, labels, notes, VNDB details and cover, and clears a runtime picked for the old version.
+- [self] A folder update and a zip update; the old version's files are untouched and RenChan's copy of an old zip is removed.
+Status: done
 
 ## M3 Screen filters (0.3.0)
 

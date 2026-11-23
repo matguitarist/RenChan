@@ -63,6 +63,9 @@ struct RenChanApp: App {
                 Button("Save Backups…") { model.showBackups = menu.selection }
                     .disabled(menu.selection == nil)
                 Divider()
+                Button("Update to New Version…") { if let id = menu.selection { model.chooseUpdate(id) } }
+                    .keyboardShortcut("u", modifiers: [.command, .shift])
+                    .disabled(menu.selection == nil || menu.selectionPlaying)
                 Button("Find on VNDB…") { if let id = menu.selection { model.findOnVNDB(id) } }
                     .keyboardShortcut("d", modifiers: [.command, .shift])
                     .disabled(menu.selection == nil)

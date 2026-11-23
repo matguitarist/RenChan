@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ already plays this version.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ utilise déjà cette version."
+          }
+        }
+      }
+    },
     "%@ of %@": {
       "localizations": {
         "fr": {
@@ -401,6 +411,16 @@
         }
       }
     },
+    "Choose the new version of %@: a folder, a Mac .app, or a zip.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez la nouvelle version de %@ : un dossier, une app Mac ou un zip."
+          }
+        }
+      }
+    },
     "Clear Filters": {
       "localizations": {
         "fr": {
@@ -721,6 +741,16 @@
         }
       }
     },
+    "Its playtime, status, rating, labels, notes, cover and save backups stay. RenChan makes a fresh working copy; the old version's files stay where they are.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son temps de jeu, son statut, sa note, ses étiquettes, ses notes, sa couverture et les copies de ses sauvegardes sont conservés. RenChan fait une nouvelle copie de travail ; les fichiers de l’ancienne version restent où ils sont."
+          }
+        }
+      }
+    },
     "Kind": {
       "localizations": {
         "fr": {
@@ -907,6 +937,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jamais"
+          }
+        }
+      }
+    },
+    "New version": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouvelle version"
           }
         }
       }
@@ -1131,6 +1171,16 @@
         }
       }
     },
+    "Point this game at its new version; playtime, labels, notes and backups stay (Shift-Command-U)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faire jouer la nouvelle version de ce jeu ; le temps de jeu, les étiquettes, les notes et les copies sont conservés (Maj-Commande-U)"
+          }
+        }
+      }
+    },
     "Preview of the accent color": {
       "localizations": {
         "fr": {
@@ -1167,6 +1217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Python 3"
+          }
+        }
+      }
+    },
+    "Quit %@ before updating it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quittez %@ avant de le mettre à jour."
           }
         }
       }
@@ -1497,6 +1557,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan le décompresse dans son propre dossier. Le zip reste tel quel."
+          }
+        }
+      }
+    },
+    "RenChan unpacks the zip into its own folder (%@).": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan décompresse le zip dans son propre dossier (%@)."
+          }
+        }
+      }
+    },
+    "RenChan unpacks the zip into its own folder.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan décompresse le zip dans son propre dossier."
           }
         }
       }
@@ -1841,6 +1921,16 @@
         }
       }
     },
+    "This version is already in the library as %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette version est déjà dans la bibliothèque sous le nom %@."
+          }
+        }
+      }
+    },
     "This zip couldn't be opened: %@": {
       "localizations": {
         "fr": {
@@ -1921,6 +2011,36 @@
         }
       }
     },
+    "Update": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettre à jour"
+          }
+        }
+      }
+    },
+    "Update to New Version…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettre à jour vers une nouvelle version…"
+          }
+        }
+      }
+    },
+    "Update “%@” to %@?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettre à jour « %@ » vers %@ ?"
+          }
+        }
+      }
+    },
     "Updates": {
       "localizations": {
         "fr": {
@@ -1937,6 +2057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les mises à jour sont désactivées dans cette version."
+          }
+        }
+      }
+    },
+    "Update…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettre à jour…"
           }
         }
       }

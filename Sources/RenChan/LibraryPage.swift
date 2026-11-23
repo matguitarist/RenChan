@@ -256,6 +256,8 @@ struct GameActions: View {
         Button("Open Saves Folder") { model.openSaves(game.id) }
             .disabled(game.saveDirectory == nil)
         Divider()
+        Button("Update to New Version…") { model.chooseUpdate(game.id) }
+            .disabled(model.playing.contains(game.id))
         Button("Find on VNDB…") { model.findOnVNDB(game.id) }
         Button("Choose Cover…") { model.chooseCover(game.id) }
         if game.customCover {

@@ -48,6 +48,11 @@ struct ContentView: View {
             Text(model.confirmZip?.size.map { String(localized: "RenChan unpacks it into its own folder (\($0.bytesText)). The zip stays as it is.") }
                  ?? String(localized: "RenChan unpacks it into its own folder. The zip stays as it is."))
         }
+        .confirmationDialog(updateTitle, isPresented: Binding(get: { model.confirmUpdate != nil }, set: { if !$0 { model.confirmUpdate = nil } })) {
+            Button("Update") { if let request = model.confirmUpdate { model.applyUpdate(request) } }
+        } message: {
+            Text(updateMessage)
+        }
         .confirmationDialog(runtimeTitle, isPresented: Binding(get: { model.confirmRemoveRuntime != nil }, set: { if !$0 { model.confirmRemoveRuntime = nil } })) {
             Button("Remove", role: .destructive) { if let version = model.confirmRemoveRuntime { model.removeRuntime(version) } }
         } message: {
@@ -73,6 +78,16 @@ struct ContentView: View {
     }
     private var zipTitle: String {
         String(localized: "Unpack “\(model.confirmZip?.url.lastPathComponent ?? "")”?")
+    }
+    private var updateTitle: String {
+        String(localized: "Update “\(model.game(model.confirmUpdate?.game)?.title ?? "")” to \(model.confirmUpdate?.url.lastPathComponent ?? "")?")
+    }
+    private var updateMessage: String {
+        let keep = String(localized: "Its playtime, status, rating, labels, notes, cover and save backups stay. RenChan makes a fresh working copy; the old version's files stay where they are.")
+        guard let request = model.confirmUpdate, request.isZip else { return keep }
+        let unpack = request.size.map { String(localized: "RenChan unpacks the zip into its own folder (\($0.bytesText)).") }
+            ?? String(localized: "RenChan unpacks the zip into its own folder.")
+        return unpack + " " + keep
     }
     private var runtimeTitle: String {
         String(localized: "Remove Ren'Py \(model.confirmRemoveRuntime ?? "")?")

@@ -73,6 +73,11 @@ struct GameDetails: View {
                 LabeledContent("Location") {
                     Button("Show in Finder") { model.showInFinder(game.id) }
                 }
+                LabeledContent("New version") {
+                    Button("Update…") { model.chooseUpdate(game.id) }
+                        .disabled(model.playing.contains(game.id))
+                        .help("Point this game at its new version; playtime, labels, notes and backups stay (Shift-Command-U)")
+                }
             }
             Section {
                 Button("Remove from Library…", role: .destructive) { model.confirmRemove = game.id }

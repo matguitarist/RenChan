@@ -49,6 +49,7 @@ final class AppModel {
     /// The game whose Save Backups sheet is open, and the backup waiting for Restore's confirmation.
     var showBackups: Game.ID?
     var confirmRestore: SaveBackup?
+    var confirmUpdate: UpdateRequest?
     /// Bumped when backups change on disk, so lists reload.
     var backupRevision = 0
     /// One-line message in an alert.

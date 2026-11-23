@@ -178,6 +178,45 @@ enum SelfTest {
                   && model.backups(first.id).first?.reason == .beforeRestore && model.backups(first.id).first?.saveCount == 2)
         }
 
+        // S-013 Update a game to a new version
+        let newVersion = Fixtures.game("The_Question-8.0-pc", in: root, files: [
+            "renpy/vc_version.py": "version = '8.6.1.26111705'\n",
+            "game/options.rpy": Fixtures.options(name: "The Question", saves: "the_question-7"),
+        ])
+        let kept = model.game(first.id)
+        model.prepareUpdate(first.id, from: newVersion)
+        check("S-013 picking a new version asks first", model.confirmUpdate?.url == newVersion && model.game(first.id)?.sourcePath == question.path)
+        if let request = model.confirmUpdate { model.applyUpdate(request) }
+        let updated = model.game(first.id)
+        check("S-013 the game now plays the new version", updated?.sourcePath == newVersion.path && updated?.basePath == newVersion.path
+              && !FileManager.default.fileExists(atPath: Store.workingCopy(first.id).path))
+        check("S-013 playtime, labels, notes and backups carry over",
+              updated?.playtime == kept?.playtime && updated?.labels == kept?.labels && updated?.notes == kept?.notes
+              && updated?.status == kept?.status && !model.backups(first.id).isEmpty)
+        check("S-013 the old version is left as it was", digest(question) == before)
+        model.prepareUpdate(first.id, from: newVersion)
+        check("S-013 picking the same version again says so", model.confirmUpdate == nil && model.notice != nil)
+        model.notice = nil
+        if let zipped = fromZip {
+            let oldBase = URL(fileURLWithPath: zipped.basePath)
+            Fixtures.game("Zipped-2.0-pc", in: zipSource, files: ["game/options.rpy": Fixtures.options(name: "Zipped", saves: "zipped-1")])
+            let zip2 = root.appending(path: "Zipped-2.0-pc.zip")
+            let zipper2 = Process()
+            zipper2.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+            zipper2.arguments = ["-qr", zip2.path, "Zipped-2.0-pc"]
+            zipper2.currentDirectoryURL = zipSource
+            try? zipper2.run()
+            zipper2.waitUntilExit()
+            model.prepareUpdate(zipped.id, from: zip2)
+            if let request = model.confirmUpdate { model.applyUpdate(request) }
+            let now = model.game(zipped.id)
+            check("S-013 a zip update unpacks the new zip and drops RenChan's copy of the old one",
+                  now?.sourcePath == zip2.path && now?.basePath.hasSuffix("Zipped-2.0-pc") == true
+                  && now.map { FileManager.default.fileExists(atPath: $0.basePath) } == true
+                  && !FileManager.default.fileExists(atPath: oldBase.path),
+                  "\(now?.sourcePath ?? "nil") \(now?.basePath ?? "nil") old \(oldBase.path) \(model.notice ?? "")")
+        }
+
         // S-008 Remove a game
         model.remove(first.id)
         check("removing deletes the working copy and keeps the original and saves",
