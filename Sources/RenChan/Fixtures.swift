@@ -76,6 +76,10 @@ enum SeedData {
                 $0.notes = "Both endings done. Try the other answer at the bridge."
                 $0.filter = FilterSetting(filter: .crt, strength: 0.6)
             }
+            try? "// {\"name\": \"Sepia\"}\nc = mix(c, vec3(dot(c, vec3(0.393, 0.769, 0.189))), s);"
+                .write(to: root.appending(path: "Sepia.glsl"), atomically: true, encoding: .utf8)
+            _ = try? CustomFilters.add(root.appending(path: "Sepia.glsl"), to: Store.filtersFolder)
+            model.customFilters = CustomFilters.list(in: Store.filtersFolder)
             if model.games.count > 2 {
                 model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }
                 model.update(model.games[1].id) { $0.labels = ["Short"] }

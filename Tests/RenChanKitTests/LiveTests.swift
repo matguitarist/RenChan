@@ -58,6 +58,10 @@ struct Live {
         let runtime = try #require(Self.store.runtime(version))
         let root = Fixture.folder()
         /// `then`: Ren'Py lines run after the first screenshot, before a second one 2.5 s later, which is returned instead.
+        let sepia = try CustomFilter.parse("""
+        // {"name": "Sepia"}
+        c = mix(c, vec3(dot(c, vec3(0.393, 0.769, 0.189)), dot(c, vec3(0.349, 0.686, 0.168)), dot(c, vec3(0.272, 0.534, 0.131))), s);
+        """, file: "Sepia.glsl")
         func shoot(_ setting: FilterSetting?, name: String? = nil, then: String? = nil) throws -> (r: Int, g: Int, b: Int) {
             let name = name ?? setting?.filter.rawValue ?? "none"
             let copy = root.appending(path: "play-\(name)")
@@ -79,7 +83,7 @@ struct Live {
                 $ renpy.screenshot(\"\(shot.path)\")
                 $ renpy.quit()
             """])
-            #expect(try FilterLoader.install(setting, runtime: version, copy: copy) == (setting == nil ? .unsupported : .layerTransforms))
+            #expect(try FilterLoader.install(setting, runtime: version, copy: copy, custom: [sepia]) == (setting == nil ? .unsupported : .layerTransforms))
             let home = root.appending(path: "home")
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"), environment: ["HOME": home.path])
             let process = try plan.makeProcess()
@@ -113,6 +117,9 @@ struct Live {
         let tuned = try shoot(FilterSetting(filter: .grayscale, strength: 0), name: "live",
                               then: "$ open(\"\(live.path)\", \"w\").write(\"1.0\")")
         #expect(abs(tuned.r - tuned.g) < 12 && tuned.r < 120, "after tuning live: \(tuned)")
+        // S-016: a person's own shader runs like a built-in one. Sepia turns pure red brown.
+        let brown = try shoot(FilterSetting(custom: "Sepia.glsl"), name: "sepia")
+        #expect(brown.r > brown.g && brown.g > brown.b && brown.g > 40, "sepia: \(brown)")
     }
 
     @Test func playsARealGameFromAClone() async throws {

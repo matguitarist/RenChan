@@ -46,12 +46,14 @@ extension AppModel {
             let outcome = try WorkingCopy.prepare(base: game.baseURL, copy: copy, allowFullCopy: allowFullCopy)
             if outcome != .reused { log.post(.info, "Made a working copy of \(game.title) (\(outcome == .cloned ? "APFS clone" : "full copy"))", source: "Play") }
             // S-014: the filter file goes in the copy only, and comes out when the filter is off.
-            let tier = try FilterLoader.install(game.filter, runtime: runtime.version, copy: copy)
+            let tier = try FilterLoader.install(game.filter, runtime: runtime.version, copy: copy, custom: customFilters)
             if let filter = game.filter {
-                if tier == .unsupported {
-                    log.post(.warning, "\(game.title): Ren'Py \(runtime.version) can't show filters; playing without \(filter.filter.rawValue)", source: "Play")
+                if let file = filter.custom, !customFilters.contains(where: { $0.file == file }) {
+                    log.post(.warning, "\(game.title): the filter \(file) is no longer in RenChan's Filters folder; playing without it", source: "Play")
+                } else if tier == .unsupported {
+                    log.post(.warning, "\(game.title): Ren'Py \(runtime.version) can't show filters; playing without \(filter.name)", source: "Play")
                 } else {
-                    log.post(.info, "\(game.title): filter \(filter.filter.rawValue) at \(Int(filter.strength * 100))% (\(tier == .camera ? "camera" : "layer transform"))", source: "Play")
+                    log.post(.info, "\(game.title): filter \(filter.name) at \(Int(filter.strength * 100))% (\(tier == .camera ? "camera" : "layer transform"))", source: "Play")
                 }
             }
             var environment: [String: String] = [:]

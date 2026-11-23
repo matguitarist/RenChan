@@ -51,13 +51,83 @@ public enum ScreenFilter: String, Codable, CaseIterable, Sendable {
 
 /// The filter a game plays with, and how strong it is.
 public struct FilterSetting: Codable, Hashable, Sendable {
+    /// A built-in filter. Ignored when `custom` is set.
     public var filter: ScreenFilter
+    /// The file name of one of the person's own filters (S-016), such as "Sepia.glsl".
+    public var custom: String?
     /// 0 to 1.
     public var strength: Double
 
     public init(filter: ScreenFilter, strength: Double = 1) {
         self.filter = filter
         self.strength = min(1, max(0, strength))
+    }
+
+    public init(custom: String, strength: Double = 1) {
+        self.init(filter: .grayscale, strength: strength)
+        self.custom = custom
+    }
+
+    /// For the log and the loader's first line.
+    public var name: String { custom ?? filter.rawValue }
+}
+
+/// A filter the person added (S-016): a .glsl file in RenChan's Filters folder whose first line is a JSON header,
+/// `// {"name": "Sepia"}` or `/* {"name": "Sepia"} */`, followed by fragment code like the built-in ones:
+/// it changes `c` (the color), and can read `s` (strength), `px` (one pixel), `tex0` and `v_tex_coord`.
+public struct CustomFilter: Hashable, Sendable, Identifiable {
+    public var file: String
+    public var name: String
+    public var fragment: String
+    public var id: String { file }
+
+    public enum Problem: Error, Equatable {
+        case noHeader, noName, noCode
+    }
+
+    private struct Header: Decodable { var name: String? }
+
+    public static func parse(_ text: String, file: String) throws -> CustomFilter {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let header: Substring
+        let body: Substring
+        if trimmed.hasPrefix("/*"), let end = trimmed.range(of: "*/") {
+            header = trimmed[trimmed.index(trimmed.startIndex, offsetBy: 2)..<end.lowerBound]
+            body = trimmed[end.upperBound...]
+        } else if trimmed.hasPrefix("//") {
+            let line = trimmed.firstIndex(of: "\n") ?? trimmed.endIndex
+            header = trimmed[trimmed.index(trimmed.startIndex, offsetBy: 2)..<line]
+            body = trimmed[line...]
+        } else {
+            throw Problem.noHeader
+        }
+        guard let parsed = try? JSONDecoder().decode(Header.self, from: Data(header.utf8)) else { throw Problem.noHeader }
+        guard let name = parsed.name?.trimmingCharacters(in: .whitespaces), !name.isEmpty else { throw Problem.noName }
+        let code = body.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !code.isEmpty else { throw Problem.noCode }
+        return CustomFilter(file: file, name: name, fragment: code)
+    }
+}
+
+/// The person's own filters, one .glsl file each in a folder RenChan owns (S-016).
+public enum CustomFilters {
+    /// Every filter in `folder` that reads, A to Z by name.
+    public static func list(in folder: URL) -> [CustomFilter] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+        return files.filter { $0.pathExtension.lowercased() == "glsl" }
+            .compactMap { url in (try? String(contentsOf: url, encoding: .utf8)).flatMap { try? CustomFilter.parse($0, file: url.lastPathComponent) } }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    /// Checks the file, then copies it in. A file with the same name is replaced, so a fixed shader updates in place.
+    @discardableResult
+    public static func add(_ url: URL, to folder: URL) throws -> CustomFilter {
+        let filter = try CustomFilter.parse(String(contentsOf: url, encoding: .utf8), file: url.lastPathComponent)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let target = folder.appending(path: url.lastPathComponent)
+        if FileManager.default.fileExists(atPath: target.path) { try FileManager.default.removeItem(at: target) }
+        try FileManager.default.copyItem(at: url, to: target)
+        return filter
     }
 }
 
@@ -94,16 +164,17 @@ public enum FilterLoader {
     /// Puts the filter in `copy` for a runtime, or removes it (and its compiled .rpyc) when there is no filter or no tier.
     /// Returns the tier used.
     @discardableResult
-    public static func install(_ setting: FilterSetting?, runtime: String, copy: URL) throws -> FilterTier {
+    public static func install(_ setting: FilterSetting?, runtime: String, copy: URL, custom: [CustomFilter] = []) throws -> FilterTier {
         let file = copy.appending(path: "game/\(fileName)")
         let compiled = file.deletingPathExtension().appendingPathExtension("rpyc")
         let tier = FilterTier.forRuntime(runtime)
-        guard let setting, tier != .unsupported else {
+        let fragment = setting.flatMap { setting in setting.custom.map { name in custom.first { $0.file == name }?.fragment } ?? setting.filter.fragment }
+        guard let setting, let fragment, tier != .unsupported else {
             for url in [file, compiled, liveFile(copy)] { try? FileManager.default.removeItem(at: url) }
             return .unsupported
         }
         writeStrength(setting.strength, copy: copy)
-        let text = source(setting, tier: tier, liveFile: liveFile(copy))
+        let text = source(setting, fragment: fragment, tier: tier, liveFile: liveFile(copy))
         if (try? String(contentsOf: file, encoding: .utf8)) != text {
             try text.write(to: file, atomically: true, encoding: .utf8)
         }
@@ -111,11 +182,13 @@ public enum FilterLoader {
     }
 
     /// Ren'Py script that runs on Python 2 (7.x) and Python 3 (8.x). Any failure leaves the game as it was.
-    public static func source(_ setting: FilterSetting, tier: FilterTier, liveFile: URL? = nil) -> String {
+    public static func source(_ setting: FilterSetting, fragment: String? = nil, tier: FilterTier, liveFile: URL? = nil) -> String {
         let strength = String(format: "%.3f", setting.strength)
         // Python 2 and 3 both read this string literal; the path never has a quote in it, but escape anyway.
         let path = (liveFile?.path ?? "").replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-        let fragment = setting.filter.fragment.split(separator: "\n").map { "        " + $0 }.joined(separator: "\n")
+        // A person's shader can't close the Python string it sits in.
+        let code = (fragment ?? setting.filter.fragment).replacingOccurrences(of: "\"\"\"", with: "")
+        let fragment = code.split(separator: "\n").map { "        " + $0 }.joined(separator: "\n")
         let apply: String
         switch tier {
         case .layerTransforms:
@@ -134,7 +207,7 @@ public enum FilterLoader {
             """
         }
         return #"""
-        # Written by RenChan before each launch, in RenChan's copy of the game only. Filter: \#(setting.filter.rawValue).
+        # Written by RenChan before each launch, in RenChan's copy of the game only. Filter: \#(setting.name.replacingOccurrences(of: "\n", with: " ")).
         init 999 python:
             try:
                 if getattr(config, "gl2", True):

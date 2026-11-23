@@ -54,6 +54,8 @@ final class AppModel {
     var discover = DiscoverState()
     /// The Find Games sheet (S-030).
     var findGames: FindGamesState?
+    /// The person's own filters, from Store.filtersFolder (S-016).
+    var customFilters: [CustomFilter] = []
     var releases: [String: [VNDBRelease]] = [:]
     var releasesLoading: Set<String> = []
     @ObservationIgnored var cameFromDiscover: (info: VNDBInfo, opened: Date)?
@@ -78,6 +80,7 @@ final class AppModel {
         log.post(.info, "RenChan \(version) started", source: "App")
         loadLibrary()
         recoverSessions()
+        customFilters = CustomFilters.list(in: Store.filtersFolder)
     }
 
     var runtimeStore: RuntimeStore { RuntimeStore(folder: Store.runtimesFolder) }

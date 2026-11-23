@@ -46,3 +46,33 @@ import Testing
     #expect(try FilterLoader.install(FilterSetting(filter: .crt), runtime: "7.3.5", copy: copy) == .unsupported)
     #expect(!FileManager.default.fileExists(atPath: file.path))
 }
+
+@Test func aCustomFilterNeedsAHeaderWithANameAndSomeCode() throws {
+    let sepia = try CustomFilter.parse("""
+    // {"name": "Sepia"}
+    c = vec3(dot(c, vec3(0.393, 0.769, 0.189)), dot(c, vec3(0.349, 0.686, 0.168)), dot(c, vec3(0.272, 0.534, 0.131)));
+    """, file: "Sepia.glsl")
+    #expect(sepia.name == "Sepia" && sepia.fragment.hasPrefix("c = vec3"))
+    #expect(try CustomFilter.parse("/* {\"name\": \"Dim\"} */\nc = c * 0.5;", file: "Dim.glsl").name == "Dim")
+    #expect(throws: CustomFilter.Problem.noHeader) { try CustomFilter.parse("c = c * 0.5;", file: "x.glsl") }
+    #expect(throws: CustomFilter.Problem.noName) { try CustomFilter.parse("// {\"title\": \"Dim\"}\nc = c * 0.5;", file: "x.glsl") }
+    #expect(throws: CustomFilter.Problem.noCode) { try CustomFilter.parse("// {\"name\": \"Dim\"}\n", file: "x.glsl") }
+}
+
+@Test func customFiltersAreCopiedInAndUsedByTheLoader() throws {
+    let root = Fixture.folder()
+    let source = root.appending(path: "Dim.glsl")
+    try "// {\"name\": \"Dim\"}\nc = c * (1.0 - 0.5 * s);".write(to: source, atomically: true, encoding: .utf8)
+    let folder = root.appending(path: "Filters")
+    try CustomFilters.add(source, to: folder)
+    try "not a filter".write(to: folder.appending(path: "Broken.glsl"), atomically: true, encoding: .utf8)
+    let found = CustomFilters.list(in: folder)
+    #expect(found.map(\.name) == ["Dim"])
+    let copy = Fixture.game(at: root.appending(path: "play"))
+    try FilterLoader.install(FilterSetting(custom: "Dim.glsl"), runtime: "8.6.1", copy: copy, custom: found)
+    let text = try String(contentsOf: copy.appending(path: "game/\(FilterLoader.fileName)"), encoding: .utf8)
+    #expect(text.contains("c = c * (1.0 - 0.5 * s);") && text.contains("Filter: Dim.glsl"))
+    // A filter whose file is gone plays without a filter.
+    #expect(try FilterLoader.install(FilterSetting(custom: "Gone.glsl"), runtime: "8.6.1", copy: copy, custom: found) == .unsupported)
+    #expect(!FileManager.default.fileExists(atPath: copy.appending(path: "game/\(FilterLoader.fileName)").path))
+}

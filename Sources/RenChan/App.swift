@@ -151,6 +151,8 @@ enum Store {
     static func gameFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Games/\(id.uuidString)", directoryHint: .isDirectory) }
     static func workingCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play", directoryHint: .isDirectory) }
     /// Save backups, one folder per game. Kept when a game is removed (S-012).
+    /// The person's own .glsl filters (S-016).
+    static var filtersFolder: URL { dataFolder.appending(path: "Filters", directoryHint: .isDirectory) }
     static func backupsFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Backups/\(id.uuidString)", directoryHint: .isDirectory) }
     /// The cover from VNDB or one the person chose (S-010).
     static func coverFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "cover") }

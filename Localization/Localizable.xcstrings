@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ (missing)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (manquant)"
+          }
+        }
+      }
+    },
     "%@ already plays this version.": {
       "localizations": {
         "fr": {
@@ -181,6 +191,26 @@
         }
       }
     },
+    "Add Filter": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter le filtre"
+          }
+        }
+      }
+    },
+    "Add Filter…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un filtre…"
+          }
+        }
+      }
+    },
     "Add Game": {
       "localizations": {
         "fr": {
@@ -217,6 +247,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter une tâche"
+          }
+        }
+      }
+    },
+    "Add a .glsl fragment shader of your own as a filter": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter votre propre shader .glsl comme filtre"
           }
         }
       }
@@ -427,6 +467,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisir une couverture…"
+          }
+        }
+      }
+    },
+    "Choose a .glsl fragment shader whose first line names it, such as // {\"name\": \"Sepia\"}.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez un shader .glsl dont la première ligne le nomme, par exemple // {\"name\": \"Sépia\"}."
           }
         }
       }
@@ -1771,6 +1821,16 @@
         }
       }
     },
+    "RenChan couldn't add %@: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu ajouter %1$@ : %2$@"
+          }
+        }
+      }
+    },
     "RenChan couldn't back up the saves: %@": {
       "localizations": {
         "fr": {
@@ -2101,6 +2161,16 @@
         }
       }
     },
+    "Show Filters Folder": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher le dossier des filtres"
+          }
+        }
+      }
+    },
     "Show games as a grid (Command-1) or a list (Command-2)": {
       "localizations": {
         "fr": {
@@ -2251,6 +2321,36 @@
         }
       }
     },
+    "The filter has a name but no shader code after it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le filtre a un nom, mais aucun code de shader après."
+          }
+        }
+      }
+    },
+    "The filter needs a first line that names it, such as // {\"name\": \"Sepia\"}.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La première ligne du filtre doit le nommer, par exemple // {\"name\": \"Sépia\"}."
+          }
+        }
+      }
+    },
+    "The filter's first line needs a name, such as // {\"name\": \"Sepia\"}.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il manque un nom à la première ligne du filtre, par exemple // {\"name\": \"Sépia\"}."
+          }
+        }
+      }
+    },
     "The game is on another disk, so RenChan needs a full copy (%@) in its own folder. The original stays as it is.": {
       "localizations": {
         "fr": {
@@ -2277,6 +2377,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce fichier n’est pas un zip, seulement %@ de texte : souvent un lien de téléchargement expiré. Téléchargez le jeu à nouveau."
+          }
+        }
+      }
+    },
+    "This filter's file is gone from RenChan's Filters folder, so the game plays without it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le fichier de ce filtre n’est plus dans le dossier Filtres de RenChan : le jeu se lance sans lui."
           }
         }
       }
@@ -2577,6 +2687,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Où l’obtenir"
+          }
+        }
+      }
+    },
+    "Your Filters": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vos filtres"
           }
         }
       }

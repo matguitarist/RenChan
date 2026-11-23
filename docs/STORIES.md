@@ -222,7 +222,15 @@ Status: done
 
 ### S-016 Add my own shader
 As the user, I add a `.glsl` fragment shader with a small JSON header and it shows up as a filter.
-Status: todo
+Acceptance:
+- [unit] A file needs a header with a name and some code; a broken file in the folder is skipped; a filter whose file is gone plays without a filter.
+- [live] A Sepia shader turns red brown on 7.8.7 and 8.6.1.
+- [self] An added filter is listed and played.
+UX:
+- Flow: inspector › Screen Filter › Add Filter… → open panel (.glsl) → copied into RenChan's Filters folder and picked for this game → listed under "Your Filters" in every game's picker. "Show Filters Folder" opens the folder.
+- States: no header, no name or no code → a notice that shows the header to write; file gone → "(missing)" in the picker and an orange note.
+- Words: "Add Filter…" / « Ajouter un filtre… », "Your Filters" / « Vos filtres ». Format in docs/custom-filters.md.
+Status: done
 
 ## M4 Mods (0.4.0)
 

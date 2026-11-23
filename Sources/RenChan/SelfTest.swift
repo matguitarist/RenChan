@@ -148,6 +148,17 @@ enum SelfTest {
         model.tuneFilter(first.id, strength: 0.25)
         model.playing.remove(first.id)
         check("S-015 moving Strength while playing writes it for the game", (try? String(contentsOf: live, encoding: .utf8)) == "0.250")
+        // S-016 Add my own shader
+        let sepiaFile = root.appending(path: "Sepia.glsl")
+        try? "// {\"name\": \"Sepia\"}\nc = mix(c, vec3(dot(c, vec3(0.393, 0.769, 0.189))), s);".write(to: sepiaFile, atomically: true, encoding: .utf8)
+        _ = try? CustomFilters.add(sepiaFile, to: Store.filtersFolder)
+        model.customFilters = CustomFilters.list(in: Store.filtersFolder)
+        model.update(first.id) { $0.filter = FilterSetting(custom: "Sepia.glsl") }
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        check("S-016 my own filter is listed and played",
+              model.customFilters.map(\.name) == ["Sepia"]
+              && ((try? String(contentsOf: filterFile, encoding: .utf8)) ?? "").contains("0.393, 0.769, 0.189"))
         model.update(first.id) { $0.filter = nil }
         model.play(first.id)
         await waitUntilStopped(model, first.id)
