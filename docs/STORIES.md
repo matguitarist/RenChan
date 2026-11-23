@@ -234,8 +234,14 @@ Status: done
 
 ## M4 Mods (0.4.0)
 
+### S-031 FSR sharpening and upscaling
+As the user, I pick "FSR" as a filter and a game made for 720p looks sharp in fullscreen: AMD FidelityFX FSR 1 (MIT), RCAS sharpening always, EASU upscaling when Ren'Py can hand over the game's own resolution. MetalFX is out: Ren'Py draws with OpenGL in its own process.
+Acceptance:
+- [live] FSR draws on 7.8.7 and 8.6.1; a hard edge stays sharper than with bilinear scaling.
+Status: todo
+
 ### S-017 Install a mod
-As the user, I drop a mod (zip, `.rpa`, `.rpy`) on a game and it appears in that game's Mods list, stored by RenChan, not in the game.
+As the user, I drop a mod (zip, `.rpa`, `.rpy`) on a game and it appears in that game's Mods list, stored by RenChan, not in the game. Walkthrough mods are mods: the same import covers them.
 Acceptance:
 - [unit] Zip Slip is refused; a zip's `game/` folder is found at any depth.
 Status: todo
