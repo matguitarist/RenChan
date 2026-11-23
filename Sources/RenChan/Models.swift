@@ -22,6 +22,7 @@ final class AppModel {
     var runtimes: [Runtime] = []
     var selection: Game.ID? { didSet { syncMenu() } }
     var search = ""
+    var filter = LibraryFilter()
     var sort: LibrarySort = LibrarySort(rawValue: UserDefaults.standard.string(forKey: "library.sort") ?? "") ?? .title {
         didSet { UserDefaults.standard.set(sort.rawValue, forKey: "library.sort") }
     }
@@ -75,10 +76,13 @@ final class AppModel {
 
     var selectedGame: Game? { game(selection) }
 
-    /// The library after search and sort.
+    /// Every label in the library, for the filter and suggestions.
+    var allLabels: [String] { Labels.all(in: games) }
+
+    /// The library after search, filter and sort.
     var shownGames: [Game] {
         let query = search.trimmingCharacters(in: .whitespaces)
-        let found = query.isEmpty ? games : games.filter { $0.title.localizedStandardContains(query) }
+        let found = games.filter { (query.isEmpty || $0.title.localizedStandardContains(query)) && filter.matches($0) }
         switch sort {
         case .title: return found.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
         case .added: return found.sorted { $0.added > $1.added }

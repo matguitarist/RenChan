@@ -121,12 +121,12 @@ As the user, I add labels, a rating and notes to a game, and filter the library 
 Screens: game-details, library-filtered
 UX:
 - Flow: inspector "My Game" section → Status picker (Not Started, Playing, Finished), five stars, labels (type and Return adds one, × removes it), notes (saved as you type). Playing a game moves Not Started to Playing.
-- Filter: toolbar Filter menu (⌥⌘F) with Status, Rating ("3 Stars or More"…) and each label; the button fills when a filter is on; "Clear Filters" in the menu and in the empty state.
+- Filter: toolbar Filter menu with Status, Rating ("3 Stars or More"…) and each label; the button fills when a filter is on; "Clear Filters" in the menu and in the empty state.
 - Surface: inline in the inspector; a toolbar menu for the filter (a few choices tied to one control).
 - States: no labels "No labels"; nothing matches "No Games Match These Filters" with "Clear Filters".
 - Words: "Status" / « Statut », "Not Started" / « Pas commencé », "Playing" / « En cours », "Finished" / « Terminé », "Rating" / « Note », "Labels" / « Étiquettes », "Notes" / « Notes ».
 - Access: stars are one control with a value ("3 stars") and increment/decrement; labels are buttons "Remove label Romance".
-Status: doing
+Status: done
 
 ### S-012 Back up saves
 As the user, I back up a game's saves with one click, see past backups by date, and restore one.
@@ -139,7 +139,7 @@ UX:
 - Access: the list is a Table; Return on a row asks to restore.
 Acceptance:
 - [unit] A restore keeps a backup of the saves it replaces.
-Status: todo
+Status: doing
 
 ### S-013 Update a game to a new version
 As the user, I point a game at its new version's folder or zip; its labels, playtime, filter and mods carry over.

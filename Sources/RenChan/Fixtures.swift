@@ -70,6 +70,14 @@ enum SeedData {
                 $0.vndb = VNDBInfo(id: "v3625", title: "The Question", developer: "ATP Projects", released: "2006-12-03",
                                    description: "A short story about a boy, a girl, and a question he has been meaning to ask her for a while. Made as a sample game for Ren'Py, it shows what a visual novel can do in a few minutes.")
             }
+            model.update(first.id) {
+                $0.status = .playing; $0.rating = 4; $0.labels = ["Romance", "Short"]
+                $0.notes = "Both endings done. Try the other answer at the bridge."
+            }
+            if model.games.count > 2 {
+                model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }
+                model.update(model.games[1].id) { $0.labels = ["Short"] }
+            }
             model.selection = first.id
         }
         model.runtimes = model.runtimeStore.installed()

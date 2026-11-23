@@ -8,7 +8,7 @@ import SwiftUI
 /// writes <page>-light.png and <page>-dark.png for every sidebar page, and
 /// settings-<tab>-light.png and settings-<tab>-dark.png for every Settings tab, then quits.
 /// Each PNG gets a <page>-<mode>-layout.json with the grid probes (tools/check-layout.swift).
-/// APP_SNAPSHOT_PAGES=library,runtimes,log limits the pages. Also: "library-list", "library-empty", "game-details",
+/// APP_SNAPSHOT_PAGES=library,runtimes,log limits the pages. Also: "library-list", "library-filtered", "library-empty", "game-details",
 /// "runtime-download", "launch-error", "vndb-search", "settings".
 /// Add APP_ACCENT=<id> to see the pages in another accent.
 /// Add APP_SNAPSHOT_MIN=1 to shrink the main window to its smallest size first.
@@ -61,6 +61,7 @@ enum Snapshot {
             model.sidebar = .library
             await shoot("library-list", { model.layout = .list }, { model.layout = .grid })
             await shoot("game-details", { model.showInspector = true }, {})
+            await shoot("library-filtered", { model.filter = LibraryFilter(labels: ["Romance"]) }, { model.filter = LibraryFilter() })
             let saved = model.games
             await shoot("library-empty", { model.games = [] }, { model.games = saved })
             await shoot("runtime-download", sheet: true, {

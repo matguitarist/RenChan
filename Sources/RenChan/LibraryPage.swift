@@ -11,6 +11,12 @@ struct LibraryPage: View {
         Group {
             if model.games.isEmpty {
                 EmptyLibrary()
+            } else if model.shownGames.isEmpty && model.filter.isActive {
+                ContentUnavailableView {
+                    Label("No Games Match These Filters", systemImage: "line.3.horizontal.decrease.circle")
+                } actions: {
+                    Button("Clear Filters") { model.filter = LibraryFilter() }
+                }
             } else if model.shownGames.isEmpty {
                 ContentUnavailableView.search(text: model.search)
             } else if model.layout == .grid {
@@ -71,6 +77,7 @@ struct LibraryToolbar: ToolbarContent {
             }
             .pickerStyle(.segmented)
             .help("Show games as a grid (Command-1) or a list (Command-2)")
+            FilterMenu()
             Menu("Sort", systemImage: "arrow.up.arrow.down") {
                 Picker("Sort By", selection: $model.sort) {
                     ForEach(LibrarySort.allCases) { Text($0.title).tag($0) }
@@ -204,6 +211,13 @@ struct LibraryList: View {
                 }
             }
             .width(min: 160, ideal: 260)
+            TableColumn("Status") { game in Text(game.status.title) }
+                .width(min: 80, ideal: 100)
+            TableColumn("Rating") { game in
+                Text(verbatim: game.stars).foregroundStyle(Palette.accentText)
+                    .accessibilityLabel(game.rating.map { String(localized: "\($0) stars") } ?? String(localized: "Not rated"))
+            }
+            .width(min: 70, ideal: 80)
             TableColumn("Ren'Py") { game in Text(game.version.map { "\($0)" } ?? String(localized: "Unknown")) }
                 .width(min: 70, ideal: 90)
             TableColumn("Python") { game in Text(game.pythonLine?.title ?? String(localized: "Unknown")) }

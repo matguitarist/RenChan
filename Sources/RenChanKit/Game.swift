@@ -34,6 +34,11 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var vndb: VNDBInfo?
     /// The person chose the cover; refreshing from VNDB keeps it.
     public var customCover = false
+    /// The person's own: status, 1 to 5 stars, labels, notes (S-011).
+    public var status: PlayStatus = .notStarted
+    public var rating: Int?
+    public var labels: [String] = []
+    public var notes = ""
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
                 version: RenPyVersion? = nil, pythonLine: PythonLine? = nil, versionSource: VersionSource? = nil,
@@ -70,6 +75,11 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         playtime = try c.decodeIfPresent(TimeInterval.self, forKey: .playtime) ?? 0
         vndb = try c.decodeIfPresent(VNDBInfo.self, forKey: .vndb)
         customCover = try c.decodeIfPresent(Bool.self, forKey: .customCover) ?? false
+        // A game played before statuses existed is being played.
+        status = try c.decodeIfPresent(PlayStatus.self, forKey: .status) ?? (lastPlayed == nil ? .notStarted : .playing)
+        rating = try c.decodeIfPresent(Int.self, forKey: .rating)
+        labels = try c.decodeIfPresent([String].self, forKey: .labels) ?? []
+        notes = try c.decodeIfPresent(String.self, forKey: .notes) ?? ""
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

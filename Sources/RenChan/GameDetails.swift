@@ -19,6 +19,7 @@ struct GameDetails: View {
                     playButton
                 }
             }
+            MyGameSection(game: game)
             VNDBSection(game: game)
             Section("Activity") {
                 LabeledContent("Playtime", value: game.playtimeText)

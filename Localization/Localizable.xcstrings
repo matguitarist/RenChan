@@ -31,12 +31,32 @@
         }
       }
     },
+    "%lld Stars or More": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld étoiles ou plus"
+          }
+        }
+      }
+    },
     "%lld games": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld jeux"
+          }
+        }
+      }
+    },
+    "%lld stars": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld étoiles"
           }
         }
       }
@@ -67,6 +87,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 restante"
+          }
+        }
+      }
+    },
+    "1 star": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 étoile"
+          }
+        }
+      }
+    },
+    "5 Stars": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 étoiles"
           }
         }
       }
@@ -131,6 +171,16 @@
         }
       }
     },
+    "Add Label": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter une étiquette"
+          }
+        }
+      }
+    },
     "Add Task": {
       "localizations": {
         "fr": {
@@ -147,6 +197,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter un dossier de jeu, une app Mac ou un zip (Commande-O)"
+          }
+        }
+      }
+    },
+    "Add a label": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter une étiquette"
+          }
+        }
+      }
+    },
+    "Any Rating": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toutes les notes"
+          }
+        }
+      }
+    },
+    "Any Status": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tous les statuts"
           }
         }
       }
@@ -247,6 +327,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisissez une image pour la couverture du jeu."
+          }
+        }
+      }
+    },
+    "Clear Filters": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer les filtres"
           }
         }
       }
@@ -361,6 +451,26 @@
         }
       }
     },
+    "Filter": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrer"
+          }
+        }
+      }
+    },
+    "Filters are on: change or clear them": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des filtres sont actifs : modifiez-les ou effacez-les"
+          }
+        }
+      }
+    },
     "Find on VNDB": {
       "localizations": {
         "fr": {
@@ -377,6 +487,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chercher sur VNDB…"
+          }
+        }
+      }
+    },
+    "Finished": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminé"
           }
         }
       }
@@ -477,6 +597,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Boîte de réception"
+          }
+        }
+      }
+    },
+    "Labels": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Étiquettes"
           }
         }
       }
@@ -601,6 +731,16 @@
         }
       }
     },
+    "My Game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mon jeu"
+          }
+        }
+      }
+    },
     "Native": {
       "localizations": {
         "fr": {
@@ -641,6 +781,16 @@
         }
       }
     },
+    "No Games Match These Filters": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun jeu ne correspond à ces filtres"
+          }
+        }
+      }
+    },
     "No Log Yet": {
       "localizations": {
         "fr": {
@@ -677,6 +827,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun jeu sur VNDB ne correspond à « %@ ». Essayez un autre titre."
+          }
+        }
+      }
+    },
+    "No labels": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune étiquette"
+          }
+        }
+      }
+    },
+    "Not Started": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas commencé"
+          }
+        }
+      }
+    },
+    "Not rated": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas noté"
+          }
+        }
+      }
+    },
+    "Notes": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
           }
         }
       }
@@ -831,6 +1021,26 @@
         }
       }
     },
+    "Rate this game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noter ce jeu"
+          }
+        }
+      }
+    },
+    "Rating": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
     "Refresh from VNDB": {
       "localizations": {
         "fr": {
@@ -887,6 +1097,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Retirer de la bibliothèque…"
+          }
+        }
+      }
+    },
+    "Remove label %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retirer l’étiquette %@"
+          }
+        }
+      }
+    },
+    "Remove this label": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retirer cette étiquette"
           }
         }
       }
@@ -1101,6 +1331,16 @@
         }
       }
     },
+    "Routes done, choices to try…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routes terminées, choix à essayer…"
+          }
+        }
+      }
+    },
     "Runs under Rosetta": {
       "localizations": {
         "fr": {
@@ -1181,6 +1421,16 @@
         }
       }
     },
+    "Show only games with a status, rating or label": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N’afficher que les jeux avec un statut, une note ou une étiquette"
+          }
+        }
+      }
+    },
     "Sort": {
       "localizations": {
         "fr": {
@@ -1207,6 +1457,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Trier la bibliothèque"
+          }
+        }
+      }
+    },
+    "Status": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statut"
           }
         }
       }

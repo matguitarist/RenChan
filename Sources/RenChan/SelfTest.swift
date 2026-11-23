@@ -103,6 +103,21 @@ enum SelfTest {
         model.sort = .title
         check("sort by title", model.shownGames.map(\.title) == ["Old Letters", "The Question", "Zipped"])
 
+        // S-011 Labels, rating and notes
+        if let first = added, let other = fromApp {
+            model.update(first.id) { $0.labels = Labels.add("Romance", to: $0.labels); $0.rating = 4; $0.notes = "Bridge choice" }
+            model.update(other.id) { $0.status = .finished; $0.rating = 2 }
+            model.filter = LibraryFilter(labels: ["romance"])
+            check("S-011 filter by label", model.shownGames.map(\.title) == ["The Question"])
+            model.filter = LibraryFilter(minimumRating: 2)
+            check("S-011 filter by rating", model.shownGames.map(\.title) == ["Old Letters", "The Question"])
+            model.filter = LibraryFilter(status: .finished)
+            check("S-011 filter by status", model.shownGames.map(\.title) == ["Old Letters"])
+            model.filter = LibraryFilter()
+            model.loadLibrary()
+            check("S-011 labels, rating and notes are saved", model.game(first.id)?.labels == ["Romance"] && model.game(first.id)?.notes == "Bridge choice")
+        }
+
         // S-004 Play a game, S-007 Open saves
         guard let first = added else { return }
         let before = digest(question)
@@ -113,6 +128,7 @@ enum SelfTest {
         check("the game ran from its working copy", FileManager.default.fileExists(atPath: copy.appending(path: "game/script.rpyc").path))
         check("the original is unchanged", digest(question) == before && !FileManager.default.fileExists(atPath: question.appending(path: "game/script.rpyc").path))
         check("the run was recorded", model.game(first.id)?.lastPlayed != nil && model.launchError == nil)
+        check("S-011 playing a game moves it to Playing", model.game(first.id)?.status == .playing)
         check("S-009 playtime counts the run and the session file is gone",
               (model.game(first.id)?.playtime ?? 0) > 0 && !FileManager.default.fileExists(atPath: Store.sessionFile(first.id).path))
         check("saves are found under the test home, never the real one",

@@ -60,7 +60,7 @@ extension AppModel {
             processes[game.id] = process
             playing.insert(game.id)
             PlaySession.begin(at: started, file: Store.sessionFile(game.id))
-            update(game.id) { $0.lastPlayed = started }
+            update(game.id) { $0.markPlayed(at: started) }
             let rosetta = runtime.isUniversal ? "" : " under Rosetta"
             log.post(.info, "Started \(game.title) on Ren'Py \(runtime.version)\(rosetta)", source: "Play")
         } catch {
