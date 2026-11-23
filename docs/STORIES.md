@@ -212,7 +212,13 @@ Status: done
 As the user, I change a filter's strength while the game runs and see it change in the game.
 Acceptance:
 - [unit] RenChan writes parameters to a file the loader reads each second.
-Status: todo
+- [live] Grayscale started at 0 turns the running game gray once the file says 1 (7.8.7 and 8.6.1).
+- [self] Moving Strength while playing writes the file.
+UX:
+- Flow: game playing → inspector › Screen Filter › Strength slider → the game changes within a second. Filter › None fades it out now; another filter waits for the next launch, and the note says so.
+- Surface: the same inline slider as S-014.
+- Words: "Strength changes show in the game right away. Another filter shows the next time you play."
+Status: done
 
 ### S-016 Add my own shader
 As the user, I add a `.glsl` fragment shader with a small JSON header and it shows up as a filter.

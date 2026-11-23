@@ -381,16 +381,6 @@
         }
       }
     },
-    "Changes show the next time you play.": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les changements s’afficheront la prochaine fois que vous jouerez."
-          }
-        }
-      }
-    },
     "Check Now": {
       "localizations": {
         "fr": {
@@ -2227,6 +2217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Intensité"
+          }
+        }
+      }
+    },
+    "Strength changes show in the game right away. Another filter shows the next time you play.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les changements d’intensité s’affichent tout de suite dans le jeu. Un autre filtre s’affichera la prochaine fois que vous jouerez."
           }
         }
       }

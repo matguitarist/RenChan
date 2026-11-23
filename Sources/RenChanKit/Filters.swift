@@ -83,6 +83,14 @@ public enum FilterLoader {
     /// Sorted after the game's own files; Ren'Py compiles it next to itself as .rpyc.
     public static let fileName = "zz_renchan_filter.rpy"
 
+    /// The strength while the game runs (S-015): a number from 0 to 1 in the copy's base folder, outside game/.
+    /// The loader reads it about once a second.
+    public static func liveFile(_ copy: URL) -> URL { copy.appending(path: "renchan_filter_strength.txt") }
+
+    public static func writeStrength(_ strength: Double, copy: URL) {
+        try? String(format: "%.3f", min(1, max(0, strength))).write(to: liveFile(copy), atomically: true, encoding: .utf8)
+    }
+
     /// Puts the filter in `copy` for a runtime, or removes it (and its compiled .rpyc) when there is no filter or no tier.
     /// Returns the tier used.
     @discardableResult
@@ -91,10 +99,11 @@ public enum FilterLoader {
         let compiled = file.deletingPathExtension().appendingPathExtension("rpyc")
         let tier = FilterTier.forRuntime(runtime)
         guard let setting, tier != .unsupported else {
-            for url in [file, compiled] { try? FileManager.default.removeItem(at: url) }
+            for url in [file, compiled, liveFile(copy)] { try? FileManager.default.removeItem(at: url) }
             return .unsupported
         }
-        let text = source(setting, tier: tier)
+        writeStrength(setting.strength, copy: copy)
+        let text = source(setting, tier: tier, liveFile: liveFile(copy))
         if (try? String(contentsOf: file, encoding: .utf8)) != text {
             try text.write(to: file, atomically: true, encoding: .utf8)
         }
@@ -102,7 +111,10 @@ public enum FilterLoader {
     }
 
     /// Ren'Py script that runs on Python 2 (7.x) and Python 3 (8.x). Any failure leaves the game as it was.
-    public static func source(_ setting: FilterSetting, tier: FilterTier) -> String {
+    public static func source(_ setting: FilterSetting, tier: FilterTier, liveFile: URL? = nil) -> String {
+        let strength = String(format: "%.3f", setting.strength)
+        // Python 2 and 3 both read this string literal; the path never has a quote in it, but escape anyway.
+        let path = (liveFile?.path ?? "").replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
         let fragment = setting.filter.fragment.split(separator: "\n").map { "        " + $0 }.joined(separator: "\n")
         let apply: String
         switch tier {
@@ -138,7 +150,20 @@ public enum FilterLoader {
         \#(fragment)
                         gl_FragColor = vec4(c, gl_FragColor.a);
                     """)
-                    renchan_filter_transform = Transform(mesh=True, shader="renchan.filter", u_renchan_strength=\#(String(format: "%.3f", setting.strength)))
+                    import time as renchan_time
+                    def renchan_filter_function(trans, st, at, _live=[0.0, \#(strength)]):
+                        now = renchan_time.time()
+                        if now - _live[0] >= 1.0:
+                            _live[0] = now
+                            try:
+                                with open("\#(path)") as f:
+                                    _live[1] = max(0.0, min(1.0, float(f.read().strip())))
+                            except Exception:
+                                pass
+                        trans.u_renchan_strength = _live[1]
+                        return 1.0
+                    renchan_filter_transform = Transform(mesh=True, shader="renchan.filter", u_renchan_strength=\#(strength),
+                                                         function=renchan_filter_function)
         \#(apply)
             except Exception as e:
                 renpy.write_log("RenChan filter off: %r" % (e,))

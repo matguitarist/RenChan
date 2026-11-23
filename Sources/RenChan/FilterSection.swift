@@ -26,6 +26,8 @@ struct FilterSection: View {
         Section("Screen Filter") {
             Picker("Filter", selection: Binding(get: { game.filter?.filter }, set: { new in
                 model.update(game.id) { $0.filter = new.map { FilterSetting(filter: $0, strength: game.filter?.strength ?? 1) } }
+                // None while playing fades the running filter out now; another filter waits for the next launch.
+                if new == nil { model.tuneFilter(game.id, strength: 0) }
             })) {
                 Text("None").tag(ScreenFilter?.none)
                 Divider()
@@ -42,12 +44,22 @@ struct FilterSection: View {
                 LabeledContent("Strength") {
                     Slider(value: Binding(get: { setting.strength }, set: { value in
                         model.update(game.id) { $0.filter?.strength = value }
+                        model.tuneFilter(game.id, strength: value)
                     }), in: 0...1)
                     .frame(maxWidth: 180)
                 }
-                Text(model.playing.contains(game.id) ? "Changes show the next time you play." : "Applies when you play. The game itself isn't changed.")
+                Text(model.playing.contains(game.id) ? "Strength changes show in the game right away. Another filter shows the next time you play."
+                                                     : "Applies when you play. The game itself isn't changed.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+extension AppModel {
+    /// S-015: while the game runs, its filter reads this strength within a second.
+    func tuneFilter(_ id: Game.ID, strength: Double) {
+        guard playing.contains(id) else { return }
+        FilterLoader.writeStrength(strength, copy: Store.workingCopy(id))
     }
 }

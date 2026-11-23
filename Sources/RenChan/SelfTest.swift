@@ -141,6 +141,13 @@ enum SelfTest {
         let filterFile = copy.appending(path: "game/\(FilterLoader.fileName)")
         check("S-014 a filter is written into the working copy, never the original",
               FileManager.default.fileExists(atPath: filterFile.path) && digest(question) == before)
+        let live = FilterLoader.liveFile(copy)
+        check("S-015 the strength file starts at the game's strength",
+              (try? String(contentsOf: live, encoding: .utf8)) == "0.600")
+        model.playing.insert(first.id)
+        model.tuneFilter(first.id, strength: 0.25)
+        model.playing.remove(first.id)
+        check("S-015 moving Strength while playing writes it for the game", (try? String(contentsOf: live, encoding: .utf8)) == "0.250")
         model.update(first.id) { $0.filter = nil }
         model.play(first.id)
         await waitUntilStopped(model, first.id)

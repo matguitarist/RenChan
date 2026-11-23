@@ -57,10 +57,22 @@ struct Live {
         }
         let runtime = try #require(Self.store.runtime(version))
         let root = Fixture.folder()
-        func shoot(_ setting: FilterSetting?) throws -> (r: Int, g: Int, b: Int) {
-            let copy = root.appending(path: "play-\(setting?.filter.rawValue ?? "none")")
-            let shot = root.appending(path: "shot-\(setting?.filter.rawValue ?? "none").png")
-            Fixture.game(at: copy, files: ["game/script.rpy": """
+        /// `then`: Ren'Py lines run after the first screenshot, before a second one 2.5 s later, which is returned instead.
+        func shoot(_ setting: FilterSetting?, name: String? = nil, then: String? = nil) throws -> (r: Int, g: Int, b: Int) {
+            let name = name ?? setting?.filter.rawValue ?? "none"
+            let copy = root.appending(path: "play-\(name)")
+            let shot = root.appending(path: "shot-\(name).png")
+            let first = root.appending(path: "shot-\(name)-first.png")
+            Fixture.game(at: copy, files: ["game/script.rpy": then.map { more in """
+            label start:
+                scene expression Solid("#ff0000")
+                pause 1.0
+                $ renpy.screenshot(\"\(first.path)\")
+                \(more)
+                pause 2.5
+                $ renpy.screenshot(\"\(shot.path)\")
+                $ renpy.quit()
+            """ } ?? """
             label start:
                 scene expression Solid("#ff0000")
                 pause 1.0
@@ -96,6 +108,11 @@ struct Live {
             // Daltonizing moves some of the red into green or blue.
             #expect(color.g > 10 || color.b > 10, "\(filter) didn't change red: \(color)")
         }
+        // S-015: Grayscale at 0 shows red; once the strength file says 1, the running game turns gray.
+        let live = FilterLoader.liveFile(root.appending(path: "play-live"))
+        let tuned = try shoot(FilterSetting(filter: .grayscale, strength: 0), name: "live",
+                              then: "$ open(\"\(live.path)\", \"w\").write(\"1.0\")")
+        #expect(abs(tuned.r - tuned.g) < 12 && tuned.r < 120, "after tuning live: \(tuned)")
     }
 
     @Test func playsARealGameFromAClone() async throws {
