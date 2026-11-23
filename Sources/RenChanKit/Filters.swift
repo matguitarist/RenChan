@@ -4,10 +4,23 @@ import Foundation
 /// `gl_FragColor` after Ren'Py has drawn the screen, so it works on every GL2 renderer RenChan runs.
 public enum ScreenFilter: String, Codable, CaseIterable, Sendable {
     case sharpen, crt, nightWarmth, grayscale, protanopia, deuteranopia, tritanopia
+    /// AMD FidelityFX FSR 1 (MIT): RCAS alone, or EASU from the game's own resolution then RCAS (S-031).
+    case fsrSharpen, fsrUpscale
+
+    /// The shader passes, in order. Most filters are one pass on the screen as drawn.
+    public var passes: [FilterPass] {
+        switch self {
+        case .fsrSharpen: [FSR.rcas]
+        case .fsrUpscale: [FSR.easu, FSR.rcas]
+        default: [FilterPass(fragment: fragment)]
+        }
+    }
 
     /// The fragment code. `c` is the screen's color, `s` the strength from 0 to 1, `px` one pixel in texture units.
     var fragment: String {
         switch self {
+        case .fsrSharpen, .fsrUpscale:
+            return FSR.rcas.fragment
         case .grayscale:
             return "c = mix(c, vec3(dot(c, vec3(0.299, 0.587, 0.114))), s);"
         case .nightWarmth:
@@ -47,6 +60,120 @@ public enum ScreenFilter: String, Codable, CaseIterable, Sendable {
         default: return "mat3(1.0, 0.0, -0.395913, 0.0, 1.0, 0.801109, 0.0, 0.0, 0.0)"
         }
     }
+}
+
+/// One shader pass of a filter.
+public struct FilterPass: Hashable, Sendable {
+    /// GLSL function definitions the fragment calls.
+    public var functions = ""
+    /// Changes `c`; can read `s`, `px`, `tex0`, `v_tex_coord` and `res0`.
+    public var fragment: String
+    /// Draws from the game's own resolution (config.screen_width) instead of the screen's: what an upscaler needs.
+    public var gameResolution = false
+
+    public init(functions: String = "", fragment: String, gameResolution: Bool = false) {
+        self.functions = functions
+        self.fragment = fragment
+        self.gameResolution = gameResolution
+    }
+}
+
+/// AMD FidelityFX Super Resolution 1, ported to GLSL 1.00 from the MIT-licensed ffx_fsr1.h
+/// (Copyright (c) 2021 Advanced Micro Devices, Inc.; MIT license in THIRD-PARTY.md). EASU upscales with edge-aware
+/// Lanczos taps; RCAS sharpens. Measured on a hard edge, 640×360 to 3840×2160: 4 px of ramp against Ren'Py's 6.
+enum FSR {
+    static let easu = FilterPass(functions: """
+    float renchan_luma(vec3 c) { return c.b * 0.5 + (c.r * 0.5 + c.g); }
+    void renchan_easu_set(inout vec2 dir, inout float len, float w, float lA, float lB, float lC, float lD, float lE) {
+        float lenX = 1.0 / max(max(abs(lD - lC), abs(lC - lB)), 1e-5);
+        float dirX = lD - lB;
+        dir.x += dirX * w;
+        lenX = clamp(abs(dirX) * lenX, 0.0, 1.0);
+        len += lenX * lenX * w;
+        float lenY = 1.0 / max(max(abs(lE - lC), abs(lC - lA)), 1e-5);
+        float dirY = lE - lA;
+        dir.y += dirY * w;
+        lenY = clamp(abs(dirY) * lenY, 0.0, 1.0);
+        len += lenY * lenY * w;
+    }
+    void renchan_easu_tap(inout vec3 aC, inout float aW, vec2 off, vec2 dir, vec2 len, float lob, float clp, vec3 c) {
+        vec2 v = vec2(off.x * dir.x + off.y * dir.y, off.x * (-dir.y) + off.y * dir.x) * len;
+        float d2 = min(v.x * v.x + v.y * v.y, clp);
+        float wB = 2.0 / 5.0 * d2 - 1.0;
+        float wA = lob * d2 - 1.0;
+        wB *= wB;
+        wA *= wA;
+        wB = 25.0 / 16.0 * wB - (25.0 / 16.0 - 1.0);
+        float w = wB * wA;
+        aC += c * w;
+        aW += w;
+    }
+    """, fragment: """
+    vec2 pp = v_tex_coord * res0 - vec2(0.5);
+    vec2 fp = floor(pp);
+    pp -= fp;
+    vec2 t = vec2(1.0) / res0;
+    vec2 p0 = (fp + vec2(0.5)) * t;
+    vec3 bC = texture2D(tex0, p0 + vec2(0.0, -1.0) * t).rgb;
+    vec3 cC = texture2D(tex0, p0 + vec2(1.0, -1.0) * t).rgb;
+    vec3 eC = texture2D(tex0, p0 + vec2(-1.0, 0.0) * t).rgb;
+    vec3 fC = texture2D(tex0, p0).rgb;
+    vec3 gC = texture2D(tex0, p0 + vec2(1.0, 0.0) * t).rgb;
+    vec3 hC = texture2D(tex0, p0 + vec2(2.0, 0.0) * t).rgb;
+    vec3 iC = texture2D(tex0, p0 + vec2(-1.0, 1.0) * t).rgb;
+    vec3 jC = texture2D(tex0, p0 + vec2(0.0, 1.0) * t).rgb;
+    vec3 kC = texture2D(tex0, p0 + vec2(1.0, 1.0) * t).rgb;
+    vec3 lC = texture2D(tex0, p0 + vec2(2.0, 1.0) * t).rgb;
+    vec3 nC = texture2D(tex0, p0 + vec2(0.0, 2.0) * t).rgb;
+    vec3 oC = texture2D(tex0, p0 + vec2(1.0, 2.0) * t).rgb;
+    float bL = renchan_luma(bC); float cL = renchan_luma(cC); float eL = renchan_luma(eC); float fL = renchan_luma(fC);
+    float gL = renchan_luma(gC); float hL = renchan_luma(hC); float iL = renchan_luma(iC); float jL = renchan_luma(jC);
+    float kL = renchan_luma(kC); float lL = renchan_luma(lC); float nL = renchan_luma(nC); float oL = renchan_luma(oC);
+    vec2 dir = vec2(0.0);
+    float len = 0.0;
+    renchan_easu_set(dir, len, (1.0 - pp.x) * (1.0 - pp.y), bL, eL, fL, gL, jL);
+    renchan_easu_set(dir, len, pp.x * (1.0 - pp.y), cL, fL, gL, hL, kL);
+    renchan_easu_set(dir, len, (1.0 - pp.x) * pp.y, fL, iL, jL, kL, nL);
+    renchan_easu_set(dir, len, pp.x * pp.y, gL, jL, kL, lL, oL);
+    float dirR = dir.x * dir.x + dir.y * dir.y;
+    if (dirR < 1.0 / 32768.0) { dir = vec2(1.0, 0.0); } else { dir *= inversesqrt(dirR); }
+    len = len * 0.5;
+    len *= len;
+    float stretch = (dir.x * dir.x + dir.y * dir.y) / max(abs(dir.x), abs(dir.y));
+    vec2 len2 = vec2(1.0 + (stretch - 1.0) * len, 1.0 - 0.5 * len);
+    float lob = 0.5 + ((1.0 / 4.0 - 0.04) - 0.5) * len;
+    float clp = 1.0 / lob;
+    vec3 aC = vec3(0.0);
+    float aW = 0.0;
+    renchan_easu_tap(aC, aW, vec2(0.0, -1.0) - pp, dir, len2, lob, clp, bC);
+    renchan_easu_tap(aC, aW, vec2(1.0, -1.0) - pp, dir, len2, lob, clp, cC);
+    renchan_easu_tap(aC, aW, vec2(-1.0, 1.0) - pp, dir, len2, lob, clp, iC);
+    renchan_easu_tap(aC, aW, vec2(0.0, 1.0) - pp, dir, len2, lob, clp, jC);
+    renchan_easu_tap(aC, aW, vec2(0.0, 0.0) - pp, dir, len2, lob, clp, fC);
+    renchan_easu_tap(aC, aW, vec2(-1.0, 0.0) - pp, dir, len2, lob, clp, eC);
+    renchan_easu_tap(aC, aW, vec2(1.0, 1.0) - pp, dir, len2, lob, clp, kC);
+    renchan_easu_tap(aC, aW, vec2(2.0, 1.0) - pp, dir, len2, lob, clp, lC);
+    renchan_easu_tap(aC, aW, vec2(2.0, 0.0) - pp, dir, len2, lob, clp, hC);
+    renchan_easu_tap(aC, aW, vec2(1.0, 0.0) - pp, dir, len2, lob, clp, gC);
+    renchan_easu_tap(aC, aW, vec2(1.0, 2.0) - pp, dir, len2, lob, clp, oC);
+    renchan_easu_tap(aC, aW, vec2(0.0, 2.0) - pp, dir, len2, lob, clp, nC);
+    c = clamp(aC / max(aW, 1e-5), min(min(fC, gC), min(jC, kC)), max(max(fC, gC), max(jC, kC)));
+    """, gameResolution: true)
+
+    /// Strength 1 is AMD's sharpest setting.
+    static let rcas = FilterPass(fragment: """
+    vec3 rb = texture2D(tex0, v_tex_coord + vec2(0.0, -px.y)).rgb;
+    vec3 rd = texture2D(tex0, v_tex_coord + vec2(-px.x, 0.0)).rgb;
+    vec3 rf = texture2D(tex0, v_tex_coord + vec2(px.x, 0.0)).rgb;
+    vec3 rh = texture2D(tex0, v_tex_coord + vec2(0.0, px.y)).rgb;
+    vec3 mn4 = min(min(rb, rd), min(rf, rh));
+    vec3 mx4 = max(max(rb, rd), max(rf, rh));
+    vec3 hitMin = min(mn4, c) / max(4.0 * mx4, vec3(1e-4));
+    vec3 hitMax = (vec3(1.0) - max(mx4, c)) / min(4.0 * mn4 - vec3(4.0), vec3(-1e-4));
+    vec3 lobeRGB = max(-hitMin, hitMax);
+    float lobe = max(-0.1875, min(max(lobeRGB.r, max(lobeRGB.g, lobeRGB.b)), 0.0)) * s;
+    c = clamp((lobe * (rb + rd + rf + rh) + c) / (4.0 * lobe + 1.0), 0.0, 1.0);
+    """)
 }
 
 /// The filter a game plays with, and how strong it is.
@@ -168,13 +295,15 @@ public enum FilterLoader {
         let file = copy.appending(path: "game/\(fileName)")
         let compiled = file.deletingPathExtension().appendingPathExtension("rpyc")
         let tier = FilterTier.forRuntime(runtime)
-        let fragment = setting.flatMap { setting in setting.custom.map { name in custom.first { $0.file == name }?.fragment } ?? setting.filter.fragment }
-        guard let setting, let fragment, tier != .unsupported else {
+        let passes = setting.flatMap { setting in
+            setting.custom.map { name in custom.first { $0.file == name }.map { [FilterPass(fragment: $0.fragment)] } } ?? setting.filter.passes
+        }
+        guard let setting, let passes, tier != .unsupported else {
             for url in [file, compiled, liveFile(copy)] { try? FileManager.default.removeItem(at: url) }
             return .unsupported
         }
         writeStrength(setting.strength, copy: copy)
-        let text = source(setting, fragment: fragment, tier: tier, liveFile: liveFile(copy))
+        let text = source(setting, passes: passes, tier: tier, liveFile: liveFile(copy))
         if (try? String(contentsOf: file, encoding: .utf8)) != text {
             try text.write(to: file, atomically: true, encoding: .utf8)
         }
@@ -182,25 +311,54 @@ public enum FilterLoader {
     }
 
     /// Ren'Py script that runs on Python 2 (7.x) and Python 3 (8.x). Any failure leaves the game as it was.
-    public static func source(_ setting: FilterSetting, fragment: String? = nil, tier: FilterTier, liveFile: URL? = nil) -> String {
+    public static func source(_ setting: FilterSetting, passes: [FilterPass]? = nil, tier: FilterTier, liveFile: URL? = nil) -> String {
+        let passes = passes ?? setting.filter.passes
         let strength = String(format: "%.3f", setting.strength)
         // Python 2 and 3 both read this string literal; the path never has a quote in it, but escape anyway.
         let path = (liveFile?.path ?? "").replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
         // A person's shader can't close the Python string it sits in.
-        let code = (fragment ?? setting.filter.fragment).replacingOccurrences(of: "\"\"\"", with: "")
-        let fragment = code.split(separator: "\n").map { "        " + $0 }.joined(separator: "\n")
+        func indent(_ code: String, _ spaces: Int) -> String {
+            code.replacingOccurrences(of: "\"\"\"", with: "").split(separator: "\n", omittingEmptySubsequences: false)
+                .map { String(repeating: " ", count: spaces) + $0 }.joined(separator: "\n")
+        }
+        let shaders = passes.enumerated().map { index, pass in
+            let functions = pass.functions.isEmpty ? "" : #"""
+             fragment_functions="""
+            \#(indent(pass.functions, 4))
+                    """,
+            """#
+            return #"""
+            renpy.register_shader("renchan.filter\#(index)", variables="""
+                uniform sampler2D tex0;
+                uniform vec2 res0;
+                uniform float u_renchan_strength;
+                varying vec2 v_tex_coord;
+            """,\#(functions) fragment_300="""
+                vec3 c = gl_FragColor.rgb;
+                float s = u_renchan_strength;
+                vec2 px = vec2(1.0) / res0;
+            \#(indent(pass.fragment, 8))
+                gl_FragColor = vec4(c, gl_FragColor.a);
+            """)
+            """#
+        }.joined(separator: "\n").split(separator: "\n", omittingEmptySubsequences: false)
+            .map { "            " + $0 }.joined(separator: "\n")
+        let transforms = passes.enumerated().map { index, pass in
+            "Transform(mesh=True, shader=\"renchan.filter\(index)\", u_renchan_strength=\(strength), function=renchan_filter_function"
+                + (pass.gameResolution ? ", gl_drawable_resolution=False)" : ")")
+        }.joined(separator: ", ")
         let apply: String
         switch tier {
         case .layerTransforms:
             apply = """
                     config.layer_transforms.setdefault(None, [])
-                    config.layer_transforms[None] = list(config.layer_transforms[None]) + [renchan_filter_transform]
+                    config.layer_transforms[None] = list(config.layer_transforms[None]) + renchan_filter_transforms
             """
         case .camera, .unsupported:
             apply = """
                     def renchan_filter_camera():
                         try:
-                            renpy.show_layer_at([renchan_filter_transform], layer="master", reset=False, camera=True)
+                            renpy.show_layer_at(renchan_filter_transforms, layer="master", reset=False, camera=True)
                         except Exception:
                             pass
                     config.interact_callbacks.append(renchan_filter_camera)
@@ -211,18 +369,7 @@ public enum FilterLoader {
         init 999 python:
             try:
                 if getattr(config, "gl2", True):
-                    renpy.register_shader("renchan.filter", variables="""
-                        uniform sampler2D tex0;
-                        uniform vec2 res0;
-                        uniform float u_renchan_strength;
-                        varying vec2 v_tex_coord;
-                    """, fragment_300="""
-                        vec3 c = gl_FragColor.rgb;
-                        float s = u_renchan_strength;
-                        vec2 px = vec2(1.0) / res0;
-        \#(fragment)
-                        gl_FragColor = vec4(c, gl_FragColor.a);
-                    """)
+        \#(shaders)
                     import time as renchan_time
                     def renchan_filter_function(trans, st, at, _live=[0.0, \#(strength)]):
                         now = renchan_time.time()
@@ -235,8 +382,7 @@ public enum FilterLoader {
                                 pass
                         trans.u_renchan_strength = _live[1]
                         return 1.0
-                    renchan_filter_transform = Transform(mesh=True, shader="renchan.filter", u_renchan_strength=\#(strength),
-                                                         function=renchan_filter_function)
+                    renchan_filter_transforms = [\#(transforms)]
         \#(apply)
             except Exception as e:
                 renpy.write_log("RenChan filter off: %r" % (e,))

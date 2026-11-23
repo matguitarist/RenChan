@@ -18,6 +18,10 @@ import Testing
     let setting = FilterSetting(filter: .grayscale, strength: 0.5)
     let modern = FilterLoader.source(setting, tier: .layerTransforms)
     #expect(modern.contains("config.layer_transforms[None]") && modern.contains("u_renchan_strength=0.500"))
+    #expect(!modern.contains("gl_drawable_resolution") && !modern.contains("renchan.filter1"))
+    // S-031: FSR Upscale is two passes, the first from the game's own resolution.
+    let fsr = FilterLoader.source(FilterSetting(filter: .fsrUpscale), tier: .layerTransforms)
+    #expect(fsr.contains("renchan.filter1") && fsr.contains("gl_drawable_resolution=False") && fsr.contains("fragment_functions="))
     #expect(modern.contains("init 999 python:") && modern.contains("except Exception"))
     let older = FilterLoader.source(setting, tier: .camera)
     #expect(older.contains("camera=True") && !older.contains("layer_transforms"))

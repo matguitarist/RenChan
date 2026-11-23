@@ -108,7 +108,7 @@ struct Live {
         for filter in ScreenFilter.allCases where filter != .grayscale {
             let color = try shoot(FilterSetting(filter: filter))
             #expect(color.r > 60, "\(filter): \(color)")
-            if [.nightWarmth, .crt, .sharpen].contains(filter) { continue }
+            if [.nightWarmth, .crt, .sharpen, .fsrSharpen, .fsrUpscale].contains(filter) { continue }
             // Daltonizing moves some of the red into green or blue.
             #expect(color.g > 10 || color.b > 10, "\(filter) didn't change red: \(color)")
         }
@@ -117,6 +117,53 @@ struct Live {
         let tuned = try shoot(FilterSetting(filter: .grayscale, strength: 0), name: "live",
                               then: "$ open(\"\(live.path)\", \"w\").write(\"1.0\")")
         #expect(abs(tuned.r - tuned.g) < 12 && tuned.r < 120, "after tuning live: \(tuned)")
+        // S-031: FSR Upscale draws from the game's resolution: a 640×360 game in a 1920×1080 window keeps a hard edge
+        // narrower than Ren'Py's own bilinear scaling.
+        func edgeWidth(_ setting: FilterSetting?) throws -> Int {
+            let name = "edge-\(setting?.filter.rawValue ?? "none")"
+            let copy = root.appending(path: "play-\(name)")
+            let shot = root.appending(path: "shot-\(name).png")
+            Fixture.game(at: copy, files: [
+                "game/options.rpy": "init -10 python:\n    config.screen_width = 640\n    config.screen_height = 360\n    config.physical_width = 1920\n    config.physical_height = 1080\n",
+                "game/script.rpy": """
+                label start:
+                    scene expression "edge.png"
+                    pause 1.0
+                    $ renpy.screenshot(\"\(shot.path)\")
+                    $ renpy.quit()
+                """])
+            // A picture at the game's size, black on the left half and white on the right: what Ren'Py scales up.
+            var pixels = [UInt8](repeating: 0, count: 640 * 360 * 4)
+            for y in 0..<360 { for x in 320..<640 { for c in 0..<3 { pixels[(y * 640 + x) * 4 + c] = 255 } } }
+            for i in 0..<(640 * 360) { pixels[i * 4 + 3] = 255 }
+            let picture = try #require(CGContext(data: &pixels, width: 640, height: 360, bitsPerComponent: 8, bytesPerRow: 640 * 4,
+                                                 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)?.makeImage())
+            let destination = try #require(CGImageDestinationCreateWithURL(copy.appending(path: "game/edge.png") as CFURL, "public.png" as CFString, 1, nil))
+            CGImageDestinationAddImage(destination, picture, nil)
+            #expect(CGImageDestinationFinalize(destination))
+            try FilterLoader.install(setting, runtime: version, copy: copy)
+            let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "\(name).log"), environment: ["HOME": root.appending(path: "home").path])
+            let process = try plan.makeProcess()
+            try process.run()
+            let deadline = Date().addingTimeInterval(60)
+            while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.2) }
+            let source = try #require(CGImageSourceCreateWithURL(shot as CFURL, nil))
+            let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
+            var row = [UInt8](repeating: 0, count: image.width * 4)
+            let context = try #require(CGContext(data: &row, width: image.width, height: 1, bitsPerComponent: 8, bytesPerRow: image.width * 4,
+                                                 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(image, in: CGRect(x: 0, y: -image.height / 2, width: image.width, height: image.height))
+            // Pixels between dark and light, across the left edge.
+            return stride(from: 0, to: image.width / 2 + image.width / 4, by: 1).filter { row[$0 * 4] > 10 && row[$0 * 4] < 245 }.count
+        }
+        let fsr = try shoot(FilterSetting(filter: .fsrUpscale), name: "fsr")
+        #expect(fsr.r > 200 && fsr.g < 40, "FSR on red: \(fsr)")
+        let sharpened = try shoot(FilterSetting(filter: .fsrSharpen), name: "fsr-sharpen")
+        #expect(sharpened.r > 200 && sharpened.g < 40, "FSR Sharpen on red: \(sharpened)")
+        let plainEdge = try edgeWidth(nil), fsrEdge = try edgeWidth(FilterSetting(filter: .fsrUpscale))
+        print("edge width: plain \(plainEdge), FSR \(fsrEdge)")
+        #expect(plainEdge > 0 && fsrEdge < plainEdge, "FSR edge \(fsrEdge) vs plain \(plainEdge)")
+
         // S-016: a person's own shader runs like a built-in one. Sepia turns pure red brown.
         let brown = try shoot(FilterSetting(custom: "Sepia.glsl"), name: "sepia")
         #expect(brown.r > brown.g && brown.g > brown.b && brown.g > 40, "sepia: \(brown)")

@@ -6,6 +6,8 @@ extension ScreenFilter {
     var title: String {
         switch self {
         case .sharpen: String(localized: "Sharpen")
+        case .fsrSharpen: String(localized: "FSR Sharpen")
+        case .fsrUpscale: String(localized: "FSR Upscale")
         case .crt: String(localized: "CRT")
         case .nightWarmth: String(localized: "Night Warmth")
         case .grayscale: String(localized: "Grayscale")
@@ -32,7 +34,7 @@ struct FilterSection: View {
             })) {
                 Text("None").tag(FilterChoice.none)
                 Divider()
-                ForEach([ScreenFilter.sharpen, .crt, .nightWarmth, .grayscale], id: \.self) { Text($0.title).tag(FilterChoice.builtIn($0)) }
+                ForEach([ScreenFilter.fsrUpscale, .fsrSharpen, .sharpen, .crt, .nightWarmth, .grayscale], id: \.self) { Text($0.title).tag(FilterChoice.builtIn($0)) }
                 Section("Color Blindness") {
                     ForEach([ScreenFilter.protanopia, .deuteranopia, .tritanopia], id: \.self) { Text($0.title).tag(FilterChoice.builtIn($0)) }
                 }
@@ -56,6 +58,10 @@ struct FilterSection: View {
                         model.tuneFilter(game.id, strength: value)
                     }), in: 0...1)
                     .frame(maxWidth: 180)
+                }
+                if setting.custom == nil && setting.filter == .fsrUpscale {
+                    Text("Draws the game at its own size, then upscales it to your screen with AMD FSR 1. Best for games made for 720p or 1080p; text can look a little softer.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
                 if let file = setting.custom, !model.customFilters.contains(where: { $0.file == file }) {
                     Text("This filter's file is gone from RenChan's Filters folder, so the game plays without it.")

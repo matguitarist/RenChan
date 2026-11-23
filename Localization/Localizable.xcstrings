@@ -701,6 +701,16 @@
         }
       }
     },
+    "Draws the game at its own size, then upscales it to your screen with AMD FSR 1. Best for games made for 720p or 1080p; text can look a little softer.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dessine le jeu à sa propre taille, puis l’agrandit à votre écran avec AMD FSR 1. Idéal pour les jeux faits pour 720p ou 1080p ; le texte peut paraître un peu plus doux."
+          }
+        }
+      }
+    },
     "Drop a Ren'Py Game Here": {
       "localizations": {
         "fr": {
@@ -717,6 +727,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Déposez un jeu sur la fenêtre, ou cherchez dans un autre dossier."
+          }
+        }
+      }
+    },
+    "FSR Sharpen": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Netteté FSR"
+          }
+        }
+      }
+    },
+    "FSR Upscale": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agrandissement FSR"
           }
         }
       }
