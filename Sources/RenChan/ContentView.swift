@@ -97,6 +97,7 @@ struct ContentView: View {
     private func page(_ item: SidebarItem) -> some View {
         switch item {
         case .library: LibraryPage()
+        case .discover: DiscoverPage()
         case .runtimes: RuntimesPage()
         case .log:
             LogViewer(model: model.logViewer, options: LogViewerOptions(

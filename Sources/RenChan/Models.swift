@@ -50,6 +50,11 @@ final class AppModel {
     var showBackups: Game.ID?
     var confirmRestore: SaveBackup?
     var confirmUpdate: UpdateRequest?
+    /// Discover (S-028): the search, releases by VNDB id, and the entry whose download page was opened last.
+    var discover = DiscoverState()
+    var releases: [String: [VNDBRelease]] = [:]
+    var releasesLoading: Set<String> = []
+    @ObservationIgnored var cameFromDiscover: (info: VNDBInfo, opened: Date)?
     /// Bumped when backups change on disk, so lists reload.
     var backupRevision = 0
     /// One-line message in an alert.
@@ -183,13 +188,14 @@ final class MenuState: ObservableObject {
 
 /// The sidebar's pages. Snapshot mode walks through every case.
 enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
-    case library, runtimes, log
+    case library, discover, runtimes, log
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .library: String(localized: "Library")
+        case .discover: String(localized: "Discover")
         case .runtimes: String(localized: "Runtimes")
         case .log: String(localized: "Log")
         }
@@ -198,6 +204,7 @@ enum SidebarItem: String, CaseIterable, Identifiable, Hashable {
     var symbol: String {
         switch self {
         case .library: "books.vertical"
+        case .discover: "sparkle.magnifyingglass"
         case .runtimes: "shippingbox"
         case .log: "list.bullet.rectangle"
         }

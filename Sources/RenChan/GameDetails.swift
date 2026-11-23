@@ -74,9 +74,24 @@ struct GameDetails: View {
                     Button("Show in Finder") { model.showInFinder(game.id) }
                 }
                 LabeledContent("New version") {
-                    Button("Update…") { model.chooseUpdate(game.id) }
-                        .disabled(model.playing.contains(game.id))
-                        .help("Point this game at its new version; playtime, labels, notes and backups stay (Shift-Command-U)")
+                    HStack(spacing: Space.sm) {
+                        if let info = game.vndb {
+                            let links = model.downloadLinks(info.id)
+                            Menu("Get It") {
+                                ForEach(links, id: \.url) { link in
+                                    Button(link.label) { model.openDownloadPage(link.url, for: info) }
+                                }
+                                if links.isEmpty {
+                                    Text(model.releasesLoading.contains(info.id) ? String(localized: "Loading…") : String(localized: "No download pages on VNDB"))
+                                }
+                            }
+                            .fixedSize()
+                            .help("Open the page where the new version is downloaded")
+                        }
+                        Button("Update…") { model.chooseUpdate(game.id) }
+                            .disabled(model.playing.contains(game.id))
+                            .help("Point this game at its new version; playtime, labels, notes and backups stay (Shift-Command-U)")
+                    }
                 }
             }
             Section {
@@ -84,6 +99,7 @@ struct GameDetails: View {
             }
         }
         .formStyle(.grouped)
+        .task(id: game.vndb?.id) { if let id = game.vndb?.id { model.loadReleases(id) } }
     }
 
     @ViewBuilder

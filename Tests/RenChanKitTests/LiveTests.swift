@@ -39,6 +39,15 @@ struct Live {
         #expect(((try? Data(contentsOf: cover))?.count ?? 0) > 1000)
     }
 
+    /// S-028: Discover finds Eternum among Ren'Py games, with an official release and its store links.
+    @Test func discoversARenPyGameAndItsDownloadPages() async throws {
+        let found = try await VNDB.search("Eternum", renpyOnly: true)
+        #expect(found.first?.id == "v31929")
+        let releases = try await VNDB.releases("v31929")
+        #expect(releases.first?.official == true && releases.first?.links.isEmpty == false)
+        #expect(try await !VNDB.search("", renpyOnly: true).isEmpty)
+    }
+
     @Test func playsARealGameFromAClone() async throws {
         let game = ProcessInfo.processInfo.environment["RENCHAN_LIVE_GAME"].map { URL(fileURLWithPath: $0) }
         let base = try #require(game, "set RENCHAN_LIVE_GAME to a game's base folder")

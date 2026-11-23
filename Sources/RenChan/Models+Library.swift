@@ -46,6 +46,7 @@ extension AppModel {
         games.append(game)
         saveLibrary()
         selection = game.id
+        linkIfCameFromDiscover(game.id)
         let version = detected.version.map { "Ren'Py \($0)" } ?? "an unknown Ren'Py"
         log.post(.info, "Added \(game.title) (\(version), \(detected.pythonLine?.rawValue ?? "unknown Python"), from \(detected.source?.rawValue ?? "nothing"))", source: "Library")
         return game

@@ -531,12 +531,32 @@
         }
       }
     },
+    "Discover": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Découvrir"
+          }
+        }
+      }
+    },
     "Done": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Terminé"
+          }
+        }
+      }
+    },
+    "Download it from one of these pages, then drop it on RenChan. It gets these details when you add it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Téléchargez-le depuis l’une de ces pages, puis déposez-le sur RenChan. Il reçoit ces détails quand vous l’ajoutez."
           }
         }
       }
@@ -567,6 +587,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Déposez un jeu Ren’Py ici"
+          }
+        }
+      }
+    },
+    "Fan release": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version de fans"
           }
         }
       }
@@ -661,6 +691,16 @@
         }
       }
     },
+    "Free": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratuit"
+          }
+        }
+      }
+    },
     "From %@": {
       "localizations": {
         "fr": {
@@ -711,6 +751,16 @@
         }
       }
     },
+    "Get It": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtenir"
+          }
+        }
+      }
+    },
     "Get the cover, developer, release date and description from the Visual Novel Database.": {
       "localizations": {
         "fr": {
@@ -727,6 +777,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Grille"
+          }
+        }
+      }
+    },
+    "In Library": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dans la bibliothèque"
           }
         }
       }
@@ -827,6 +887,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Liste"
+          }
+        }
+      }
+    },
+    "Loading…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chargement…"
           }
         }
       }
@@ -1011,6 +1081,16 @@
         }
       }
     },
+    "No download pages on VNDB": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune page de téléchargement sur VNDB"
+          }
+        }
+      }
+    },
     "No games on VNDB match “%@”. Try another title.": {
       "localizations": {
         "fr": {
@@ -1101,12 +1181,32 @@
         }
       }
     },
+    "Open the page where the new version is downloaded": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir la page où télécharger la nouvelle version"
+          }
+        }
+      }
+    },
     "Overview": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Aperçu"
+          }
+        }
+      }
+    },
+    "Paid": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Payant"
           }
         }
       }
@@ -1177,6 +1277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Faire jouer la nouvelle version de ce jeu ; le temps de jeu, les étiquettes, les notes et les copies sont conservés (Maj-Commande-U)"
+          }
+        }
+      }
+    },
+    "Popular on VNDB": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Populaires sur VNDB"
           }
         }
       }
@@ -1397,6 +1507,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ren’Py %1$@ n’a pas pu être téléchargé : %2$@"
+          }
+        }
+      }
+    },
+    "Ren'Py Only": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ren’Py seulement"
           }
         }
       }
@@ -1711,6 +1831,16 @@
         }
       }
     },
+    "Search VNDB": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher sur VNDB"
+          }
+        }
+      }
+    },
     "Search VNDB for this game (Shift-Command-D)": {
       "localizations": {
         "fr": {
@@ -1741,6 +1871,16 @@
         }
       }
     },
+    "Select a game to see where to get it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sélectionnez un jeu pour voir où l’obtenir."
+          }
+        }
+      }
+    },
     "Show games as a grid (Command-1) or a list (Command-2)": {
       "localizations": {
         "fr": {
@@ -1757,6 +1897,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher dans le Finder"
+          }
+        }
+      }
+    },
+    "Show in Library": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher dans la bibliothèque"
+          }
+        }
+      }
+    },
+    "Show only games with a Ren'Py release": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N’afficher que les jeux avec une version Ren’Py"
           }
         }
       }
@@ -1961,6 +2121,16 @@
         }
       }
     },
+    "Try Again": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réessayer"
+          }
+        }
+      }
+    },
     "Try Ren'Py %@": {
       "localizations": {
         "fr": {
@@ -2081,12 +2251,32 @@
         }
       }
     },
+    "VNDB Can't Be Reached": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNDB est injoignable"
+          }
+        }
+      }
+    },
     "VNDB can't be reached. Check your connection and try again.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "VNDB est injoignable. Vérifiez votre connexion et réessayez."
+          }
+        }
+      }
+    },
+    "VNDB lists no download pages for this game.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNDB n’indique aucune page de téléchargement pour ce jeu."
           }
         }
       }
@@ -2127,6 +2317,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce que fait RenChan s’affiche ici : jeux ajoutés, versions de Ren’Py téléchargées, parties lancées."
+          }
+        }
+      }
+    },
+    "Where to Get It": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Où l’obtenir"
           }
         }
       }

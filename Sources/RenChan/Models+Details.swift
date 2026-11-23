@@ -64,7 +64,7 @@ extension AppModel {
         }
     }
 
-    private func link(_ id: Game.ID, to info: VNDBInfo) {
+    func link(_ id: Game.ID, to info: VNDBInfo) {
         var wantsCover = false
         update(id) { wantsCover = VNDB.apply(info, to: &$0) }
         log.post(.info, "Linked \(game(id)?.title ?? "") to VNDB \(info.id) (\(info.title))", source: "VNDB")

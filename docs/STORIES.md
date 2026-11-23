@@ -155,6 +155,31 @@ Acceptance:
 - [self] A folder update and a zip update; the old version's files are untouched and RenChan's copy of an old zip is removed.
 Status: done
 
+### S-028 Discover games on VNDB
+As the user, I search VNDB for Ren'Py games, see where each one is sold or downloaded, and the game I add after visiting one of those pages gets its VNDB details.
+Screens: discover
+UX:
+- Flow: sidebar Discover → popular Ren'Py games until I type → search (Return) in the toolbar field; "Ren'Py Only" toggle → pick a game → inspector "Where to Get It" lists releases (official first) with buttons such as Itch.io, Steam, Patreon → the page opens in the browser → I download and drop the game on RenChan → it is linked to that entry.
+- Surface: a sidebar page (a place to come back to) with the inspector.
+- States: loading spinner; offline "VNDB Can't Be Reached" with Try Again; no results; a game already in the library shows "In Library" and "Show in Library".
+- Words: "Discover" / « Découvrir », "Where to Get It" / « Où l’obtenir », "Fan release" / « Version de fans ».
+- Notes: VNDB hosts no games, so RenChan opens the store pages; itch.io and Steam need the person's own account.
+Acceptance:
+- [unit] A Ren'Py-only search, popular games when the search is empty, official releases first, title matching for the added game.
+- [self] Only a game with a matching title, added after opening a page, is linked.
+- [live] Finds Eternum among Ren'Py games with an official release and its links.
+Status: done
+
+### S-029 Get a game's new version
+As the user, from a game linked to VNDB, I open the page where its new version is downloaded, then update it.
+Screens: game-details
+UX:
+- Flow: inspector Files › New version › "Get It" menu (official download pages) → browser → Update… with the downloaded file (S-013).
+- Words: "Get It" / « Obtenir ».
+Acceptance:
+- [self] Get It lists official pages only, each once.
+Status: done
+
 ## M3 Screen filters (0.3.0)
 
 ### S-014 Turn on a filter

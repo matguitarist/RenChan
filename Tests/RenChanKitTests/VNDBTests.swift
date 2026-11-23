@@ -25,6 +25,12 @@ let sampleAnswer = """
     #expect(found[0].pageURL.absoluteString == "https://vndb.org/v945")
 }
 
+@Test func aReleaseDateShowsAsTheSameDay() throws {
+    let date = try #require(VNDBInfo(id: "v1", title: "A", released: "2025-08-14").releaseDate)
+    let day = Calendar.current.dateComponents([.year, .month, .day], from: date)
+    #expect(day.year == 2025 && day.month == 8 && day.day == 14)
+}
+
 @Test func aManualCoverIsKeptOnRefresh() throws {
     let info = try #require(try VNDB.parse(Data(sampleAnswer.utf8)).first)
     var game = Game(title: "KS", sourcePath: "/g", kind: .folder, basePath: "/g")

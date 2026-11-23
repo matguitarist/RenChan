@@ -217,6 +217,21 @@ enum SelfTest {
                   "\(now?.sourcePath ?? "nil") \(now?.basePath ?? "nil") old \(oldBase.path) \(model.notice ?? "")")
         }
 
+        // S-028 Discover: a game added after opening its download page gets that VNDB entry, and only that game
+        let starlit = VNDBInfo(id: "v90001", title: "Starlit Harbor")
+        model.cameFromDiscover = (starlit, .now)
+        let other = model.addFolder(Fixtures.game("Moon_Garden-1.0-pc", in: root, files: [:]))
+        check("S-028 a game with another title isn't linked", other.map { model.game($0.id)?.vndb == nil } == true)
+        let downloaded = model.addFolder(Fixtures.game("Starlit_Harbor-1.2-pc", in: root, files: [:]))
+        check("S-028 the game added after Discover is linked to its VNDB entry",
+              downloaded.map { model.game($0.id)?.vndb?.id == "v90001" } == true && model.cameFromDiscover == nil)
+        check("S-028 Discover sees it in the library", model.libraryGame(vndb: "v90001")?.title == "Starlit Harbor 1.2")
+        model.releases["v90001"] = [VNDBRelease(id: "r1", title: "Starlit Harbor", official: true,
+                                                links: [VNDBRelease.Link(label: "Itch.io", url: URL(string: "https://example.itch.io/a")!)]),
+                                    VNDBRelease(id: "r2", title: "Fan", official: false,
+                                                links: [VNDBRelease.Link(label: "Fan site", url: URL(string: "https://example.org/fan")!)])]
+        check("S-029 Get It lists the official download pages only", model.downloadLinks("v90001").map(\.label) == ["Itch.io"])
+
         // S-008 Remove a game
         model.remove(first.id)
         check("removing deletes the working copy and keeps the original and saves",

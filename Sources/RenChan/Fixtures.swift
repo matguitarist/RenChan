@@ -98,6 +98,24 @@ enum SeedData {
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -86400 * 6))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforeRestore, at: Date(timeIntervalSinceNow: -86400 * 2))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -7200))
+            // Discover (S-028) without the network: a few results and their releases.
+            let links = { (pairs: [(String, String)]) in pairs.compactMap { pair in URL(string: pair.1).map { VNDBRelease.Link(label: pair.0, url: $0) } } }
+            model.discover = DiscoverState(results: [
+                VNDBInfo(id: "v90001", title: "Starlit Harbor", developer: "Lantern Works", released: "2025-08-14",
+                         description: "A lighthouse keeper's daughter, a missing ship, and one summer to find out what happened."),
+                VNDBInfo(id: "v90002", title: "Paper Cranes", developer: "Fold Studio", released: "2024-03-02"),
+                VNDBInfo(id: "v90003", title: "Night Train to Aoi", developer: "Kumo Kumo", released: "2026-01-10"),
+                VNDBInfo(id: "v90004", title: "The Bakery on Fifth", developer: "Small Oven", released: "2023-11-30"),
+                VNDBInfo(id: "v3625", title: "The Question", developer: "ATP Projects", released: "2006-12-03"),
+            ], selection: "v90001", searched: true)
+            model.releases["v90001"] = [
+                VNDBRelease(id: "r1", title: "Starlit Harbor [v1.2]", released: "2026-02-01", platforms: ["win", "mac", "lin"], freeware: false,
+                            links: links([("Itch.io", "https://example.itch.io/starlit-harbor"), ("Steam", "https://store.steampowered.com/app/1"), ("Patreon", "https://www.patreon.com/example")])),
+                VNDBRelease(id: "r2", title: "Starlit Harbor (French)", released: "2026-04-11", platforms: ["win"], freeware: true, official: false,
+                            links: links([("Official website", "https://example.org/fr")])),
+            ]
+            model.releases["v3625"] = [VNDBRelease(id: "r3", title: "The Question", released: "2006-12-03", platforms: ["win", "mac", "lin"],
+                                                   freeware: true, links: links([("Official website", "https://www.renpy.org")]))]
             model.selection = first.id
         }
         model.runtimes = model.runtimeStore.installed()
