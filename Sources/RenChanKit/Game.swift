@@ -28,6 +28,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var lastPlayed: Date?
     /// A runtime picked by hand after a failure ("7.4.11"); nil uses RuntimeCatalog's choice.
     public var runtimeOverride: String?
+    /// Seconds the game has run from RenChan, summed over every session (S-009).
+    public var playtime: TimeInterval = 0
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
                 version: RenPyVersion? = nil, pythonLine: PythonLine? = nil, versionSource: VersionSource? = nil,
@@ -44,6 +46,24 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         self.added = added
         self.lastPlayed = lastPlayed
         self.runtimeOverride = runtimeOverride
+    }
+
+    public init(from decoder: any Decoder) throws {
+        // Fields added after 0.1.0 have defaults, so an older library.json still opens.
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        sourcePath = try c.decode(String.self, forKey: .sourcePath)
+        kind = try c.decode(SourceKind.self, forKey: .kind)
+        basePath = try c.decode(String.self, forKey: .basePath)
+        version = try c.decodeIfPresent(RenPyVersion.self, forKey: .version)
+        pythonLine = try c.decodeIfPresent(PythonLine.self, forKey: .pythonLine)
+        versionSource = try c.decodeIfPresent(VersionSource.self, forKey: .versionSource)
+        saveDirectory = try c.decodeIfPresent(String.self, forKey: .saveDirectory)
+        added = try c.decode(Date.self, forKey: .added)
+        lastPlayed = try c.decodeIfPresent(Date.self, forKey: .lastPlayed)
+        runtimeOverride = try c.decodeIfPresent(String.self, forKey: .runtimeOverride)
+        playtime = try c.decodeIfPresent(TimeInterval.self, forKey: .playtime) ?? 0
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

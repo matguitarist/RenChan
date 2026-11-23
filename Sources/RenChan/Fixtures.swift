@@ -64,7 +64,8 @@ enum SeedData {
             model.addFolder(Fixtures.game(folder, in: root, files: all))
         }
         if let first = model.games.first {
-            model.update(first.id) { $0.lastPlayed = Date(timeIntervalSinceNow: -3600) }
+            model.update(first.id) { $0.lastPlayed = Date(timeIntervalSinceNow: -3600); $0.playtime = 3 * 3600 + 20 * 60 }
+            if model.games.count > 2 { model.update(model.games[2].id) { $0.lastPlayed = Date(timeIntervalSinceNow: -86400 * 3); $0.playtime = 47 * 60 } }
             model.selection = first.id
         }
         model.runtimes = model.runtimeStore.installed()

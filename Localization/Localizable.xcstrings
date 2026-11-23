@@ -91,6 +91,16 @@
         }
       }
     },
+    "Activity": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activité"
+          }
+        }
+      }
+    },
     "Add": {
       "localizations": {
         "fr": {
@@ -401,6 +411,16 @@
         }
       }
     },
+    "Less than a minute": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moins d’une minute"
+          }
+        }
+      }
+    },
     "Library": {
       "localizations": {
         "fr": {
@@ -581,12 +601,32 @@
         }
       }
     },
+    "Playing now": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En cours"
+          }
+        }
+      }
+    },
     "Plays on": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Tourne sur"
+          }
+        }
+      }
+    },
+    "Playtime": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temps de jeu"
           }
         }
       }

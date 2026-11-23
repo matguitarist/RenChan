@@ -204,10 +204,10 @@ struct LibraryList: View {
                 .width(min: 70, ideal: 90)
             TableColumn("Date Added") { game in Text(game.added, format: .dateTime.day().month().year()) }
                 .width(min: 90, ideal: 110)
-            TableColumn("Last Played") { game in
-                Text(game.lastPlayed.map { $0.formatted(.relative(presentation: .named)) } ?? String(localized: "Never"))
-            }
-            .width(min: 90, ideal: 120)
+            TableColumn("Last Played") { game in Text(game.lastPlayedText) }
+                .width(min: 90, ideal: 120)
+            TableColumn("Playtime") { game in Text(game.playtimeText) }
+                .width(min: 80, ideal: 100)
         }
         .contextMenu(forSelectionType: Game.ID.self) { ids in
             if let id = ids.first, let game = model.game(id) { GameActions(game: game) }
@@ -247,6 +247,19 @@ extension PythonLine {
 }
 
 extension Game {
+    /// "3 hr, 20 min", "Less than a minute", or "Never" for a game never played.
+    var playtimeText: String {
+        if playtime < 60 { return lastPlayed == nil ? String(localized: "Never") : String(localized: "Less than a minute") }
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = playtime >= 3600 ? [.hour, .minute] : [.minute]
+        formatter.unitsStyle = .short
+        return formatter.string(from: playtime) ?? ""
+    }
+
+    var lastPlayedText: String {
+        lastPlayed.map { $0.formatted(.relative(presentation: .named)) } ?? String(localized: "Never")
+    }
+
     /// "Ren'Py 8.6.1 · Python 3", for cards and the inspector.
     var versionLine: String {
         switch (version, pythonLine) {

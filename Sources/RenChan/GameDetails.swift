@@ -19,6 +19,16 @@ struct GameDetails: View {
                     playButton
                 }
             }
+            Section("Activity") {
+                LabeledContent("Playtime", value: game.playtimeText)
+                LabeledContent("Last Played") {
+                    if model.playing.contains(game.id) {
+                        Text("Playing now").foregroundStyle(Palette.accentText)
+                    } else {
+                        Text(game.lastPlayedText)
+                    }
+                }
+            }
             Section("Ren'Py") {
                 LabeledContent("Version") {
                     VStack(alignment: .trailing, spacing: 2) {

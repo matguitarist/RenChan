@@ -60,6 +60,7 @@ final class AppModel {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
         log.post(.info, "RenChan \(version) started", source: "App")
         loadLibrary()
+        recoverSessions()
     }
 
     var runtimeStore: RuntimeStore { RuntimeStore(folder: Store.runtimesFolder) }
@@ -79,6 +80,7 @@ final class AppModel {
         case .title: return found.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
         case .added: return found.sorted { $0.added > $1.added }
         case .lastPlayed: return found.sorted { ($0.lastPlayed ?? .distantPast) > ($1.lastPlayed ?? .distantPast) }
+        case .playtime: return found.sorted { $0.playtime > $1.playtime }
         }
     }
 
@@ -113,13 +115,14 @@ final class AppModel {
 }
 
 enum LibrarySort: String, CaseIterable, Identifiable {
-    case title, added, lastPlayed
+    case title, added, lastPlayed, playtime
     var id: String { rawValue }
     var title: String {
         switch self {
         case .title: String(localized: "Title")
         case .added: String(localized: "Date Added")
         case .lastPlayed: String(localized: "Last Played")
+        case .playtime: String(localized: "Playtime")
         }
     }
 }

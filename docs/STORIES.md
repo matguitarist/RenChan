@@ -89,23 +89,54 @@ Status: done
 
 ### S-009 Playtime and last played
 As the user, I see how long I've played each game and when I last played it.
+Screens: game-details, library-list
+UX:
+- Flow: Play → the game quits, even with an error → the inspector's Playtime and Last Played update; the list has a Playtime column; Sort › Playtime.
+- Surface: inline, in a "Play" section of the inspector and a list column (values on screen, nothing to open).
+- States: never played "Never"; while playing "Playing now"; under a minute "Less than a minute". If RenChan quits while a game runs, the time counts up to the game's last log line.
+- Words: "Playtime" / « Temps de jeu », "Last Played" / « Dernière partie », "Never" / « Jamais », "Playing now" / « En cours ».
+- Access: VoiceOver reads "Playtime, 3 hours, 20 minutes".
 Acceptance:
 - [unit] Time counts from launch to quit; a crash still records it.
-Status: todo
+Status: done
 
 ### S-010 Details from VNDB
 As the user, I match a game to VNDB and get its cover, developer, release date and description, and my own edits stay when I refresh.
+Screens: game-details, vndb-search
+UX:
+- Flow: inspector "Find on VNDB…" (or Game › Find on VNDB…, ⇧⌘D) → sheet "Find on VNDB" with the title already searched → pick a result → "Use This Game" (Return) → cover, developer, release date and description fill in. Escape cancels and changes nothing.
+- Matched: the Details section shows developer, released, description (four lines, "More" opens the rest), "Open on VNDB", and a … menu with "Refresh from VNDB" and "Unlink from VNDB".
+- Cover: right-click › "Choose Cover…" picks an image; "Use the Game's Own Cover" goes back. A chosen cover is never replaced by a refresh.
+- Surface: a sheet (one short task that finishes or cancels); details inline in the inspector.
+- States: searching shows a spinner in the list; no results "No games on VNDB match “…”." with the field to try another title; offline "VNDB can't be reached. Check your connection and try again." inline under the field.
+- Words: "Find on VNDB…" / « Chercher sur VNDB… », "Use This Game" / « Utiliser ce jeu », "Refresh from VNDB" / « Actualiser depuis VNDB ».
+- Access: Return picks the selected result, arrows move in the list; VoiceOver reads title, developer and year per row.
 Acceptance:
 - [unit] A title search returns candidates; a manual cover is kept on refresh.
 - [live] Matches three known games.
-Status: todo
+Status: doing
 
 ### S-011 Labels, rating and notes
 As the user, I add labels, a rating and notes to a game, and filter the library by label, rating, or status (not started, playing, finished).
+Screens: game-details, library-filtered
+UX:
+- Flow: inspector "My Game" section → Status picker (Not Started, Playing, Finished), five stars, labels (type and Return adds one, × removes it), notes (saved as you type). Playing a game moves Not Started to Playing.
+- Filter: toolbar Filter menu (⌥⌘F) with Status, Rating ("3 Stars or More"…) and each label; the button fills when a filter is on; "Clear Filters" in the menu and in the empty state.
+- Surface: inline in the inspector; a toolbar menu for the filter (a few choices tied to one control).
+- States: no labels "No labels"; nothing matches "No Games Match These Filters" with "Clear Filters".
+- Words: "Status" / « Statut », "Not Started" / « Pas commencé », "Playing" / « En cours », "Finished" / « Terminé », "Rating" / « Note », "Labels" / « Étiquettes », "Notes" / « Notes ».
+- Access: stars are one control with a value ("3 stars") and increment/decrement; labels are buttons "Remove label Romance".
 Status: todo
 
 ### S-012 Back up saves
 As the user, I back up a game's saves with one click, see past backups by date, and restore one.
+Screens: game-details, save-backups
+UX:
+- Flow: inspector "Back Up Saves" (or Game › Back Up Saves, ⌥⌘B) → a backup with today's date, the inspector says "Last backup: just now". "Backups…" (Game › Save Backups…) → sheet "Save Backups" listing each backup with its date, number of saves and size → "Restore…" asks "Restore the saves from <date>?" with "Restore" → RenChan backs up the current saves first, then restores. Move to Trash removes a backup (it can come back from the Trash).
+- Surface: a button inline; the list in a sheet; a confirmation dialog for Restore.
+- States: no saves folder yet "Found the first time you play" and the buttons off; no backups "No backups yet" with "Back Up Now"; while the game plays, Restore is off with "Quit the game to restore".
+- Words: "Back Up Saves" / « Sauvegarder les parties », "Save Backups" / « Copies des parties », "Restore…" / « Restaurer… », "Before restore" / « Avant restauration ».
+- Access: the list is a Table; Return on a row asks to restore.
 Acceptance:
 - [unit] A restore keeps a backup of the saves it replaces.
 Status: todo

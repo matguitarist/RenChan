@@ -59,6 +59,7 @@ extension AppModel {
             try process.run()
             processes[game.id] = process
             playing.insert(game.id)
+            PlaySession.begin(at: started, file: Store.sessionFile(game.id))
             update(game.id) { $0.lastPlayed = started }
             let rosetta = runtime.isUniversal ? "" : " under Rosetta"
             log.post(.info, "Started \(game.title) on Ren'Py \(runtime.version)\(rosetta)", source: "Play")
@@ -71,6 +72,8 @@ extension AppModel {
     private func finished(_ id: Game.ID, status: Int32, plan: LaunchPlan, started: Date) {
         processes[id] = nil
         playing.remove(id)
+        let seconds = PlaySession.end(at: .now, file: Store.sessionFile(id))
+        update(id) { $0.playtime += seconds }
         guard let game = game(id) else { return }
         if game.saveDirectory == nil, let found = SaveFolder.changed(since: started, root: Store.saveRoot).first {
             update(id) { $0.saveDirectory = found }
@@ -88,6 +91,16 @@ extension AppModel {
                                     text: result.traceback ?? result.outputTail,
                                     tracebackFile: result.traceback == nil ? plan.outputFile : file,
                                     exactVersion: RuntimeCatalog.exactAlternative(version: game.version, chosen: plan.runtime.version))
+    }
+
+    /// Runs RenChan didn't see end (it quit while a game played) count up to the game's last log line.
+    func recoverSessions() {
+        for game in games {
+            guard let seconds = PlaySession.recover(file: Store.sessionFile(game.id),
+                                                    lastActivity: Store.gameFolder(game.id).appending(path: "run.log")) else { continue }
+            update(game.id) { $0.playtime += seconds }
+            log.post(.info, "Counted \(Int(seconds / 60)) min of \(game.title) played while RenChan was closed", source: "Play")
+        }
     }
 
     func stop(_ id: Game.ID) {

@@ -69,7 +69,7 @@ enum SelfTest {
         let notAGame = root.appending(path: "Holiday Photos", directoryHint: .isDirectory)
         try? FileManager.default.createDirectory(at: notAGame, withIntermediateDirectories: true)
         model.addFolder(notAGame)
-        check("a folder that isn't a game is refused, saying why", model.games.count == 1 && model.notice?.contains("game folder") == true)
+        check("a folder that isn't a game is refused, saying why", model.games.count == 1 && model.notice == LocateError.noGameFolder.message, model.notice ?? "no notice")
         model.notice = nil
 
         let app = root.appending(path: "Old Letters.app/Contents/Resources/autorun", directoryHint: .isDirectory)
@@ -113,6 +113,8 @@ enum SelfTest {
         check("the game ran from its working copy", FileManager.default.fileExists(atPath: copy.appending(path: "game/script.rpyc").path))
         check("the original is unchanged", digest(question) == before && !FileManager.default.fileExists(atPath: question.appending(path: "game/script.rpyc").path))
         check("the run was recorded", model.game(first.id)?.lastPlayed != nil && model.launchError == nil)
+        check("S-009 playtime counts the run and the session file is gone",
+              (model.game(first.id)?.playtime ?? 0) > 0 && !FileManager.default.fileExists(atPath: Store.sessionFile(first.id).path))
         check("saves are found under the test home, never the real one",
               model.saveFolder(first)?.path.hasPrefix(Store.renpyHome.path) == true && model.saveCount(first) == 1)
 
@@ -126,6 +128,7 @@ enum SelfTest {
             await waitUntilStopped(model, crash.id)
             check("a crash shows Ren'Py's traceback with file and line", model.launchError?.text.contains("game/script.rpy\", line 2") == true)
             check("the exact version is offered", model.launchError?.exactVersion == "7.4.11")
+            check("S-009 a crash still counts its playtime", (model.game(crash.id)?.playtime ?? 0) > 0)
             model.launchError = nil
         }
 

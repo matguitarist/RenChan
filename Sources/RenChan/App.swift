@@ -136,6 +136,8 @@ enum Store {
     /// One folder per game: play/ (the working copy), source/ (an unpacked zip), run.log.
     static func gameFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Games/\(id.uuidString)", directoryHint: .isDirectory) }
     static func workingCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play", directoryHint: .isDirectory) }
+    /// Written while a game plays, for its playtime (S-009).
+    static func sessionFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "session.json") }
 
     /// The home Ren'Py writes ~/Library/RenPy under: the real one, or a folder in /tmp in a test run.
     static var renpyHome: URL {
