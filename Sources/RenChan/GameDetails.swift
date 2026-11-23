@@ -15,12 +15,11 @@ struct GameDetails: View {
                         .fixedSize(horizontal: false, vertical: true)
                     Cover(game: game)
                         .aspectRatio(Cover.ratio, contentMode: .fit)
-                        .frame(maxWidth: 240)
+                        .frame(width: 180)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
-                    HStack(spacing: Space.md) {
-                        playButton
-                        Text(game.versionLine).font(.caption).foregroundStyle(.secondary)
-                    }
+                        .frame(maxWidth: .infinity)
+                    playButton
+                        .frame(maxWidth: .infinity)
                 }
             }
             MyGameSection(game: game)
