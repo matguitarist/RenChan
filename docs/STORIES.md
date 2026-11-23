@@ -238,10 +238,11 @@ Status: done
 As the user, I pick "FSR" as a filter and a game made for 720p looks sharp in fullscreen: AMD FidelityFX FSR 1 (MIT), RCAS sharpening always, EASU upscaling when Ren'Py can hand over the game's own resolution. MetalFX is out: Ren'Py draws with OpenGL in its own process.
 Acceptance:
 - [live] FSR draws on 7.8.7 and 8.6.1; a hard edge stays sharper than with bilinear scaling (4 px of ramp against 6).
+- [live] FSR draws on the game's images (the master layer) only: an edge in a screen stays as hard as without FSR (0 px of ramp).
 - [unit] FSR Upscale is two passes, the first at the game's resolution (`gl_drawable_resolution=False`).
 UX:
 - Flow: Screen Filter › Filter › FSR Upscale or FSR Sharpen → Strength sets RCAS sharpness, live.
-- States: FSR Upscale explains itself under the slider: game drawn at its own size, then upscaled; text can look softer.
+- States: FSR Upscale explains itself under the slider: the game's pictures are upscaled from its own size; text and menus stay sharp.
 - Words: "FSR Upscale" / « Agrandissement FSR », "FSR Sharpen" / « Netteté FSR ». License in THIRD-PARTY.md.
 Status: done
 

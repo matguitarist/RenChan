@@ -59,7 +59,7 @@ struct FilterSection: View {
                     .frame(maxWidth: 180)
                 }
                 if setting.custom == nil && setting.filter == .fsrUpscale {
-                    Text("Draws the game at its own size, then upscales it to your screen with AMD FSR 1. Best for games made for 720p or 1080p; text can look a little softer.")
+                    Text("Upscales the game's pictures from its own size to your screen with AMD FSR 1; text and menus stay as sharp as without it. Best for games made for 720p or 1080p.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 if let file = setting.custom, !model.customFilters.contains(where: { $0.file == file }) {

@@ -18,17 +18,20 @@ import Testing
     let live = URL(fileURLWithPath: "/tmp/copy/renchan_filter.json"), error = URL(fileURLWithPath: "/tmp/copy/renchan_filter_error.txt")
     let modern = FilterLoader.source(tier: .layerTransforms, liveFile: live, errorFile: error)
     #expect(modern.contains("config.layer_transforms[None]") && modern.contains(live.path) && modern.contains(error.path))
-    #expect(modern.contains("renchan_filter_slot(0)") && modern.contains("renchan_filter_slot(1)"))
-    #expect(modern.contains("init 999 python:") && modern.contains("except Exception") && modern.contains("shader_cache.get"))
+    #expect(modern.contains("renchan_filter_slot(0, None)") && modern.contains("renchan_filter_slot(1, \"master\")"))
+    #expect(modern.contains(#"config.layer_transforms["master"]"#))
+    #expect(modern.contains("init 999 python:") && modern.contains("except Exception") && modern.contains("draw.shader_cache"))
+    // Ren'Py draws a filter with renpy.texture, the vertex shader that writes v_tex_coord; checking it alone fails.
+    #expect(modern.contains(#"cache.get((name, "renpy.texture"))"#))
     let older = FilterLoader.source(tier: .camera, liveFile: live, errorFile: error)
-    #expect(older.contains("camera=True") && !older.contains("layer_transforms"))
+    #expect(older.contains("camera=True") && !older.contains("layer_transforms") && older.contains(#"renchan_filter_slot(0, "*")"#))
     // No f-strings or other Python 3 only syntax: 7.x runs Python 2.
     #expect(!modern.contains("f\"") && !older.contains("f\""))
     for filter in ScreenFilter.allCases { #expect(!filter.fragment.isEmpty) }
 }
 
 private struct LiveState: Decodable {
-    struct Pass: Decodable { var functions: String; var fragment: String; var game: Bool }
+    struct Pass: Decodable { var functions: String; var fragment: String; var game: Bool; var layer: String? }
     var strength: Double; var name: String; var key: String; var passes: [Pass]
 }
 
@@ -53,6 +56,10 @@ private func liveState(_ copy: URL) throws -> LiveState {
     FilterLoader.update(FilterSetting(filter: .fsrUpscale), custom: [], copy: copy)
     state = try liveState(copy)
     #expect(state.key != crtKey && state.passes.map(\.game) == [true, false] && !state.passes[0].functions.isEmpty)
+    // FSR draws on the game's images only, so Ren'Py's own text stays at the screen's resolution; CRT covers everything.
+    #expect(state.passes.map(\.layer) == ["master", "master"])
+    FilterLoader.update(FilterSetting(filter: .crt), custom: [], copy: copy)
+    #expect(try liveState(copy).passes.map(\.layer) == [nil])
     // None keeps the loader, drawing nothing, so a filter can be picked again while the game runs.
     try "compiled".write(to: compiled, atomically: true, encoding: .utf8)
     #expect(try FilterLoader.install(nil, runtime: "8.6.1", copy: copy) == .layerTransforms)

@@ -70,11 +70,15 @@ public struct FilterPass: Hashable, Sendable {
     public var fragment: String
     /// Draws from the game's own resolution (config.screen_width) instead of the screen's: what an upscaler needs.
     public var gameResolution = false
+    /// Draws on the game's images only (the master layer), so text, the dialogue box and menus stay as Ren'Py drew
+    /// them at the screen's resolution. On the camera tier every filter is on the master layer anyway.
+    public var imagesOnly = false
 
-    public init(functions: String = "", fragment: String, gameResolution: Bool = false) {
+    public init(functions: String = "", fragment: String, gameResolution: Bool = false, imagesOnly: Bool = false) {
         self.functions = functions
         self.fragment = fragment
         self.gameResolution = gameResolution
+        self.imagesOnly = imagesOnly
     }
 }
 
@@ -158,7 +162,7 @@ enum FSR {
     renchan_easu_tap(aC, aW, vec2(1.0, 2.0) - pp, dir, len2, lob, clp, oC);
     renchan_easu_tap(aC, aW, vec2(0.0, 2.0) - pp, dir, len2, lob, clp, nC);
     c = clamp(aC / max(aW, 1e-5), min(min(fC, gC), min(jC, kC)), max(max(fC, gC), max(jC, kC)));
-    """, gameResolution: true)
+    """, gameResolution: true, imagesOnly: true)
 
     /// Strength 1 is AMD's sharpest setting.
     static let rcas = FilterPass(fragment: """
@@ -173,7 +177,7 @@ enum FSR {
     vec3 lobeRGB = max(-hitMin, hitMax);
     float lobe = max(-0.1875, min(max(lobeRGB.r, max(lobeRGB.g, lobeRGB.b)), 0.0)) * s;
     c = clamp((lobe * (rb + rd + rf + rh) + c) / (4.0 * lobe + 1.0), 0.0, 1.0);
-    """)
+    """, imagesOnly: true)
 }
 
 /// The filter a game plays with, and how strong it is.
@@ -300,7 +304,7 @@ public enum FilterLoader {
     }
 
     struct State: Encodable {
-        struct Pass: Encodable { var functions: String; var fragment: String; var game: Bool }
+        struct Pass: Encodable { var functions: String; var fragment: String; var game: Bool; var layer: String? }
         var strength: Double
         var name: String
         var key: String
@@ -310,9 +314,10 @@ public enum FilterLoader {
     /// The state file's text. Its key changes whenever the shader code does, so an edited filter is compiled again.
     static func state(_ setting: FilterSetting?, passes: [FilterPass]) -> Data {
         let list = passes.map { State.Pass(functions: $0.functions.replacingOccurrences(of: "\"\"\"", with: ""),
-                                           fragment: $0.fragment.replacingOccurrences(of: "\"\"\"", with: ""), game: $0.gameResolution) }
+                                           fragment: $0.fragment.replacingOccurrences(of: "\"\"\"", with: ""), game: $0.gameResolution,
+                                           layer: $0.imagesOnly ? "master" : nil) }
         var hash: UInt64 = 0xcbf29ce484222325
-        for pass in list { for byte in (pass.functions + "\u{1}" + pass.fragment + (pass.game ? "1" : "0") + "\u{2}").utf8 { hash = (hash ^ UInt64(byte)) &* 0x100000001b3 } }
+        for pass in list { for byte in (pass.functions + "\u{1}" + pass.fragment + (pass.game ? "1" : "0") + (pass.layer ?? "") + "\u{2}").utf8 { hash = (hash ^ UInt64(byte)) &* 0x100000001b3 } }
         let state = State(strength: min(1, max(0, setting?.strength ?? 0)), name: setting?.name ?? "none",
                           key: String(hash, radix: 16), passes: list)
         let encoder = JSONEncoder()
@@ -364,13 +369,17 @@ public enum FilterLoader {
         func literal(_ url: URL) -> String {
             url.path.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
         }
-        let transforms = (0..<slots).map { "Transform(function=renchan_filter_slot(\($0)))" }.joined(separator: ", ")
+        // Slots on the whole screen (None) and on the game's images ("master"); the camera tier has one set, "*", for every pass.
+        func transforms(_ layer: String) -> String {
+            (0..<slots).map { "Transform(function=renchan_filter_slot(\($0), \(layer)))" }.joined(separator: ", ")
+        }
         let apply: String
         switch tier {
         case .layerTransforms:
             apply = """
                     config.layer_transforms.setdefault(None, [])
                     config.layer_transforms[None] = list(config.layer_transforms[None]) + renchan_filter_transforms
+                    config.layer_transforms["master"] = list(config.layer_transforms.get("master", [])) + renchan_filter_image_transforms
             """
         case .camera, .unsupported:
             apply = """
@@ -392,7 +401,7 @@ public enum FilterLoader {
                     import json as renchan_json
                     import os as renchan_os
                     renchan_filter = {"checked": 0.0, "mtime": None, "strength": 0.0, "key": None,
-                                      "shaders": [], "game": [], "count": 0, "path": "\#(literal(liveFile))", "error": "\#(literal(errorFile))"}
+                                      "passes": [], "count": 0, "path": "\#(literal(liveFile))", "error": "\#(literal(errorFile))"}
                     # Declares RenChan's uniform at init, so filters registered later can use it.
                     renpy.register_shader("renchan.base", variables="""
                         uniform float u_renchan_strength;
@@ -454,13 +463,13 @@ public enum FilterLoader {
                                 if pinned is not None:
                                     cache.pinned = True
                                 try:
+                                    # Ren'Py draws a mesh with renpy.texture, whose vertex shader writes v_tex_coord.
                                     for name in names:
-                                        cache.get((name,))
+                                        cache.get((name, "renpy.texture"))
                                 finally:
                                     if pinned is not None:
                                         cache.pinned = pinned
-                            st["shaders"] = names
-                            st["game"] = [bool(p.get("game")) for p in passes[:\#(slots)]]
+                            st["passes"] = [(n, bool(p.get("game")), p.get("layer")) for n, p in zip(names, passes)]
                             message = ""
                         except Exception as e:
                             message = "%s" % (e,)
@@ -473,18 +482,18 @@ public enum FilterLoader {
 
                     renchan_filter_read(False)
 
-                    def renchan_filter_slot(index):
+                    def renchan_filter_slot(index, layer):
                         def function(trans, st, at):
                             now = renchan_time.time()
-                            if index == 0 and now - renchan_filter["checked"] >= 0.5:
+                            if index == 0 and layer != "master" and now - renchan_filter["checked"] >= 0.5:
                                 renchan_filter["checked"] = now
                                 renchan_filter_read(True)
-                            shaders = renchan_filter["shaders"]
+                            mine = [p for p in renchan_filter["passes"] if layer == "*" or p[2] == layer]
                             try:
-                                if index < len(shaders):
+                                if index < len(mine):
                                     trans.mesh = True
-                                    trans.shader = shaders[index]
-                                    trans.gl_drawable_resolution = not renchan_filter["game"][index]
+                                    trans.shader = mine[index][0]
+                                    trans.gl_drawable_resolution = not mine[index][1]
                                     trans.u_renchan_strength = renchan_filter["strength"]
                                 else:
                                     trans.mesh = False
@@ -495,7 +504,8 @@ public enum FilterLoader {
                             return 0.5
                         return function
 
-                    renchan_filter_transforms = [\#(transforms)]
+                    renchan_filter_transforms = [\#(tier == .camera ? transforms("\"*\"") : transforms("None"))]
+                    renchan_filter_image_transforms = [\#(transforms("\"master\""))]
         \#(apply)
             except Exception as e:
                 renpy.write_log("RenChan filter off: %r" % (e,))

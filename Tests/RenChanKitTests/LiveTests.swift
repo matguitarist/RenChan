@@ -125,6 +125,15 @@ struct Live {
         let swapped = try shoot(FilterSetting(filter: .grayscale), name: "swap",
                                 then: "$ open(\"\(FilterLoader.liveFile(swapCopy).path)\", \"w\").write(open(\"\(sepiaState.path)\").read())")
         #expect(swapped.r > swapped.g && swapped.g > swapped.b && swapped.g > 40, "after switching to sepia live: \(swapped)")
+        // Switching live to a filter that reads its neighbours (v_tex_coord) compiles too, as it does at launch.
+        let crtCopy = root.appending(path: "play-swapcrt")
+        let crtState = root.appending(path: "crt-state.json")
+        FilterLoader.update(FilterSetting(filter: .crt), custom: [sepia], copy: root)
+        try FileManager.default.moveItem(at: FilterLoader.liveFile(root), to: crtState)
+        let crt = try shoot(FilterSetting(filter: .grayscale), name: "swapcrt",
+                            then: "$ open(\"\(FilterLoader.liveFile(crtCopy).path)\", \"w\").write(open(\"\(crtState.path)\").read())")
+        #expect((FilterLoader.lastError(copy: crtCopy) ?? "").isEmpty, "CRT live: \(FilterLoader.lastError(copy: crtCopy) ?? "")")
+        #expect(crt.r > crt.g + 40, "after switching to CRT live: \(crt)")
         // A shader with a mistake doesn't stop the game: it keeps Grayscale, and the error is there for RenChan.
         let brokenCopy = root.appending(path: "play-broken")
         let brokenState = root.appending(path: "broken-state.json")
@@ -138,15 +147,18 @@ struct Live {
         print("broken shader error: \(FilterLoader.lastError(copy: brokenCopy) ?? "none")")
         // S-031: FSR Upscale draws from the game's resolution: a 640×360 game in a 1920×1080 window keeps a hard edge
         // narrower than Ren'Py's own bilinear scaling.
-        func edgeWidth(_ setting: FilterSetting?) throws -> Int {
-            let name = "edge-\(setting?.filter.rawValue ?? "none")"
+        /// `onScreen`: the white half is a Solid in a screen, which Ren'Py draws at the window's resolution, as it does text.
+        func edgeWidth(_ setting: FilterSetting?, onScreen: Bool = false) throws -> Int {
+            let name = "edge-\(setting?.filter.rawValue ?? "none")\(onScreen ? "-screen" : "")"
             let copy = root.appending(path: "play-\(name)")
             let shot = root.appending(path: "shot-\(name).png")
             Fixture.game(at: copy, files: [
                 "game/options.rpy": "init -10 python:\n    config.screen_width = 640\n    config.screen_height = 360\n    config.physical_width = 1920\n    config.physical_height = 1080\n",
                 "game/script.rpy": """
+                screen renchan_edge():
+                    add Solid("#ffffff", xsize=320, ysize=360) xpos 320
                 label start:
-                    scene expression "edge.png"
+                    \(onScreen ? "scene expression Solid(\"#000000\")\n    show screen renchan_edge" : "scene expression \"edge.png\"")
                     pause 1.0
                     $ renpy.screenshot(\"\(shot.path)\")
                     $ renpy.quit()
@@ -173,7 +185,7 @@ struct Live {
                                                  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
             context.draw(image, in: CGRect(x: 0, y: -image.height / 2, width: image.width, height: image.height))
             // Pixels between dark and light, across the left edge.
-            return stride(from: 0, to: image.width / 2 + image.width / 4, by: 1).filter { row[$0 * 4] > 10 && row[$0 * 4] < 245 }.count
+            return stride(from: 0, to: image.width / 2 + image.width / 4, by: 1).filter { row[$0 * 4] > 2 && row[$0 * 4] < 253 }.count
         }
         let fsr = try shoot(FilterSetting(filter: .fsrUpscale), name: "fsr")
         #expect(fsr.r > 200 && fsr.g < 40, "FSR on red: \(fsr)")
@@ -182,6 +194,10 @@ struct Live {
         let plainEdge = try edgeWidth(nil), fsrEdge = try edgeWidth(FilterSetting(filter: .fsrUpscale))
         print("edge width: plain \(plainEdge), FSR \(fsrEdge)")
         #expect(plainEdge > 0 && fsrEdge < plainEdge, "FSR edge \(fsrEdge) vs plain \(plainEdge)")
+        // Screens (text, the dialogue box, menus) aren't upscaled from the game's size: their edges stay as hard as without FSR.
+        let plainScreen = try edgeWidth(nil, onScreen: true), fsrScreen = try edgeWidth(FilterSetting(filter: .fsrUpscale), onScreen: true)
+        print("screen edge width: plain \(plainScreen), FSR \(fsrScreen)")
+        #expect(fsrScreen <= plainScreen, "FSR screen edge \(fsrScreen) vs plain \(plainScreen)")
 
         // S-016: a person's own shader runs like a built-in one. Sepia turns pure red brown.
         let brown = try shoot(FilterSetting(custom: "Sepia.glsl"), name: "sepia")
