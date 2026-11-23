@@ -20,6 +20,23 @@ struct RunAndDevToolsRows: View {
                 Text("Not played yet").foregroundStyle(.secondary)
             }
         }
+        let languages = model.languages(game)
+        if !languages.isEmpty || game.language != nil {
+            Picker(selection: Binding(get: { game.language }, set: { language in model.update(game.id) { $0.language = language } })) {
+                Text("Game’s Choice").tag(String?.none)
+                Text("Original Language").tag(String?.some(LanguageLoader.original))
+                Divider()
+                ForEach(languages, id: \.self) { language in
+                    Text(verbatim: GameLanguages.title(language)).tag(String?.some(language))
+                }
+                if let chosen = game.language, chosen != LanguageLoader.original, !languages.contains(chosen) {
+                    Text("\(GameLanguages.title(chosen)) (missing)").tag(String?.some(chosen))
+                }
+            } label: {
+                Text("Language")
+            }
+            .help("The language the game starts in, from its next launch. Game’s Choice starts in the one last used in the game.")
+        }
         Toggle(isOn: Binding(get: { game.devTools.console }, set: { on in model.update(game.id) { $0.devTools.console = on } })) {
             Text("Console (Shift+O)")
         }
@@ -28,6 +45,18 @@ struct RunAndDevToolsRows: View {
             Text("Fast Skip (>)")
         }
         .help("Let the > key skip ahead to the next choice, from the next launch")
+    }
+}
+
+/// S-039: the translations a game ships, with those its mods that are on add.
+extension AppModel {
+    func languages(_ game: Game) -> [String] {
+        var key = Hasher()
+        key.combine(modsRevision); key.combine(game.basePath); key.combine(game.mods)
+        return memoized("languages-\(game.id)", key: key.finalize()) {
+            let modPaths = enabledMods(game).flatMap { ModLibrary.currentFiles($0, root: Store.modsFolder) }
+            return GameLanguages.find(base: game.baseURL, extraPaths: modPaths)
+        }
     }
 }
 

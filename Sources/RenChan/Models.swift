@@ -73,6 +73,8 @@ final class AppModel {
     var runningCopies: [Game.ID: URL] = [:]
     /// A walkthrough window to open from code, such as snapshot mode (S-032).
     var walkthroughToOpen: WalkthroughRef?
+    /// Mods opened from the Finder, waiting for their game (S-037).
+    var addModsTo: ModTarget?
     /// A Saves window to open (S-035).
     var savesToOpen: SavesRef?
     /// Games whose watched page is being read now (S-033).
@@ -113,6 +115,11 @@ final class AppModel {
         startWatchChecks()
         customFilters = CustomFilters.list(in: Store.filtersFolder)
         mods = ModLibrary.load(Store.modsFolder)
+        if !OpenQueue.pending.isEmpty {
+            let urls = OpenQueue.pending
+            OpenQueue.pending = []
+            Task { @MainActor in self.open(urls) }
+        }
     }
 
     var runtimeStore: RuntimeStore { RuntimeStore(folder: Store.runtimesFolder) }

@@ -362,6 +362,94 @@ struct Live {
         #expect((try? String(contentsOf: report, encoding: .utf8)) == "42 Bo True", "\(log.suffix(2000))")
     }
 
+    /// Runs a game in `copy` with HOME in `home` until it quits; returns its output.
+    static func runGame(_ runtime: Runtime, copy: URL, home: URL, arguments: [String] = []) async throws -> String {
+        let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: copy.deletingLastPathComponent().appending(path: "run-\(UUID()).log"),
+                              environment: ["HOME": home.path], arguments: arguments)
+        let process = try plan.makeProcess()
+        try process.run()
+        let deadline = Date().addingTimeInterval(90)
+        while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
+        if process.isRunning { process.terminate() }
+        return (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
+    }
+
+    /// S-039: the game starts in the language RenChan sets, and its translated text shows.
+    @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
+    func aGameStartsInTheChosenLanguage(version: String) async throws {
+        if Self.store.runtime(version) == nil {
+            try await RuntimeDownload.install(version, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        let report = root.appending(path: "language.txt")
+        let copy = Fixture.game(at: root.appending(path: "Game"), files: [
+            "game/script.rpy": """
+            label start:
+                $ open("\(report.path)", "w").write("%s %s" % (_preferences.language, __("Hello")))
+                $ renpy.quit()
+            """,
+            "game/tl/french/strings.rpy": "translate french strings:\n    old \"Hello\"\n    new \"Bonjour\"\n",
+        ])
+        #expect(GameLanguages.find(base: copy) == ["french"])
+        try LanguageLoader.install("french", copy: copy)
+        var log = try await Self.runGame(runtime, copy: copy, home: root.appending(path: "home"))
+        #expect((try? String(contentsOf: report, encoding: .utf8)) == "french Bonjour", "\(log.suffix(1500))")
+        // Game's Choice: the file leaves, and Ren'Py starts in the language it used last.
+        try LanguageLoader.install(nil, copy: copy)
+        log = try await Self.runGame(runtime, copy: copy, home: root.appending(path: "home"))
+        var text = (try? String(contentsOf: report, encoding: .utf8)) ?? ""
+        #expect(text == "french Bonjour", "\(text) \(log.suffix(1500))")
+        // Original: back to the language the game was written in.
+        try LanguageLoader.install(LanguageLoader.original, copy: copy)
+        log = try await Self.runGame(runtime, copy: copy, home: root.appending(path: "home"))
+        text = (try? String(contentsOf: report, encoding: .utf8)) ?? ""
+        #expect(text == "None Hello", "\(text) \(log.suffix(1500))")
+    }
+
+    /// S-040: persistent values are read and changed, every image is marked as seen, and the game reads them without asking.
+    @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
+    func persistentDataIsReadChangedAndUnlocked(version: String) async throws {
+        if Self.store.runtime(version) == nil {
+            try await RuntimeDownload.install(version, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        let home = root.appending(path: "home")
+        let report = root.appending(path: "persistent.txt")
+        let marker = root.appending(path: "check")
+        let copy = Fixture.game(at: root.appending(path: "Game"), files: ["game/script.rpy": """
+            define config.save_directory = "renchan-persistent-test"
+            default persistent.endings = 1
+            default persistent.true_end = False
+            image bg one = Solid("#f00")
+            image bg two = Solid("#0f0")
+            label start:
+                if renpy.os.path.exists("\(marker.path)"):
+                    $ open("\(report.path)", "w").write("%s %s %s" % (persistent.endings, persistent.true_end, renpy.seen_image("bg two")))
+                $ renpy.quit()
+            """])
+        var log = try await Self.runGame(runtime, copy: copy, home: home)
+        try SaveTool.install(copy: copy)
+        let out = root.appending(path: "out.json")
+        log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.persistentDumpArguments(output: out))
+        let dump = try SaveTool.readReport(out)
+        let vars = Dictionary(uniqueKeysWithValues: (dump.variables ?? []).map { ($0.name, $0) })
+        #expect(vars["endings"]?.value == "1" && vars["endings"]?.kind == .int && vars["true_end"]?.value == "false", "\(String(describing: dump)) \(log.suffix(1500))")
+        #expect(!vars.keys.contains { $0.hasPrefix("_") } && (dump.images ?? 0) >= 2)
+        let changes = root.appending(path: "changes.json")
+        try SaveTool.writeChanges(["endings": 3, "true_end": true, "_seen_ever": 1, "nope": 2], to: changes)
+        log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.persistentSetArguments(changes: changes, output: out))
+        let set = try SaveTool.readReport(out)
+        #expect(set.changed == ["endings", "true_end"] && set.refused == ["_seen_ever", "nope"], "\(String(describing: set)) \(log.suffix(1500))")
+        log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.unlockImagesArguments(output: out))
+        let unlock = try SaveTool.readReport(out)
+        #expect((unlock.unlocked ?? 0) >= 2 && unlock.error == nil, "\(String(describing: unlock)) \(log.suffix(1500))")
+        try "".write(to: marker, atomically: true, encoding: .utf8)
+        log = try await Self.runGame(runtime, copy: copy, home: home)
+        #expect((try? String(contentsOf: report, encoding: .utf8)) == "3 True True", "\(log.suffix(2000))")
+    }
+
     @Test func playsARealGameFromAClone() async throws {
         let game = ProcessInfo.processInfo.environment["RENCHAN_LIVE_GAME"].map { URL(fileURLWithPath: $0) }
         let base = try #require(game, "set RENCHAN_LIVE_GAME to a game's base folder")

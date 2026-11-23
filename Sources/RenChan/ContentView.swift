@@ -39,6 +39,9 @@ struct ContentView: View {
         .sheet(item: Binding(get: { model.findGames.map(FindGamesSheetItem.init) }, set: { if $0 == nil { model.findGames = nil } })) { item in
             FindGamesSheet(initial: item.state).environment(model).themed()
         }
+        .sheet(item: Binding(get: { model.addModsTo.map(AddModSheetItem.init) }, set: { if $0 == nil { model.addModsTo = nil } })) { item in
+            AddModSheet(target: item.target).environment(model).themed()
+        }
         .sheet(item: $model.launchError) { failure in
             LaunchErrorSheet(failure: failure).environment(model).themed()
         }
@@ -121,6 +124,12 @@ struct ContentView: View {
 private struct FindGamesSheetItem: Identifiable {
     let state: FindGamesState
     var id: String { "find" }
+}
+
+/// Stays up while the person picks the game underneath.
+private struct AddModSheetItem: Identifiable {
+    let target: ModTarget
+    var id: UUID { target.id }
 }
 
 private struct BackupsSheetItem: Identifiable {

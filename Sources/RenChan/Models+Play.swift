@@ -62,6 +62,9 @@ extension AppModel {
             var environment = try prepareMods(game, copy: copy)
             // S-022: Ren'Py's console and fast skip, in the copy only.
             try DevToolsLoader.install(game.devTools, copy: copy)
+            // S-039: the language it starts in.
+            try LanguageLoader.install(game.language, copy: copy)
+            backUpBeforePlay(game)
             if Store.isOverridden { environment["HOME"] = Store.renpyHome.path }
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: Store.gameFolder(game.id).appending(path: "run.log"),
                                   environment: environment)
@@ -117,6 +120,21 @@ extension AppModel {
                                     text: result.traceback ?? result.outputTail,
                                     tracebackFile: result.traceback == nil ? plan.outputFile : file,
                                     exactVersion: RuntimeCatalog.exactAlternative(version: game.version, chosen: plan.runtime.version))
+    }
+
+    /// S-038: the saves are backed up before each launch when they changed since the last backup; the newest five stay.
+    static let backupBeforePlayKey = "saves.backupBeforePlay"
+
+    func backUpBeforePlay(_ game: Game) {
+        guard UserDefaults.standard.object(forKey: Self.backupBeforePlayKey) as? Bool ?? true, let saves = saveFolder(game) else { return }
+        do {
+            if let backup = try SaveBackups.backUpBeforePlay(saves: saves, into: Store.backupsFolder(game.id)) {
+                backupRevision += 1
+                log.post(.info, "Backed up \(backup.saveCount) saves of \(game.title) before playing", source: "Saves")
+            }
+        } catch {
+            log.post(.warning, "Couldn't back up the saves of \(game.title) before playing: \(error.localizedDescription)", source: "Saves")
+        }
     }
 
     /// Runs RenChan didn't see end (it quit while a game played) count up to the game's last log line.

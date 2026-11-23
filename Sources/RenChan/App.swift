@@ -139,6 +139,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = Updater.shared
     }
 
+    /// S-037: files opened from the Finder or dropped on the Dock icon.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        MainActor.assumeIsolated {
+            if let model = AppModel.current { model.open(urls) } else { OpenQueue.pending += urls }
+        }
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
     /// The self-test's result becomes the exit code, after a normal quit.

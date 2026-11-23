@@ -6,6 +6,8 @@ import SwiftUI
 struct SavesRef: Codable, Hashable {
     var game: Game.ID
     var modded = false
+    /// Opens on the persistent data (S-040), for snapshots.
+    var persistent: Bool?
 }
 
 /// Saves: browse a game's saves and change a save's variables (S-035, S-036).
@@ -78,6 +80,37 @@ extension AppModel {
     }
 }
 
+/// Persistent data (S-040): the values every save shares, such as unlocked galleries and endings seen.
+extension AppModel {
+    func readPersistent(of game: Game, modded: Bool) async throws -> (variables: [SaveVariable], images: Int) {
+        let report = try await runSaveTool(game, modded: modded) { SaveTool.persistentDumpArguments(output: $0) }
+        return (report.variables ?? [], report.images ?? 0)
+    }
+
+    func writePersistent(_ changes: [String: Any], of game: Game, modded: Bool) async throws -> [String] {
+        backUpBeforeEditing(game, modded: modded)
+        let changesFile = Store.gameFolder(game.id).appending(path: "save-changes.json")
+        try SaveTool.writeChanges(changes, to: changesFile)
+        let report = try await runSaveTool(game, modded: modded) { SaveTool.persistentSetArguments(changes: changesFile, output: $0) }
+        log.post(.info, "Changed \(report.changed?.joined(separator: ", ") ?? "nothing") in \(game.title)'s persistent data", source: "Saves")
+        return report.changed ?? []
+    }
+
+    /// Marks every image the game defines as seen, which unlocks them in Ren'Py's gallery. Returns how many were new.
+    func unlockImages(of game: Game, modded: Bool) async throws -> Int {
+        backUpBeforeEditing(game, modded: modded)
+        let report = try await runSaveTool(game, modded: modded) { SaveTool.unlockImagesArguments(output: $0) }
+        log.post(.info, "Marked \(report.unlocked ?? 0) images of \(game.title) as seen", source: "Saves")
+        return report.unlocked ?? 0
+    }
+
+    private func backUpBeforeEditing(_ game: Game, modded: Bool) {
+        guard let folder = savesFolder(game, modded: modded), FileManager.default.fileExists(atPath: folder.path) else { return }
+        _ = try? SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit)
+        backupRevision += 1
+    }
+}
+
 struct SaveToolError: LocalizedError {
     var message: String
     init(_ message: String) { self.message = message }
@@ -89,23 +122,38 @@ struct SavesWindow: View {
     let ref: SavesRef
     @State private var modded = false
     @State private var saves: [SaveFile] = []
-    @State private var selection: SaveFile.ID?
+    /// A save's path, or persistentTag for the persistent data.
+    @State private var selection: String?
+    static let persistentTag = "persistent"
     @State private var confirmTrash: SaveFile?
 
     var body: some View {
         if let game = model.game(ref.game) {
             NavigationSplitView {
-                List(saves, selection: $selection) { save in
-                    SaveRow(save: save)
-                        .contextMenu {
-                            Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([save.url]) }
-                            Button("Move to Trash…") { confirmTrash = save }
+                List(selection: $selection) {
+                    if game.saveDirectory != nil {
+                        Section {
+                            PersistentRow().tag(Self.persistentTag)
                         }
+                    }
+                    Section("Saves") {
+                        if saves.isEmpty && game.saveDirectory != nil {
+                            Text("Saves made in the game show up here.").foregroundStyle(.secondary)
+                        }
+                        ForEach(saves) { save in
+                            SaveRow(save: save)
+                                .tag(save.id)
+                                .contextMenu {
+                                    Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([save.url]) }
+                                    Button("Move to Trash…") { confirmTrash = save }
+                                }
+                        }
+                    }
                 }
                 .overlay {
-                    if saves.isEmpty {
+                    if game.saveDirectory == nil {
                         ContentUnavailableView("No Saves", systemImage: "tray",
-                                               description: Text(game.saveDirectory == nil ? "Play the game once so RenChan learns where it saves." : "Saves made in the game show up here."))
+                                               description: Text("Play the game once so RenChan learns where it saves."))
                     }
                 }
                 .navigationSplitViewColumnWidth(min: 240, ideal: 280)
@@ -113,6 +161,9 @@ struct SavesWindow: View {
                 if let save = saves.first(where: { $0.id == selection }) {
                     SaveDetail(game: game, save: save, modded: modded) { reload(game) }
                         .id(save.id)
+                } else if selection == Self.persistentTag {
+                    SaveDetail(game: game, save: nil, modded: modded) { reload(game) }
+                        .id("\(Self.persistentTag)-\(modded)")
                 } else {
                     ContentUnavailableView("Choose a Save", systemImage: "square.stack")
                 }
@@ -130,7 +181,11 @@ struct SavesWindow: View {
                 Button("Reload", systemImage: "arrow.clockwise") { reload(game) }
                     .help("Read the saves folder again")
             }
-            .onAppear { modded = ref.modded; reload(game) }
+            .onAppear {
+                modded = ref.modded
+                if ref.persistent == true { selection = Self.persistentTag }
+                reload(game)
+            }
             .onChange(of: modded) { reload(game) }
             .confirmationDialog(String(localized: "Move \(confirmTrash?.place ?? "") to the Trash?"), isPresented: Binding(get: { confirmTrash != nil }, set: { if !$0 { confirmTrash = nil } })) {
                 Button("Move to Trash", role: .destructive) {
@@ -146,7 +201,26 @@ struct SavesWindow: View {
 
     private func reload(_ game: Game) {
         saves = model.savesFolder(game, modded: modded).map(SaveList.list) ?? []
+        if selection == Self.persistentTag && game.saveDirectory != nil { return }
         if selection == nil || !saves.contains(where: { $0.id == selection }) { selection = saves.first?.id }
+    }
+}
+
+/// The first row: the persistent data every save shares (S-040).
+private struct PersistentRow: View {
+    var body: some View {
+        HStack(spacing: Space.md) {
+            Image(systemName: "rectangle.stack.badge.person.crop")
+                .font(.title3)
+                .foregroundStyle(Palette.accent)
+                .frame(width: 64, height: 36)
+                .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Persistent Data").lineLimit(1)
+                Text("Gallery, endings and more, shared by every save").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
+        }
+        .padding(.vertical, 2)
     }
 }
 

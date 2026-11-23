@@ -151,6 +151,16 @@
         }
       }
     },
+    "%lld images": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld images"
+          }
+        }
+      }
+    },
     "%lld stars": {
       "localizations": {
         "fr": {
@@ -187,6 +197,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 jeu"
+          }
+        }
+      }
+    },
+    "1 image": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 image"
           }
         }
       }
@@ -257,6 +277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter"
+          }
+        }
+      }
+    },
+    "Add %lld Files to Which Game?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter %lld fichiers à quel jeu ?"
           }
         }
       }
@@ -451,6 +481,26 @@
         }
       }
     },
+    "Add the game first, then open %@ again to add it to that game.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajoutez d’abord le jeu, puis ouvrez de nouveau %@ pour l’ajouter à ce jeu."
+          }
+        }
+      }
+    },
+    "Add “%@” to Which Game?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter « %@ » à quel jeu ?"
+          }
+        }
+      }
+    },
     "Any Rating": {
       "localizations": {
         "fr": {
@@ -541,6 +591,16 @@
         }
       }
     },
+    "Back up saves before each play": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier les sauvegardes avant chaque partie"
+          }
+        }
+      }
+    },
     "Back up the saves before a big choice, or before trying a mod.": {
       "localizations": {
         "fr": {
@@ -607,6 +667,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Avant les mods"
+          }
+        }
+      }
+    },
+    "Before playing": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant de jouer"
           }
         }
       }
@@ -1391,6 +1461,26 @@
         }
       }
     },
+    "Gallery Images": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Images de la galerie"
+          }
+        }
+      }
+    },
+    "Gallery, endings and more, shared by every save": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Galerie, fins et plus, communs à toutes les sauvegardes"
+          }
+        }
+      }
+    },
     "Game": {
       "localizations": {
         "fr": {
@@ -1407,6 +1497,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Version du jeu"
+          }
+        }
+      }
+    },
+    "Game’s Choice": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choix du jeu"
           }
         }
       }
@@ -1737,6 +1837,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Créer votre propre mod pour ce jeu à partir du modèle de RenChan et l’ouvrir dans votre éditeur"
+          }
+        }
+      }
+    },
+    "Mark all %lld images as seen?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer les %lld images comme vues ?"
+          }
+        }
+      }
+    },
+    "Mark every image the game defines as seen, which unlocks Ren'Py galleries": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer comme vue chaque image du jeu, ce qui débloque les galeries Ren’Py"
           }
         }
       }
@@ -2201,6 +2321,26 @@
         }
       }
     },
+    "On/off values, numbers and text can be changed. RenChan backs up the saves first; the game reads the changes the next time it starts.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les valeurs oui/non, les nombres et le texte peuvent être modifiés. RenChan copie d’abord les sauvegardes ; le jeu lit les changements à son prochain démarrage."
+          }
+        }
+      }
+    },
+    "Only when the saves changed since the last backup. RenChan keeps the last five; backups you make stay until you remove them.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seulement si les sauvegardes ont changé depuis la dernière copie. RenChan garde les cinq dernières ; les copies que vous faites restent jusqu’à ce que vous les supprimiez."
+          }
+        }
+      }
+    },
     "Open": {
       "localizations": {
         "fr": {
@@ -2261,6 +2401,16 @@
         }
       }
     },
+    "Original Language": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Langue d’origine"
+          }
+        }
+      }
+    },
     "Overview": {
       "localizations": {
         "fr": {
@@ -2317,6 +2467,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Collez la page itch.io ou le fil F95zone du jeu. RenChan lit sa version une fois par jour et vous avertit quand une plus récente sort."
+          }
+        }
+      }
+    },
+    "Persistent Data": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données persistantes"
           }
         }
       }
@@ -2567,6 +2727,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Relire le dossier des sauvegardes"
+          }
+        }
+      }
+    },
+    "Reading the persistent data with Ren'Py…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecture des données persistantes avec Ren’Py…"
           }
         }
       }
@@ -2947,6 +3117,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan télécharge depuis renpy.org la version de Ren’Py dont un jeu a besoin la première fois que vous y jouez."
+          }
+        }
+      }
+    },
+    "RenChan keeps its own copy and turns it on for that game. The game’s own files are never changed.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan en garde sa propre copie et l’active pour ce jeu. Les fichiers du jeu ne sont jamais modifiés."
           }
         }
       }
@@ -3551,6 +3731,16 @@
         }
       }
     },
+    "The game keeps no persistent values of its own.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le jeu ne garde aucune valeur persistante qui lui soit propre."
+          }
+        }
+      }
+    },
     "The game kept the last filter: this one didn't compile. %@": {
       "localizations": {
         "fr": {
@@ -3567,6 +3757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les sauvegardes du jeu, ou celles faites avec des mods"
+          }
+        }
+      }
+    },
+    "The language the game starts in, from its next launch. Game’s Choice starts in the one last used in the game.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La langue dans laquelle le jeu démarre, dès son prochain lancement. Choix du jeu démarre dans la dernière langue utilisée dans le jeu."
           }
         }
       }
@@ -3691,6 +3891,16 @@
         }
       }
     },
+    "This unlocks them in the game’s gallery. RenChan backs up the saves first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elles seront débloquées dans la galerie du jeu. RenChan copie d’abord les sauvegardes."
+          }
+        }
+      }
+    },
     "This version is already in the library as %@.": {
       "localizations": {
         "fr": {
@@ -3797,6 +4007,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Délier de VNDB"
+          }
+        }
+      }
+    },
+    "Unlock All Images": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Débloquer toutes les images"
+          }
+        }
+      }
+    },
+    "Unlock All…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tout débloquer…"
+          }
+        }
+      }
+    },
+    "Unlocked %lld images. The saves were backed up first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld images débloquées. Les sauvegardes ont d’abord été copiées."
+          }
+        }
+      }
+    },
+    "Unlocked 1 image. The saves were backed up first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 image débloquée. Les sauvegardes ont d’abord été copiées."
           }
         }
       }
@@ -4067,6 +4317,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce que fait RenChan s’affiche ici : jeux ajoutés, versions de Ren’Py téléchargées, parties lancées."
+          }
+        }
+      }
+    },
+    "What the game remembers across every save: unlocked galleries, endings seen, and its own settings.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce que le jeu retient d’une sauvegarde à l’autre : galeries débloquées, fins vues et ses propres réglages."
           }
         }
       }

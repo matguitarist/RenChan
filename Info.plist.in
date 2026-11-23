@@ -17,6 +17,27 @@
 <key>SUFeedURL</key><string>https://github.com/matguitarist/RenChan/releases/latest/download/appcast.xml</string>
 <key>SUPublicEDKey</key><string>iZxP3Jyd7cwDRDmIKimunIWba/iaPhwA2uBjnUKwqb4=</string>
 <key>SUEnableInstallerLauncherService</key><false/>
+<key>CFBundleDocumentTypes</key><array>
+<dict><key>CFBundleTypeName</key><string>Ren'Py Archive</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>Default</string>
+<key>LSItemContentTypes</key><array><string>org.renpy.rpa</string></array></dict>
+<dict><key>CFBundleTypeName</key><string>Ren'Py Script</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>Alternate</string>
+<key>LSItemContentTypes</key><array><string>org.renpy.rpy</string><string>org.renpy.rpyc</string></array></dict>
+<dict><key>CFBundleTypeName</key><string>Game or Mod Zip</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>Alternate</string>
+<key>LSItemContentTypes</key><array><string>public.zip-archive</string><string>com.apple.application-bundle</string></array></dict>
+<dict><key>CFBundleTypeName</key><string>Game Folder</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>None</string>
+<key>LSItemContentTypes</key><array><string>public.folder</string></array></dict>
+</array>
+<key>UTImportedTypeDeclarations</key><array>
+<dict><key>UTTypeIdentifier</key><string>org.renpy.rpa</string><key>UTTypeDescription</key><string>Ren'Py Archive</string>
+<key>UTTypeConformsTo</key><array><string>public.data</string><string>public.archive</string></array>
+<key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>rpa</string></array></dict></dict>
+<dict><key>UTTypeIdentifier</key><string>org.renpy.rpy</string><key>UTTypeDescription</key><string>Ren'Py Script</string>
+<key>UTTypeConformsTo</key><array><string>public.plain-text</string><string>public.source-code</string></array>
+<key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>rpy</string><string>rpym</string></array></dict></dict>
+<dict><key>UTTypeIdentifier</key><string>org.renpy.rpyc</string><key>UTTypeDescription</key><string>Compiled Ren'Py Script</string>
+<key>UTTypeConformsTo</key><array><string>public.data</string></array>
+<key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>rpyc</string><string>rpymc</string></array></dict></dict>
+</array>
 <key>CFBundleDevelopmentRegion</key><string>en</string>
 <key>CFBundleLocalizations</key><array><string>en</string><string>fr</string></array>
 </dict></plist>

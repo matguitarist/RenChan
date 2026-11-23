@@ -44,11 +44,19 @@ public enum SaveTool {
     /// renchan_saves dump SLOT OUT.json, or renchan_saves set SLOT CHANGES.json OUT.json
     public static func dumpArguments(slot: String, output: URL) -> [String] { ["renchan_saves", "dump", slot, output.path] }
     public static func setArguments(slot: String, changes: URL, output: URL) -> [String] { ["renchan_saves", "set", slot, changes.path, output.path] }
+    /// Persistent data, shared by every save (S-040): its fields, changes to them, and every image marked as seen.
+    public static func persistentDumpArguments(output: URL) -> [String] { ["renchan_saves", "pdump", "-", output.path] }
+    public static func persistentSetArguments(changes: URL, output: URL) -> [String] { ["renchan_saves", "pset", "-", changes.path, output.path] }
+    public static func unlockImagesArguments(output: URL) -> [String] { ["renchan_saves", "unlock", "-", output.path] }
 
     public struct Report: Decodable, Sendable {
         public var variables: [SaveVariable]?
         public var changed: [String]?
         public var refused: [String]?
+        /// Images newly marked as seen by unlock.
+        public var unlocked: Int?
+        /// Images the game defines, for unlock.
+        public var images: Int?
         public var error: String?
     }
 
@@ -63,6 +71,9 @@ public enum SaveTool {
     public static let source = #"""
     # RenChan's save tool. It only runs when RenChan starts Ren'Py with the renchan_saves command; play never uses it.
     init -1500 python:
+        class _RenChanDone(Exception):
+            pass
+
         def _renchan_saves():
             import io, json, os, sys, zipfile
             import renpy.compat.pickle as _pickle
@@ -104,7 +115,67 @@ public enum SaveTool {
                 except Exception:
                     return type(v).__name__
 
+            def convert(old, value):
+                # The new value when it fits the old one's kind, else None.
+                k = kind(old)
+                if k == "bool" and isinstance(value, bool):
+                    return (value,)
+                if k == "int" and isinstance(value, int_types) and not isinstance(value, bool):
+                    return (int(value),)
+                if k == "float" and isinstance(value, (float,) + int_types) and not isinstance(value, bool):
+                    return (float(value),)
+                if k == "string" and isinstance(value, text_types):
+                    return (value.encode("utf-8") if PY2 and isinstance(old, str) else value,)
+                return None
+
+            def read_changes():
+                with io.open(args.files[0], "r", encoding="utf-8") as f:
+                    return json.load(f)
+
             try:
+                if args.action in ("pdump", "pset", "unlock"):
+                    # Persistent data: Ren'Py loaded it before running this command, and saving it the
+                    # usual way signs it with this Mac's key, so the game reads it without asking.
+                    p = renpy.game.persistent
+                    fields = p.__dict__
+                    if args.action == "pdump":
+                        found = []
+                        for name in sorted(fields):
+                            v = fields[name]
+                            if name.startswith("_") or callable(v) or isinstance(v, type(os)):
+                                continue
+                            found.append({"name": name, "kind": kind(v), "value": describe(v)})
+                        report["variables"] = found
+                        report["images"] = len(renpy.list_images())
+                    elif args.action == "pset":
+                        changed, refused = [], []
+                        for name, value in read_changes().items():
+                            new = None if name.startswith("_") or name not in fields else convert(fields[name], value)
+                            if new is None:
+                                refused.append(name)
+                                continue
+                            setattr(p, name, new[0])
+                            changed.append(name)
+                        if changed:
+                            renpy.save_persistent()
+                        report["changed"] = sorted(changed)
+                        report["refused"] = sorted(refused)
+                    else:
+                        seen = getattr(p, "_seen_images", None)
+                        if seen is None:
+                            seen = p._seen_images = {}
+                        count = 0
+                        for image in renpy.list_images():
+                            key = tuple(str(i) for i in image.split())
+                            if key not in seen:
+                                seen[key] = True
+                                count += 1
+                        if count:
+                            renpy.save_persistent()
+                        report["unlocked"] = count
+                        report["images"] = len(renpy.list_images())
+                    raise _RenChanDone()
+
                 location = renpy.loadsave.location.newest(args.slot)
                 if location is None:
                     raise Exception("No save in slot %s" % args.slot)
@@ -138,27 +209,14 @@ public enum SaveTool {
                     report["variables"] = found
 
                 elif args.action == "set":
-                    with io.open(args.files[0], "r", encoding="utf-8") as f:
-                        changes = json.load(f)
                     changed, refused = [], []
-                    for name, value in changes.items():
+                    for name, value in read_changes().items():
                         key = "store." + name
-                        if key not in roots:
+                        new = convert(effective(name, roots[key]), value) if key in roots else None
+                        if new is None:
                             refused.append(name)
                             continue
-                        old = effective(name, roots[key])
-                        k = kind(old)
-                        if k == "bool" and isinstance(value, bool):
-                            new = value
-                        elif k == "int" and isinstance(value, int_types) and not isinstance(value, bool):
-                            new = int(value)
-                        elif k == "float" and isinstance(value, (float,) + int_types) and not isinstance(value, bool):
-                            new = float(value)
-                        elif k == "string" and isinstance(value, text_types):
-                            new = value.encode("utf-8") if PY2 and isinstance(old, str) else value
-                        else:
-                            refused.append(name)
-                            continue
+                        new = new[0]
                         roots[key] = new
                         for r in records:
                             if name in r and r[name] is not deleted:
@@ -183,6 +241,8 @@ public enum SaveTool {
                     report["refused"] = sorted(refused)
                 else:
                     raise Exception("Unknown action %s" % args.action)
+            except _RenChanDone:
+                pass
             except Exception as e:
                 report["error"] = "%s: %s" % (type(e).__name__, e)
 

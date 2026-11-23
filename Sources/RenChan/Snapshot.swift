@@ -92,6 +92,17 @@ enum Snapshot {
                 }
                 window?.close()
             }
+            if only == nil || only?.contains("saves-persistent") == true, let game = model.games.first(where: { $0.title == "The Question" }) {
+                model.savesToOpen = SavesRef(game: game.id, persistent: true)
+                try? await Task.sleep(for: .seconds(3))
+                let window = NSApp.windows.first { $0.isVisible && $0.title.contains(game.title) }
+                for mode in ["light", "dark"] {
+                    NSApp.appearance = NSAppearance(named: mode == "light" ? .aqua : .darkAqua)
+                    try? await Task.sleep(for: .seconds(1))
+                    if let window { capture(to: "\(dir)/saves-persistent-\(mode).png", window: window) }
+                }
+                window?.close()
+            }
             await shoot("library-filtered", { model.filter = LibraryFilter(labels: ["Romance"]) }, { model.filter = LibraryFilter() })
             let saved = model.games
             await shoot("library-empty", { model.games = [] }, { model.games = saved })
@@ -112,6 +123,9 @@ enum Snapshot {
                 ], chosen: [URL(fileURLWithPath: "/Applications/Night Train to Aoi.app"), home.appending(path: "Games/Starlit_Harbor-1.2-pc")],
                 places: ["/Applications", "~/Applications", "~/Games", "~/Downloads", "~/Desktop"])
             }, { model.findGames = nil })
+            await shoot("add-mod", sheet: true, {
+                model.addModsTo = ModTarget(files: [URL(fileURLWithPath: "/Users/Shared/0x52_URM.rpa")], game: saved.first?.id)
+            }, { model.addModsTo = nil })
             await shoot("save-backups", sheet: true, { model.showBackups = saved.first?.id }, { model.showBackups = nil })
             await shoot("vndb-search", sheet: true, {
                 model.vndbSearch = VNDBSearch(game: saved.first?.id ?? UUID(), query: "The Question", results: [

@@ -394,6 +394,8 @@ enum SelfTest {
             check("S-035 the game knows its saves folder", false)
         }
 
+        await newChecks(model, first: first, shelf: shelf)
+
         // S-033 Know when a new version is out (a page on disk stands in for itch.io)
         let page = shelf.appending(path: "itch-page.html")
         try? #"<div class="upload_name"><strong class="name" title="The Question - [9.9] - PC">The Question - [9.9] - PC</strong></div>"#.write(to: page, atomically: true, encoding: .utf8)
@@ -438,6 +440,74 @@ enum SelfTest {
               && model.game(first.id) == nil)
         check("S-012 removing a game keeps its save backups", FileManager.default.fileExists(atPath: Store.backupsFolder(first.id).path))
         model.notice = nil
+    }
+
+    /// S-037 to S-040: open from the Finder, back up before play, language, persistent data.
+    private static func newChecks(_ model: AppModel, first: Game, shelf: URL) async {
+        // S-037 Open from the Finder and the Dock
+        let owl = Fixtures.game("Night_Owl-1.0-pc", in: shelf, files: ["renpy/__init__.py": "", "game/options.rpy": Fixtures.options(name: "Night Owl", saves: "night-owl")])
+        let countBefore = model.games.count
+        model.open([owl])
+        check("S-037 a game opened from the Finder is added", model.games.count == countBefore + 1 && model.selectedGame?.title == "Night Owl")
+        let script = shelf.appending(path: "extra_scene.rpy")
+        try? "label extra_scene:\n    return\n".write(to: script, atomically: true, encoding: .utf8)
+        model.selection = first.id
+        model.open([script])
+        check("S-037 a mod opened from the Finder asks for its game, the selected one first", model.addModsTo?.game == first.id && model.addModsTo?.files == [script])
+        model.addOpenedMods()
+        let added = model.game(first.id)?.mods.last.flatMap { model.mod($0.mod) }
+        check("S-037 Add puts the mod on that game", model.addModsTo == nil && added?.files == ["extra_scene.rpy"], "\(String(describing: added))")
+        if let use = model.game(first.id)?.mods.last { model.removeMod(use.mod, from: first.id) }
+
+        // S-038 Back up saves before each play
+        let autoBefore = model.backups(first.id).filter { $0.reason == .beforePlay }.count
+        // Something in the saves changes after the last backup, as when the person plays.
+        func playOnce() { if let folder = model.saveFolder(first) { FileManager.default.createFile(atPath: folder.appending(path: "1-9-LT1.save").path, contents: Data("\(Date())".utf8)) } }
+        playOnce()
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        check("S-038 the saves are backed up before playing", model.backups(first.id).filter { $0.reason == .beforePlay }.count == autoBefore + 1)
+        UserDefaults.standard.set(false, forKey: AppModel.backupBeforePlayKey)
+        playOnce()
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        UserDefaults.standard.removeObject(forKey: AppModel.backupBeforePlayKey)
+        check("S-038 turned off in Settings, no backup is made", model.backups(first.id).filter { $0.reason == .beforePlay }.count == autoBefore + 1)
+
+        // S-039 Pick a game's language
+        if let game = model.game(first.id) {
+            try? FileManager.default.createDirectory(at: game.baseURL.appending(path: "game/tl/french", directoryHint: .isDirectory), withIntermediateDirectories: true)
+            try? "".write(to: game.baseURL.appending(path: "game/tl/french/strings.rpy"), atomically: true, encoding: .utf8)
+            model.modsRevision += 1
+            check("S-039 the game's translations are listed", model.languages(game) == ["french"], "\(model.languages(game))")
+            model.update(first.id) { $0.language = "french" }
+            model.play(first.id)
+            await waitUntilStopped(model, first.id)
+            let file = Store.workingCopy(first.id).appending(path: "game/\(LanguageLoader.fileName)")
+            let text = (try? String(contentsOf: file, encoding: .utf8)) ?? ""
+            check("S-039 the language file lands in the copy", text.contains(#"config.language = u"french""#), text)
+            model.update(first.id) { $0.language = nil }
+            model.play(first.id)
+            await waitUntilStopped(model, first.id)
+            check("S-039 Game's Choice takes it out", !FileManager.default.fileExists(atPath: file.path))
+        }
+
+        // S-040 Change persistent data (the pretend runtime stands in for Ren'Py)
+        if let game = model.game(first.id) {
+            var read: (variables: [SaveVariable], images: Int)?
+            var failure = ""
+            do { read = try await model.readPersistent(of: game, modded: false) } catch { failure = error.localizedDescription }
+            check("S-040 persistent values are read with the game's Ren'Py",
+                  read?.variables.map(\.name) == ["endings_seen", "true_ending"] && read?.images == 42, "\(String(describing: read)) \(failure)")
+            let editsBefore = model.backups(first.id).filter { $0.reason == .beforeEdit }.count
+            let unlocked = try? await model.unlockImages(of: game, modded: false)
+            check("S-040 Unlock All Images backs up the saves, then marks the images as seen",
+                  unlocked == 40 && model.backups(first.id).filter { $0.reason == .beforeEdit }.count == editsBefore + 1
+                  && FileManager.default.fileExists(atPath: Store.workingCopy(first.id).appending(path: "renchan_unlocked").path))
+            _ = try? await model.writePersistent(["true_ending": true], of: game, modded: false)
+            let sent = (try? String(contentsOf: Store.workingCopy(first.id).appending(path: "renchan_last_changes.json"), encoding: .utf8)) ?? ""
+            check("S-040 a persistent change is sent to Ren'Py", sent == #"{"true_ending":true}"#, sent)
+        }
     }
 
     private static func waitUntilStopped(_ model: AppModel, _ id: UUID) async {

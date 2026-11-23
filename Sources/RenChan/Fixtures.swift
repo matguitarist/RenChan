@@ -35,6 +35,11 @@ enum Fixtures {
           for last; do :; done
           if [ "$5" = "dump" ]; then
             printf '%s' '{"variables":[{"name":"affection_mei","kind":"int","value":"12"},{"name":"bag","kind":"other","value":"list (3)"},{"name":"chapter","kind":"float","value":"2.5"},{"name":"hero","kind":"string","value":"Ana"},{"name":"met_aoi","kind":"bool","value":"true"}]}' > "$last"
+          elif [ "$5" = "pdump" ]; then
+            printf '%s' '{"variables":[{"name":"endings_seen","kind":"int","value":"1"},{"name":"true_ending","kind":"bool","value":"false"}],"images":42}' > "$last"
+          elif [ "$5" = "unlock" ]; then
+            touch "$base/renchan_unlocked"
+            printf '%s' '{"unlocked":40,"images":42}' > "$last"
           else
             cp "$7" "$base/renchan_last_changes.json"
             printf '%s' '{"changed":["affection_mei"],"refused":[]}' > "$last"
@@ -182,6 +187,13 @@ enum SeedData {
                 try? FileManager.default.createDirectory(at: Store.gameFolder(first.id), withIntermediateDirectories: true)
                 try? jpeg.write(to: Store.coverFile(first.id))
             }
+            // S-039: two translations, one picked.
+            for language in ["french", "spanish"] {
+                let folder = first.baseURL.appending(path: "game/tl/\(language)", directoryHint: .isDirectory)
+                try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try? "".write(to: folder.appending(path: "strings.rpy"), atomically: true, encoding: .utf8)
+            }
+            model.update(first.id) { $0.language = "french" }
             let saves = Store.saveRoot.appending(path: "The_Question-7.0-pc", directoryHint: .isDirectory)
             try? FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)
             // Saves laid out as Ren'Py writes them, to browse (S-035) and back up (S-012).
@@ -192,6 +204,7 @@ enum SeedData {
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -86400 * 6))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforeRestore, at: Date(timeIntervalSinceNow: -86400 * 2))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -7200))
+            _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforePlay, at: Date(timeIntervalSinceNow: -3600))
             // Discover (S-028) without the network: a few results and their releases.
             let links = { (pairs: [(String, String)]) in pairs.compactMap { pair in URL(string: pair.1).map { VNDBRelease.Link(label: pair.0, url: $0) } } }
             model.discover = DiscoverState(results: [

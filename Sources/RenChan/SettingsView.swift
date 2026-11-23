@@ -60,6 +60,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 struct GeneralSettings: View {
     @Environment(AppModel.self) private var model
     @AppStorage(AppModel.watchChecksKey) private var watchChecks = true
+    @AppStorage(AppModel.backupBeforePlayKey) private var backupBeforePlay = true
 
     var body: some View {
         @Bindable var model = model
@@ -80,6 +81,12 @@ struct GeneralSettings: View {
                     Button("Restart Now") { AppLanguage.relaunch() }
                 }
             }
+        }
+        Section("Saves") {
+            Toggle("Back up saves before each play", isOn: $backupBeforePlay)
+            Text("Only when the saves changed since the last backup. RenChan keeps the last five; backups you make stay until you remove them.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
         }
         Section("New Versions") {
             Toggle("Check watched pages every day", isOn: $watchChecks)

@@ -11,6 +11,8 @@ public struct SaveBackup: Identifiable, Hashable, Sendable {
         case beforeMods
         /// Made by RenChan before it changed a save's variables (S-036).
         case beforeEdit
+        /// Made by RenChan before a launch, when the saves changed since the last backup (S-038). Only the newest few are kept.
+        case beforePlay
     }
 
     /// The folder name, "2026-11-22 190412".
@@ -52,6 +54,23 @@ public enum SaveBackups {
         encoder.dateEncodingStrategy = .secondsSince1970
         try encoder.encode(Info(date: date, reason: reason)).write(to: folder.appending(path: "backup.json"))
         return try read(folder)
+    }
+
+    /// Before a launch (S-038): backs up the saves when something in them is newer than the newest backup,
+    /// then keeps only the newest `keep` backups made this way. Returns the backup, or nil when none was needed.
+    @discardableResult
+    public static func backUpBeforePlay(saves: URL, into root: URL, keep: Int = 5, at date: Date = .now) throws -> SaveBackup? {
+        let files = (try? FileManager.default.contentsOfDirectory(at: saves, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
+        let changed = files.filter { !$0.lastPathComponent.hasPrefix(".") }
+            .compactMap { (try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate }.max()
+        guard let changed else { return nil }
+        let existing = list(root)
+        if let newest = existing.first, changed <= newest.date { return nil }
+        let backup = try backUp(saves: saves, into: root, reason: .beforePlay, at: date)
+        for old in list(root).filter({ $0.reason == .beforePlay }).dropFirst(max(keep, 1)) {
+            try? FileManager.default.removeItem(at: old.folder)
+        }
+        return backup
     }
 
     /// Every backup, newest first.

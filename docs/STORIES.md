@@ -415,6 +415,64 @@ Acceptance:
 - [self] Variables are read; a change is backed up first, then written.
 Status: done
 
+## M9 Everyday care (0.8.0)
+
+### S-037 Open from the Finder and the Dock
+As the user, I double-click a `.rpa`, use Open With › RenChan on a game zip, or drop a game folder on the Dock icon, and RenChan adds the game, or asks which game the mod is for.
+Screens: add-mod
+Depends: S-001, S-017
+UX:
+- Flow: a game folder, `.app` or game zip → added as if dropped on the window (a zip still asks first). A `.rpa`, `.rpy`, `.rpyc`, a mod zip or folder, or a walkthrough → sheet "Add “0x52_URM.rpa” to Which Game?" with a Game picker (the selected game first) → Add (Return) or Cancel (Escape).
+- States: an empty library says "Add the game first, then open … again to add it to that game."
+- Words: "Add “%@” to Which Game?" / « Ajouter « %@ » à quel jeu ? ».
+- Notes: RenChan is the default app for `.rpa` files and an Open With choice for `.rpy`, `.rpyc` and zips; folders only from the Dock.
+Acceptance:
+- [unit] A zip with game/ beside renpy/ or lib/ (two folders down at most) or a Mac build is a game; a zip of scripts is a mod; a game folder is a game, a folder of scripts a mod.
+- [self] An opened game folder is added; an opened `.rpy` asks with the selected game, and Add puts it on that game.
+- Opening a game folder with `open -n -a RenChan.app --env APP_STORE=/tmp/…` starts RenChan and adds it (checked 2026-11-23).
+Status: done
+
+### S-038 Back up saves before each play
+As the user, my saves are backed up before every launch, so a bad choice, a broken mod or an edit can be undone.
+Screens: save-backups, settings-general
+Depends: S-012
+UX:
+- Flow: Play → when anything in the saves folder is newer than the newest backup, RenChan backs it up ("Before playing") → the newest five such backups stay; backups the person made, and those before a restore, mods or an edit, are never pruned.
+- Setting: Settings › General › Saves › "Back up saves before each play" (on).
+- Words: "Before playing" / « Avant de jouer », "Back up saves before each play" / « Copier les sauvegardes avant chaque partie ».
+Acceptance:
+- [unit] No saves, or nothing changed since the last backup: no backup; seven changed launches keep five; a manual backup stays.
+- [self] A launch after a change makes one; with the setting off, none.
+Status: done
+
+### S-039 Pick a game's language
+As the user, I pick which of a game's translations it starts in, including one a translation mod adds, or go back to its original language.
+Screens: game-details
+Depends: S-004, S-018
+UX:
+- Flow: inspector › Ren'Py › Language: Game’s Choice, Original Language, then each translation (from `game/tl/<name>/`, the game's `.rpa` archives, and its mods that are on) → used from the next launch.
+- States: no translations hides the row; a picked translation that is gone shows "French (missing)".
+- How: RenChan writes `zz_renchan_language.rpy` (`config.language`) into its copy only. Ren'Py remembers the last language in its preferences, so Game’s Choice starts in the one last used; Original Language clears it.
+- Words: "Language" / « Langue », "Game’s Choice" / « Choix du jeu », "Original Language" / « Langue d’origine ».
+Acceptance:
+- [unit] Languages come from tl/ folders, mod paths and RPA-2.0/3.0 indexes; None is left out; the file goes in the copy and leaves with Game’s Choice.
+- [live] On real 7.8.7 and 8.6.1, a game with a French translation starts in French with "Bonjour", keeps it under Game’s Choice, and Original Language goes back to "Hello".
+- [self] The game's translations are listed; the file lands in the copy and leaves.
+Status: done
+
+### S-040 Change persistent data
+As the user, I see and change what a game remembers across saves (endings seen, gallery flags) and unlock every image in its gallery.
+Screens: saves-persistent
+Depends: S-036
+UX:
+- Flow: Saves window › "Persistent Data" (the first row) → its values, edited like a save's (toggles, numbers, text; Save Changes ⌘S) → "Gallery Images: 42 images" with "Unlock All…" → "Mark all 42 images as seen?" → Unlock All Images. Every change backs up the saves first ("Before editing a save").
+- How: RenChan's save tool runs Ren'Py without a window; Ren'Py has already loaded the persistent data, the tool changes it and saves it Ren'Py's own way, signed for this Mac. Unlock marks each image the game defines as seen (`persistent._seen_images`), which is what Ren'Py galleries check. Ren'Py's own fields (starting with _) are not shown.
+- Words: "Persistent Data" / « Données persistantes », "Unlock All…" / « Tout débloquer… ».
+Acceptance:
+- [live] On real 7.8.7 and 8.6.1: an int and a flag are read and changed, _ fields and unknown names are refused, images are unlocked, and the game sees all of it without asking.
+- [self] Values are read, Unlock backs up then unlocks, a change is sent.
+Status: done
+
 ## Later
 - Download Windows-only Steam games with SteamCMD.
 - `renchan` CLI and MCP server.

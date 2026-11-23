@@ -55,6 +55,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var gameVersion: String?
     /// The itch.io page or F95zone thread watched for new versions (S-033).
     public var watch: UpdateWatch?
+    /// The translation it starts in, a folder under game/tl such as "french"; nil keeps the game's own choice (S-039).
+    public var language: String?
     /// A newer version on the watched page, if any.
     public var newVersion: String? { watch?.news(installed: gameVersion) }
     public var hasModsOn: Bool { mods.contains(where: \.enabled) }
@@ -107,6 +109,7 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         runs = try c.decodeIfPresent([RunRecord].self, forKey: .runs) ?? []
         gameVersion = try c.decodeIfPresent(String.self, forKey: .gameVersion)
         watch = try c.decodeIfPresent(UpdateWatch.self, forKey: .watch)
+        language = try c.decodeIfPresent(String.self, forKey: .language)
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }
