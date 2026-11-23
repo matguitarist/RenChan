@@ -62,6 +62,9 @@ final class AppModel {
     var runningCopies: [Game.ID: URL] = [:]
     /// A walkthrough window to open from code, such as snapshot mode (S-032).
     var walkthroughToOpen: WalkthroughRef?
+    /// Games whose watched page is being read now (S-033).
+    var checkingVersions: Set<Game.ID> = []
+    @ObservationIgnored var watchTask: Task<Void, Never>?
     var releases: [String: [VNDBRelease]] = [:]
     var releasesLoading: Set<String> = []
     @ObservationIgnored var cameFromDiscover: (info: VNDBInfo, opened: Date)?
@@ -86,6 +89,7 @@ final class AppModel {
         log.post(.info, "RenChan \(version) started", source: "App")
         loadLibrary()
         recoverSessions()
+        startWatchChecks()
         customFilters = CustomFilters.list(in: Store.filtersFolder)
         mods = ModLibrary.load(Store.modsFolder)
     }
@@ -121,6 +125,15 @@ final class AppModel {
             log.post(.error, "Couldn't read the library at \(Store.url.path): \(error.localizedDescription)", source: "Library")
         }
         runtimes = runtimeStore.installed()
+        // S-033: games added before 0.6.0 get their own version read once.
+        var changed = false
+        for index in games.indices where games[index].gameVersion == nil {
+            if let found = GameVersion.detect(base: games[index].baseURL, source: games[index].sourceURL) {
+                games[index].gameVersion = found
+                changed = true
+            }
+        }
+        if changed { saveLibrary() }
     }
 
     func saveLibrary() {

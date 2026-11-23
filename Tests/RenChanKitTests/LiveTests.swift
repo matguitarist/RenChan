@@ -249,6 +249,18 @@ struct Live {
         #expect((try? String(contentsOf: state, encoding: .utf8))?.contains("\"ran\": true") == true)
     }
 
+    /// S-033: a real itch.io page gives a version.
+    @Test func aRealItchPageShowsAVersion() async throws {
+        let version = try await PageVersion.fetch(URL(string: "https://caribdis.itch.io/eternum")!, userAgent: "RenChan-tests")
+        #expect(VersionOrder.compare(version, "0.9") != .orderedAscending, "\(version)")
+    }
+
+    /// S-033: a real F95zone thread gives the version in its title.
+    @Test func aRealF95zoneThreadShowsAVersion() async throws {
+        let version = try await PageVersion.fetch(URL(string: "https://f95zone.to/threads/32469/")!, userAgent: "RenChan-tests")
+        #expect(version == "Final")
+    }
+
     @Test func playsARealGameFromAClone() async throws {
         let game = ProcessInfo.processInfo.environment["RENCHAN_LIVE_GAME"].map { URL(fileURLWithPath: $0) }
         let base = try #require(game, "set RENCHAN_LIVE_GAME to a game's base folder")

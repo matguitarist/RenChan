@@ -354,9 +354,35 @@ UX:
 - Flow: inspector › Ren'Py › Last Run ("Worked on Ren'Py 8.6.1", relative date). File › Export Compatibility Report… (Markdown, shown in Finder) or Copy Compatibility Report.
 Status: done
 
+## M7 New versions (0.6.0)
+
+### S-033 Know when a new version is out
+As the user, I set a game's itch.io page or F95zone thread, and RenChan tells me when a newer version is out.
+Screens: library, game-details, settings
+Depends: S-013
+UX:
+- Flow: inspector › Files › Watch › Watch Page… → alert with the page field → Watch → checked at once, then once a day (Settings › General › New Versions) and with Game › Check All for New Versions (⇧⌘K). A newer version shows "New 1.1" on the card, "Version 1.1 is out" in the inspector, and a notification once. The row's menu: Open Page, Check Now, Dismiss This Version, Change Page…, Stop Watching.
+- States: not checked yet; "Page shows 0.9"; "Version 1.1 is out" in the accent; "Couldn't check: The page needs a login." in orange.
+- Words: "Watch Page…" / « Suivre une page… », "Game Version" / « Version du jeu », "New 1.1" / « Nouvelle 1.1 ».
+- Polite: one page every 3 s, at most once every 20 h per game, nothing downloaded.
+Acceptance:
+- [unit] Versions compare the way people write them (0.10 > 0.9, v1.2 = 1.2, 0.9a > 0.9); itch.io download names and F95zone titles give the newest version; only itch.io pages and F95zone threads are accepted; a dismissed version stays hidden; the game's own version comes from config.version or its folder name.
+- [live] The real Eternum itch.io page gives 0.9 or later; a real F95zone thread gives the version in its title.
+- [self] A newer version on a page shows on the game; Dismiss hides it.
+Status: done
+
+### S-034 Import from F95Checker
+As the user, I bring my F95Checker library into RenChan, and each game watches its F95zone thread.
+Screens: find-games
+Depends: S-030, S-033
+UX:
+- Flow: File › Import from F95Checker… → F95Checker's db.sqlite3 from its usual folder, or a file panel → the Find Games sheet titled "Import from F95Checker", listing its games that are on this Mac, with how many aren't → Add N Games. Games already in the library start watching their thread.
+Acceptance:
+- [unit] The database is read without being changed; relative executables use F95Checker's default folder; an .app or a game folder is found from an executable's path.
+- [self] Games on this Mac are listed with their thread and version; games elsewhere are counted, not listed.
+Status: done
+
 ## Later
-- F95zone and itch.io update checks with alerts.
-- Import a library from F95Checker.
 - Save viewer and editor (local only).
 - Download Windows-only Steam games with SteamCMD.
 - `renchan` CLI and MCP server.

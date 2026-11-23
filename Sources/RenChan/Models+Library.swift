@@ -39,10 +39,11 @@ extension AppModel {
             return existing
         }
         let detected = VersionDetector.detect(base: found.base)
-        let game = Game(id: id, title: GameLocator.title(base: found.base, source: source), sourcePath: source.path,
+        var game = Game(id: id, title: GameLocator.title(base: found.base, source: source), sourcePath: source.path,
                         kind: kind ?? found.kind, basePath: found.base.path, version: detected.version,
                         pythonLine: detected.pythonLine, versionSource: detected.source,
                         saveDirectory: GameLocator.saveDirectory(base: found.base))
+        game.gameVersion = GameVersion.detect(base: found.base, source: source)
         games.append(game)
         saveLibrary()
         selection = game.id

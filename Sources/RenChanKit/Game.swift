@@ -51,6 +51,12 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var devTools = DevTools()
     /// What happened the last times it was played, newest first (S-027).
     public var runs: [RunRecord] = []
+    /// The game's own version, such as "0.9" (S-033).
+    public var gameVersion: String?
+    /// The itch.io page or F95zone thread watched for new versions (S-033).
+    public var watch: UpdateWatch?
+    /// A newer version on the watched page, if any.
+    public var newVersion: String? { watch?.news(installed: gameVersion) }
     public var hasModsOn: Bool { mods.contains(where: \.enabled) }
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
@@ -99,6 +105,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         walkthroughs = try c.decodeIfPresent([Walkthrough].self, forKey: .walkthroughs) ?? []
         devTools = try c.decodeIfPresent(DevTools.self, forKey: .devTools) ?? DevTools()
         runs = try c.decodeIfPresent([RunRecord].self, forKey: .runs) ?? []
+        gameVersion = try c.decodeIfPresent(String.self, forKey: .gameVersion)
+        watch = try c.decodeIfPresent(UpdateWatch.self, forKey: .watch)
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

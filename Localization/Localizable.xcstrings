@@ -601,6 +601,26 @@
         }
       }
     },
+    "Change Page…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changer de page…"
+          }
+        }
+      }
+    },
+    "Check All for New Versions": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher les nouvelles versions de tous les jeux"
+          }
+        }
+      }
+    },
     "Check Now": {
       "localizations": {
         "fr": {
@@ -631,6 +651,26 @@
         }
       }
     },
+    "Check watched pages every day": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vérifier les pages suivies chaque jour"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vérification…"
+          }
+        }
+      }
+    },
     "Choose": {
       "localizations": {
         "fr": {
@@ -647,6 +687,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisir une couverture…"
+          }
+        }
+      }
+    },
+    "Choose F95Checker's db.sqlite3. RenChan only reads it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez le fichier db.sqlite3 de F95Checker. RenChan ne fait que le lire."
           }
         }
       }
@@ -821,6 +871,16 @@
         }
       }
     },
+    "Couldn't check: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vérification impossible : %@"
+          }
+        }
+      }
+    },
     "Create": {
       "localizations": {
         "fr": {
@@ -887,6 +947,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Découvrir"
+          }
+        }
+      }
+    },
+    "Dismiss This Version": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignorer cette version"
           }
         }
       }
@@ -997,6 +1067,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exporter le rapport de compatibilité…"
+          }
+        }
+      }
+    },
+    "F95Checker's games that are on this Mac. Each one watches its F95zone thread for new versions.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les jeux de F95Checker présents sur ce Mac. Chacun suit son fil F95zone pour les nouvelles versions."
+          }
+        }
+      }
+    },
+    "F95Checker's games that are on this Mac. Each one watches its F95zone thread for new versions. %lld aren't on this Mac and aren't listed.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les jeux de F95Checker présents sur ce Mac. Chacun suit son fil F95zone pour les nouvelles versions. %lld ne sont pas sur ce Mac et ne sont pas listés."
           }
         }
       }
@@ -1241,6 +1331,16 @@
         }
       }
     },
+    "Game Version": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version du jeu"
+          }
+        }
+      }
+    },
     "General": {
       "localizations": {
         "fr": {
@@ -1271,6 +1371,16 @@
         }
       }
     },
+    "Get told when a new version is out on this game's itch.io page or F95zone thread": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Être averti quand une nouvelle version sort sur la page itch.io ou le fil F95zone de ce jeu"
+          }
+        }
+      }
+    },
     "Grayscale": {
       "localizations": {
         "fr": {
@@ -1287,6 +1397,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Grille"
+          }
+        }
+      }
+    },
+    "Import": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importer"
+          }
+        }
+      }
+    },
+    "Import from F95Checker": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importer depuis F95Checker"
+          }
+        }
+      }
+    },
+    "Import from F95Checker…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importer depuis F95Checker…"
           }
         }
       }
@@ -1661,6 +1801,16 @@
         }
       }
     },
+    "New %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouvelle %@"
+          }
+        }
+      }
+    },
     "New Mod": {
       "localizations": {
         "fr": {
@@ -1681,12 +1831,32 @@
         }
       }
     },
+    "New Versions": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouvelles versions"
+          }
+        }
+      }
+    },
     "New version": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Nouvelle version"
+          }
+        }
+      }
+    },
+    "New version of %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouvelle version de %@"
           }
         }
       }
@@ -1811,6 +1981,16 @@
         }
       }
     },
+    "No version found on the page.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune version trouvée sur la page."
+          }
+        }
+      }
+    },
     "None": {
       "localizations": {
         "fr": {
@@ -1837,6 +2017,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pas commencé"
+          }
+        }
+      }
+    },
+    "Not checked yet": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore vérifiée"
           }
         }
       }
@@ -1891,6 +2081,16 @@
         }
       }
     },
+    "Open Page": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir la page"
+          }
+        }
+      }
+    },
     "Open Saves Folder": {
       "localizations": {
         "fr": {
@@ -1921,6 +2121,16 @@
         }
       }
     },
+    "Open, check or stop watching this page": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir, vérifier ou ne plus suivre cette page"
+          }
+        }
+      }
+    },
     "Overview": {
       "localizations": {
         "fr": {
@@ -1941,12 +2151,32 @@
         }
       }
     },
+    "Page shows %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La page indique %@"
+          }
+        }
+      }
+    },
     "Paid": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Payant"
+          }
+        }
+      }
+    },
+    "Paste the game's itch.io page or F95zone thread. RenChan reads its version once a day and tells you when a newer one is out.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collez la page itch.io ou le fil F95zone du jeu. RenChan lit sa version une fois par jour et vous avertit quand une plus récente sort."
           }
         }
       }
@@ -2371,6 +2601,16 @@
         }
       }
     },
+    "RenChan couldn't read F95Checker's library at %@. Choose the db.sqlite3 in F95Checker's folder.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu lire la bibliothèque de F95Checker à %@. Choisissez le fichier db.sqlite3 dans le dossier de F95Checker."
+          }
+        }
+      }
+    },
     "RenChan couldn't restore the saves: %@": {
       "localizations": {
         "fr": {
@@ -2471,6 +2711,16 @@
         }
       }
     },
+    "RenChan reads the itch.io page or F95zone thread you set on a game and tells you when a newer version is out. Nothing is downloaded.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan lit la page itch.io ou le fil F95zone que vous avez indiqué pour un jeu et vous avertit quand une version plus récente sort. Rien n’est téléchargé."
+          }
+        }
+      }
+    },
     "RenChan unpacks it into its own folder (%@). The zip stays as it is.": {
       "localizations": {
         "fr": {
@@ -2507,6 +2757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan décompresse le zip dans son propre dossier."
+          }
+        }
+      }
+    },
+    "RenChan watches itch.io game pages and F95zone threads, such as https://studio.itch.io/game or https://f95zone.to/threads/game.12345/.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan suit les pages de jeux itch.io et les fils F95zone, comme https://studio.itch.io/game ou https://f95zone.to/threads/game.12345/."
           }
         }
       }
@@ -2841,6 +3101,16 @@
         }
       }
     },
+    "Stop Watching": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ne plus suivre"
+          }
+        }
+      }
+    },
     "Strength": {
       "localizations": {
         "fr": {
@@ -2927,6 +3197,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "La nouvelle langue s’appliquera après un redémarrage."
+          }
+        }
+      }
+    },
+    "The page is gone.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La page n’existe plus."
+          }
+        }
+      }
+    },
+    "The page needs a login.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La page demande une connexion."
+          }
+        }
+      }
+    },
+    "The site answered %lld.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le site a répondu %lld."
           }
         }
       }
@@ -3241,6 +3541,36 @@
         }
       }
     },
+    "Version %@ is out": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La version %@ est sortie"
+          }
+        }
+      }
+    },
+    "Version %@ is out on the game's page": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La version %@ est sortie sur la page du jeu"
+          }
+        }
+      }
+    },
+    "Version %@ is out. Download it, then use Update to New Version… in RenChan.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La version %@ est sortie. Téléchargez-la, puis utilisez Mettre à jour vers une nouvelle version… dans RenChan."
+          }
+        }
+      }
+    },
     "View": {
       "localizations": {
         "fr": {
@@ -3277,6 +3607,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Soluces"
+          }
+        }
+      }
+    },
+    "Watch": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivre"
+          }
+        }
+      }
+    },
+    "Watch Page…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivre une page…"
+          }
+        }
+      }
+    },
+    "Watch for New Versions": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivre les nouvelles versions"
           }
         }
       }
@@ -3347,6 +3707,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "en liste"
+          }
+        }
+      }
+    },
+    "https://studio.itch.io/game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://studio.itch.io/game"
           }
         }
       }

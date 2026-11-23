@@ -27,3 +27,6 @@ One name per thing, in every button, menu, title, tooltip and error.
 | Load order | The order of a game's mods; a later mod wins a file both have | priority | Ordre de chargement |
 | Modded saves | The saves of play with mods on, kept apart from the game's | mod saves | Sauvegardes avec mods |
 | Walkthrough | A PDF or text guide kept with a game and read in its own window; a walkthrough mod is a mod | guide, soluce file | Soluce |
+| Watch | The itch.io page or F95zone thread RenChan reads for a game's new versions | Follow, subscribe, track | Suivre |
+| Game Version | The game's own version, such as 0.9, read from config.version or its folder name | Ren'Py version | Version du jeu |
+| New version | A version on the watched page newer than the game's | Update (the action) | Nouvelle version |

@@ -123,7 +123,14 @@ enum SeedData {
                 }
             }
             if model.games.count > 2 {
-                model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }
+                model.update(model.games[2].id) {
+                    $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"]
+                    // S-033: its itch.io page shows a newer version.
+                    $0.gameVersion = "1.0"
+                    var watch = UpdateWatch(page: "https://lanternworks.itch.io/harbor-lights")
+                    watch.record(version: "1.1", error: nil, at: .now.addingTimeInterval(-7200))
+                    $0.watch = watch
+                }
                 model.update(model.games[1].id) { $0.labels = ["Short"] }
             }
             // A 2:3 portrait like VNDB's covers, so snapshots show how one is framed.

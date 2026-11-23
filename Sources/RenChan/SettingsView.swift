@@ -59,6 +59,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
 struct GeneralSettings: View {
     @Environment(AppModel.self) private var model
+    @AppStorage(AppModel.watchChecksKey) private var watchChecks = true
 
     var body: some View {
         @Bindable var model = model
@@ -79,6 +80,12 @@ struct GeneralSettings: View {
                     Button("Restart Now") { AppLanguage.relaunch() }
                 }
             }
+        }
+        Section("New Versions") {
+            Toggle("Check watched pages every day", isOn: $watchChecks)
+            Text("RenChan reads the itch.io page or F95zone thread you set on a game and tells you when a newer version is out. Nothing is downloaded.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
         }
     }
 }

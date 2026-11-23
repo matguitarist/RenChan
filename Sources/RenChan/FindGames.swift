@@ -8,6 +8,9 @@ struct FoundGame: Identifiable, Equatable {
     var url: URL
     var title: String
     var version: String?
+    /// From F95Checker (S-034): the thread to watch and the game's own version.
+    var watch: String? = nil
+    var gameVersion: String? = nil
 }
 
 struct FindGamesState: Equatable {
@@ -16,6 +19,8 @@ struct FindGamesState: Equatable {
     var chosen: Set<URL> = []
     /// The folders that were looked in, for the sheet's words.
     var places: [String] = []
+    /// Set when the list comes from F95Checker (S-034): how many of its games aren't on this Mac.
+    var notOnThisMac: Int?
 }
 
 /// Find Games on This Mac (S-030).
@@ -55,7 +60,58 @@ extension AppModel {
     func addFoundGames() {
         guard let state = findGames else { return }
         findGames = nil
-        for game in state.found where state.chosen.contains(game.url) { addFolder(game.url) }
+        for found in state.found where state.chosen.contains(found.url) {
+            guard let game = addFolder(found.url) else { continue }
+            if found.watch != nil || found.gameVersion != nil {
+                update(game.id) {
+                    if let page = found.watch, $0.watch == nil { $0.watch = UpdateWatch(page: page) }
+                    if $0.gameVersion == nil { $0.gameVersion = found.gameVersion }
+                }
+            }
+        }
+        if state.notOnThisMac != nil { checkForNewVersions() }
+    }
+
+    /// File › Import from F95Checker… (S-034): its games that are on this Mac, each watching its thread.
+    func importF95Checker(database: URL? = nil) {
+        var file = database ?? F95Checker.defaultDatabases().first
+        if file == nil {
+            let panel = NSOpenPanel()
+            panel.canChooseFiles = true
+            panel.canChooseDirectories = false
+            panel.message = String(localized: "Choose F95Checker's db.sqlite3. RenChan only reads it.")
+            panel.prompt = String(localized: "Import")
+            guard panel.runModal() == .OK else { return }
+            file = panel.url
+        }
+        guard let file else { return }
+        let entries: [F95Checker.Entry]
+        do {
+            entries = try F95Checker.read(file)
+        } catch {
+            notice = String(localized: "RenChan couldn't read F95Checker's library at \(file.path). Choose the db.sqlite3 in F95Checker's folder.")
+            log.post(.warning, "Couldn't read \(file.path): \(error)", source: "Library")
+            return
+        }
+        let known = Set(games.flatMap { [$0.sourcePath, $0.basePath] }.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path })
+        var found: [FoundGame] = []
+        var missing = 0
+        var linked = 0
+        for entry in entries {
+            let located = entry.executables.lazy.map(F95Checker.gameLocation).compactMap { url in (try? GameLocator.locate(url)).map { (url, $0.base) } }.first
+            guard let (url, base) = located else { missing += 1; continue }
+            let paths = [url, base].map { $0.resolvingSymlinksInPath().path }
+            if let existing = games.first(where: { paths.contains(URL(fileURLWithPath: $0.sourcePath).resolvingSymlinksInPath().path) || paths.contains(URL(fileURLWithPath: $0.basePath).resolvingSymlinksInPath().path) }) {
+                // Already in the library: it starts watching its thread, nothing else changes.
+                if existing.watch == nil { update(existing.id) { $0.watch = UpdateWatch(page: entry.thread.absoluteString) }; linked += 1 }
+                continue
+            }
+            guard !paths.contains(where: known.contains), !found.contains(where: { $0.url == url }) else { continue }
+            found.append(FoundGame(url: url, title: entry.name, version: VersionDetector.detect(base: base).version?.description,
+                                   watch: entry.thread.absoluteString, gameVersion: GameVersion.detect(base: base, source: url) ?? entry.version))
+        }
+        log.post(.info, "F95Checker: \(entries.count) games, \(found.count) to add, \(linked) already here now watch their thread, \(missing) not on this Mac", source: "Library")
+        findGames = FindGamesState(scanning: false, found: found, chosen: Set(found.map(\.url)), places: [], notOnThisMac: missing)
     }
 }
 
@@ -67,10 +123,18 @@ struct FindGamesSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Space.lg) {
             VStack(alignment: .leading, spacing: Space.xs) {
-                Text("Find Games on This Mac").font(.title3.weight(.semibold))
-                Text("Looked in \(state.places.formatted(.list(type: .and))). Games already in your library aren't listed.")
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                if let missing = state.notOnThisMac {
+                    Text("Import from F95Checker").font(.title3.weight(.semibold))
+                    Text(missing == 0 ? String(localized: "F95Checker's games that are on this Mac. Each one watches its F95zone thread for new versions.")
+                                      : String(localized: "F95Checker's games that are on this Mac. Each one watches its F95zone thread for new versions. \(missing) aren't on this Mac and aren't listed."))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("Find Games on This Mac").font(.title3.weight(.semibold))
+                    Text("Looked in \(state.places.formatted(.list(type: .and))). Games already in your library aren't listed.")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             Group {
                 if state.scanning {
@@ -102,7 +166,9 @@ struct FindGamesSheet: View {
             }
             .frame(height: 280)
             HStack(spacing: Space.sm) {
-                Button("Look in Another Folder…") { model.findGamesInFolder() }
+                if state.notOnThisMac == nil {
+                    Button("Look in Another Folder…") { model.findGamesInFolder() }
+                }
                 Spacer()
                 Button("Cancel", role: .cancel) { model.findGames = nil }
                     .keyboardShortcut(.cancelAction)

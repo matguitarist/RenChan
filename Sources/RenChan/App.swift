@@ -37,6 +37,7 @@ struct RenChanApp: App {
                     .keyboardShortcut("o")
                 Button("Find Games on This Mac…") { model.sidebar = .library; model.findGames() }
                     .keyboardShortcut("o", modifiers: [.command, .shift])
+                Button("Import from F95Checker…") { model.sidebar = .library; model.importF95Checker() }
                 Divider()
                 Button("Export Compatibility Report…") { model.exportCompatibilityReport() }
                 Button("Copy Compatibility Report") { model.copyCompatibilityReport() }
@@ -72,6 +73,8 @@ struct RenChanApp: App {
                 Button("Update to New Version…") { if let id = menu.selection { model.chooseUpdate(id) } }
                     .keyboardShortcut("u", modifiers: [.command, .shift])
                     .disabled(menu.selection == nil || menu.selectionPlaying)
+                Button("Check All for New Versions") { model.checkForNewVersions(force: true) }
+                    .keyboardShortcut("k", modifiers: [.command, .shift])
                 Button("Find on VNDB…") { if let id = menu.selection { model.findOnVNDB(id) } }
                     .keyboardShortcut("d", modifiers: [.command, .shift])
                     .disabled(menu.selection == nil)

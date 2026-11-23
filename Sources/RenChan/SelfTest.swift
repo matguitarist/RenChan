@@ -369,6 +369,42 @@ enum SelfTest {
         model.addFoundGames()
         check("S-030 Add Games adds only the chosen ones", model.games.count == before030 + 1 && model.findGames == nil)
 
+        // S-033 Know when a new version is out (a page on disk stands in for itch.io)
+        let page = shelf.appending(path: "itch-page.html")
+        try? #"<div class="upload_name"><strong class="name" title="The Question - [9.9] - PC">The Question - [9.9] - PC</strong></div>"#.write(to: page, atomically: true, encoding: .utf8)
+        check("S-033 only itch.io pages and F95zone threads are watched", !model.setWatch("https://example.com/game", for: first.id) && model.notice != nil)
+        model.notice = nil
+        model.update(first.id) { $0.gameVersion = "6.99"; $0.watch = UpdateWatch(page: page.absoluteString) }
+        model.checkNewVersion(first.id)
+        for _ in 0..<50 where model.game(first.id)?.watch?.checked == nil { try? await Task.sleep(for: .milliseconds(100)) }
+        check("S-033 a newer version on the page shows on the game", model.game(first.id)?.newVersion == "9.9", "\(String(describing: model.game(first.id)?.watch))")
+        model.dismissNewVersion(first.id)
+        check("S-033 Dismiss hides that version", model.game(first.id)?.newVersion == nil && model.game(first.id)?.watch?.latest == "9.9")
+        model.stopWatching(first.id)
+
+        // S-034 Import from F95Checker: games on this Mac are listed with their thread; the database isn't changed
+        Fixtures.game("Night_Ferry-0.3-pc", in: shelf, files: ["renpy/__init__.py": ""])
+        let db = shelf.appending(path: "db.sqlite3")
+        let sqlite = Process()
+        sqlite.executableURL = URL(fileURLWithPath: "/usr/bin/sqlite3")
+        sqlite.arguments = [db.path, """
+            CREATE TABLE games (id INTEGER PRIMARY KEY, name TEXT, version TEXT, executables TEXT);
+            INSERT INTO games VALUES (4242, 'Night Ferry', 'v0.3', '["\(shelf.path)/Night_Ferry-0.3-pc/NightFerry.exe"]');
+            INSERT INTO games VALUES (77, 'Far Away', '1.0', '["/Volumes/Nowhere/FarAway/FarAway.exe"]');
+            """]
+        try? sqlite.run()
+        sqlite.waitUntilExit()
+        let dbBefore = try? Data(contentsOf: db)
+        model.importF95Checker(database: db)
+        check("S-034 lists F95Checker's games that are on this Mac",
+              model.findGames?.found.map(\.title) == ["Night Ferry"] && model.findGames?.notOnThisMac == 1, "\(String(describing: model.findGames))")
+        model.addFoundGames()
+        let ferry = model.games.first { $0.sourcePath.hasSuffix("Night_Ferry-0.3-pc") }
+        check("S-034 an imported game watches its F95zone thread",
+              ferry?.watch?.page == "https://f95zone.to/threads/4242/" && ferry?.gameVersion == "0.3" && (try? Data(contentsOf: db)) == dbBefore)
+        model.watchTask?.cancel()
+        model.watchTask = nil
+
         // S-008 Remove a game
         model.remove(first.id)
         check("removing deletes the working copy and keeps the original and saves",

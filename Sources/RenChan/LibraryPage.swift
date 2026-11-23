@@ -127,6 +127,9 @@ struct GameCard: View {
                     RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
                         .strokeBorder(selected ? Palette.accent : Color.secondary.opacity(0.2), lineWidth: selected ? 3 : 1)
                 }
+                .overlay(alignment: .topLeading) {
+                    if let news = game.newVersion { NewVersionBadge(version: news) }
+                }
                 .overlay(alignment: .topTrailing) {
                     if playing {
                         Label("Playing", systemImage: "play.fill")

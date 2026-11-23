@@ -79,6 +79,8 @@ extension AppModel {
             GameUpdate.apply(to: &$0, title: GameLocator.title(base: found.base, source: request.url), sourcePath: request.url.path,
                              kind: found.kind, basePath: found.base.path, detected: detected,
                              saveDirectory: GameLocator.saveDirectory(base: found.base))
+            // S-033: the new version's own number; the badge goes once it's the one on the page.
+            $0.gameVersion = GameVersion.detect(base: found.base, source: request.url) ?? $0.gameVersion
         }
         // The working copy is a clone of the old files; an unpacked old zip is RenChan's own and goes too.
         try? FileManager.default.removeItem(at: Store.workingCopy(old.id))

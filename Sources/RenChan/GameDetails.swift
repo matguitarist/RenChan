@@ -77,6 +77,7 @@ struct GameDetails: View {
                 LabeledContent("Location") {
                     Button("Show in Finder") { model.showInFinder(game.id) }
                 }
+                WatchRows(game: game)
                 LabeledContent("New version") {
                     HStack(spacing: Space.sm) {
                         if let info = game.vndb {
