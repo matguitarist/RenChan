@@ -36,6 +36,15 @@ import Testing
     #expect(GameLocator.title(base: bare, source: bare) == "My Game 1.2")
 }
 
+/// An expired itch.io link saves a 118-byte XML error page under the zip's name.
+@Test func aDownloadThatIsntAZipIsRefusedPlainly() throws {
+    let file = Fixture.folder().appending(path: "cosy-cafe-mac.zip")
+    try #"<?xml version="1.0" encoding="UTF-8"?><Error><Code>ExpiredRequest</Code><Message>Request has expired</Message></Error>"#
+        .write(to: file, atomically: true, encoding: .utf8)
+    #expect(throws: LocateError.notAZip(size: 118)) { try ZipImport.check(file) }
+    #expect(throws: LocateError.notAZip(size: 118)) { try ZipImport.unpack(file, into: file.deletingLastPathComponent().appending(path: "out")) }
+}
+
 @Test func zipSlipIsRefused() {
     #expect(ZipImport.unsafeEntry(["Game/game/script.rpy", "Game/./lib/"]) == nil)
     #expect(ZipImport.unsafeEntry(["Game/../../evil.sh"]) == "Game/../../evil.sh")

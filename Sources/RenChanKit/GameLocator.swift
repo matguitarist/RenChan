@@ -6,6 +6,8 @@ public enum LocateError: Error, Equatable, Sendable {
     case noScripts
     case unsafeZip(String)
     case unzipFailed(String)
+    /// The file has a .zip name but isn't one, such as an error page saved by an expired download link.
+    case notAZip(size: Int64)
 
 }
 

@@ -210,6 +210,7 @@ extension LocateError {
         case .noScripts: String(localized: "This isn't a Ren'Py game: its game folder has no Ren'Py scripts.")
         case .unsafeZip(let entry): String(localized: "This zip was refused: it would write outside its folder (\(entry)).")
         case .unzipFailed(let reason): String(localized: "This zip couldn't be opened: \(reason)")
+        case .notAZip(let size): String(localized: "This file isn't a zip, only \(ByteCountFormatter.string(fromByteCount: size, countStyle: .file)) of text: often a download link that expired. Download the game again.")
         }
     }
 }

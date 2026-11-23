@@ -9,6 +9,13 @@ extension AppModel {
     func add(_ urls: [URL]) {
         for url in urls {
             if url.pathExtension.lowercased() == "zip" {
+                do {
+                    try ZipImport.check(url)
+                } catch {
+                    notice = error.message
+                    log.post(.warning, "Refused \(url.path): not a zip (\(error))", source: "Library")
+                    continue
+                }
                 confirmZip = ZipRequest(url: url, size: ZipImport.size(of: url))
             } else {
                 addFolder(url)

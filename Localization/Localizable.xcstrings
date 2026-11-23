@@ -1791,6 +1791,16 @@
         }
       }
     },
+    "This file isn't a zip, only %@ of text: often a download link that expired. Download the game again.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce fichier n’est pas un zip, seulement %@ de texte : souvent un lien de téléchargement expiré. Téléchargez le jeu à nouveau."
+          }
+        }
+      }
+    },
     "This is what Ren'Py wrote when it stopped.": {
       "localizations": {
         "fr": {
