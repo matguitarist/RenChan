@@ -106,6 +106,7 @@ extension SaveBackup.Reason {
         case .manual: String(localized: "Backup")
         case .beforeRestore: String(localized: "Before restore")
         case .beforeMods: String(localized: "Before mods")
+        case .beforeEdit: String(localized: "Before editing a save")
         }
     }
 }

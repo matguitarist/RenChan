@@ -9,6 +9,8 @@ public struct SaveBackup: Identifiable, Hashable, Sendable {
         case beforeRestore
         /// Made by RenChan before a game's first launch with mods (S-020).
         case beforeMods
+        /// Made by RenChan before it changed a save's variables (S-036).
+        case beforeEdit
     }
 
     /// The folder name, "2026-11-22 190412".

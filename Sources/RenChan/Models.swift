@@ -62,6 +62,8 @@ final class AppModel {
     var runningCopies: [Game.ID: URL] = [:]
     /// A walkthrough window to open from code, such as snapshot mode (S-032).
     var walkthroughToOpen: WalkthroughRef?
+    /// A Saves window to open (S-035).
+    var savesToOpen: SavesRef?
     /// Games whose watched page is being read now (S-033).
     var checkingVersions: Set<Game.ID> = []
     @ObservationIgnored var watchTask: Task<Void, Never>?

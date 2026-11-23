@@ -44,12 +44,15 @@ public struct LaunchPlan: Sendable {
     public let outputFile: URL
     /// Extra environment, such as HOME in tests.
     public var environment: [String: String] = [:]
+    /// A Ren'Py command and its arguments after the game folder, such as RenChan's save tool (S-036).
+    public var arguments: [String] = []
 
-    public init(runtime: Runtime, copy: URL, outputFile: URL, environment: [String: String] = [:]) {
+    public init(runtime: Runtime, copy: URL, outputFile: URL, environment: [String: String] = [:], arguments: [String] = []) {
         self.runtime = runtime
         self.copy = copy
         self.outputFile = outputFile
         self.environment = environment
+        self.arguments = arguments
     }
 
     /// `lib/<folder>/python -EO renpy.py <copy>`, as renutil does. Its output goes to outputFile.
@@ -59,7 +62,7 @@ public struct LaunchPlan: Sendable {
         }
         let process = Process()
         process.executableURL = python
-        process.arguments = ["-EO", runtime.renpyScript.path, copy.path]
+        process.arguments = ["-EO", runtime.renpyScript.path, copy.path] + arguments
         process.currentDirectoryURL = copy
         var env = ProcessInfo.processInfo.environment
         env["RENPY_LOG_TO_STDOUT"] = "1"

@@ -30,6 +30,17 @@ enum Fixtures {
         let script = """
         #!/bin/sh
         base="$3"
+        # RenChan's save tool (S-036): canned answers, and the changes kept for the self-test to read.
+        if [ "$4" = "renchan_saves" ]; then
+          for last; do :; done
+          if [ "$5" = "dump" ]; then
+            printf '%s' '{"variables":[{"name":"affection_mei","kind":"int","value":"12"},{"name":"bag","kind":"other","value":"list (3)"},{"name":"chapter","kind":"float","value":"2.5"},{"name":"hero","kind":"string","value":"Ana"},{"name":"met_aoi","kind":"bool","value":"true"}]}' > "$last"
+          else
+            cp "$7" "$base/renchan_last_changes.json"
+            printf '%s' '{"changed":["affection_mei"],"refused":[]}' > "$last"
+          fi
+          exit 0
+        fi
         touch "$base/game/script.rpyc"
         saves=$(sed -n 's/.*save_directory = "\\(.*\\)".*/\\1/p' "$base/game/options.rpy" 2>/dev/null)
         root="${RENPY_PATH_TO_SAVES:-$HOME/Library/RenPy}"
@@ -47,6 +58,33 @@ enum Fixtures {
 }
 
 extension Fixtures {
+    /// A save file laid out as Ren'Py writes one: a zip with a screenshot, its name, json and log (S-035).
+    static func save(_ slot: String, name: String, minutesAgo: Double, color: NSColor, in folder: URL) {
+        let work = FileManager.default.temporaryDirectory.appending(path: "renchan-save-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try? FileManager.default.createDirectory(at: work, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let image = NSImage(size: NSSize(width: 384, height: 216), flipped: false) { rect in
+            NSGradient(starting: color, ending: color.blended(withFraction: 0.6, of: .black) ?? color)?.draw(in: rect, angle: -60)
+            return true
+        }
+        if let tiff = image.tiffRepresentation, let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+            try? png.write(to: work.appending(path: "screenshot.png"))
+        }
+        let ctime = Date().addingTimeInterval(-minutesAgo * 60).timeIntervalSince1970
+        try? name.write(to: work.appending(path: "extra_info"), atomically: true, encoding: .utf8)
+        try? #"{"_save_name": "\#(name)", "_renpy_version": [8, 6, 1, 0], "_game_runtime": \#(minutesAgo * 30), "_ctime": \#(ctime)}"#
+            .write(to: work.appending(path: "json"), atomically: true, encoding: .utf8)
+        try? "8.6.1".write(to: work.appending(path: "renpy_version"), atomically: true, encoding: .utf8)
+        try? "pretend".write(to: work.appending(path: "log"), atomically: true, encoding: .utf8)
+        let zip = Process()
+        zip.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+        zip.currentDirectoryURL = work
+        zip.arguments = ["-q", folder.appending(path: "\(slot)-LT1.save").path, "screenshot.png", "extra_info", "json", "renpy_version", "log"]
+        try? zip.run()
+        zip.waitUntilExit()
+        try? FileManager.default.removeItem(at: work)
+    }
+
     /// A small PDF with one page of text per item, for walkthrough seed data and the self-test.
     static func pdf(_ pages: [String], to url: URL) {
         var box = CGRect(x: 0, y: 0, width: 612, height: 792)
@@ -146,9 +184,11 @@ enum SeedData {
             }
             let saves = Store.saveRoot.appending(path: "The_Question-7.0-pc", directoryHint: .isDirectory)
             try? FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)
-            for name in ["1-1-LT1.save", "1-2-LT1.save", "auto-1-LT1.save", "persistent"] {
-                try? Data(repeating: 7, count: 48_000).write(to: saves.appending(path: name))
-            }
+            // Saves laid out as Ren'Py writes them, to browse (S-035) and back up (S-012).
+            Fixtures.save("1-1", name: "The bridge at dusk", minutesAgo: 35, color: .systemOrange, in: saves)
+            Fixtures.save("1-2", name: "Before the question", minutesAgo: 190, color: .systemPurple, in: saves)
+            Fixtures.save("auto-1", name: "", minutesAgo: 600, color: .systemTeal, in: saves)
+            try? Data(repeating: 7, count: 4_000).write(to: saves.appending(path: "persistent"))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -86400 * 6))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforeRestore, at: Date(timeIntervalSinceNow: -86400 * 2))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -7200))

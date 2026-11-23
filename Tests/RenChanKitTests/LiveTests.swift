@@ -261,6 +261,72 @@ struct Live {
         #expect(version == "Final")
     }
 
+    /// S-035, S-036: a real save is listed, its variables read and changed, and Ren'Py loads the changed save.
+    @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
+    func aSaveIsReadChangedAndStillLoads(version: String) async throws {
+        if Self.store.runtime(version) == nil {
+            try await RuntimeDownload.install(version, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        let home = root.appending(path: "home")
+        let report = root.appending(path: "loaded.txt")
+        let marker = root.appending(path: "loadme")
+        let script = """
+        define config.save_directory = "renchan-save-test"
+        default points = 3
+        default hero = "Ana"
+        default met = False
+        default bag = ["key"]
+        init python:
+            def _after():
+                open("\(report.path)", "w").write("%s %s %s" % (store.points, store.hero, store.met))
+                renpy.quit()
+            config.after_load_callbacks.append(_after)
+        label start:
+            if renpy.os.path.exists("\(marker.path)"):
+                $ renpy.load("1-1")
+            $ points = 7
+            $ renpy.save("1-1", "Before the bridge")
+            $ renpy.quit()
+        """
+        let copy = Fixture.game(at: root.appending(path: "Game"), files: ["game/script.rpy": script])
+        func run(_ arguments: [String] = []) async throws -> String {
+            let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run-\(UUID()).log"),
+                                  environment: ["HOME": home.path], arguments: arguments)
+            let process = try plan.makeProcess()
+            try process.run()
+            let deadline = Date().addingTimeInterval(90)
+            while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
+            if process.isRunning { process.terminate() }
+            return (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
+        }
+        // Play once: the game saves in slot 1-1 and quits.
+        var log = try await run()
+        let folder = home.appending(path: "Library/RenPy/renchan-save-test")
+        let saves = SaveList.list(in: folder)
+        #expect(saves.map(\.slot) == ["1-1"], "\(log.suffix(1500))")
+        #expect(saves.first?.name == "Before the bridge" && saves.first?.screenshot() != nil)
+        // Read and change it.
+        try SaveTool.install(copy: copy)
+        let out = root.appending(path: "dump.json")
+        log = try await run(SaveTool.dumpArguments(slot: "1-1", output: out))
+        let dump = try SaveTool.readReport(out)
+        let vars = Dictionary(uniqueKeysWithValues: (dump.variables ?? []).map { ($0.name, $0) })
+        // The save holds the state from the start of the statement it was made in, where points was still 3.
+        #expect(vars["points"]?.value == "3" && vars["points"]?.kind == .int, "\(String(describing: dump)) \(log.suffix(1500))")
+        #expect(vars["hero"]?.value == "Ana" && vars["met"]?.value == "false" && vars["bag"]?.editable == false)
+        let changes = root.appending(path: "changes.json")
+        try SaveTool.writeChanges(["points": 42, "hero": "Bo", "met": true, "bag": 1], to: changes)
+        log = try await run(SaveTool.setArguments(slot: "1-1", changes: changes, output: out))
+        let set = try SaveTool.readReport(out)
+        #expect(set.changed == ["hero", "met", "points"] && set.refused == ["bag"], "\(String(describing: set)) \(log.suffix(1500))")
+        // Ren'Py loads the changed save without asking, and sees the new values.
+        try "".write(to: marker, atomically: true, encoding: .utf8)
+        log = try await run()
+        #expect((try? String(contentsOf: report, encoding: .utf8)) == "42 Bo True", "\(log.suffix(2000))")
+    }
+
     @Test func playsARealGameFromAClone() async throws {
         let game = ProcessInfo.processInfo.environment["RENCHAN_LIVE_GAME"].map { URL(fileURLWithPath: $0) }
         let base = try #require(game, "set RENCHAN_LIVE_GAME to a game's base folder")

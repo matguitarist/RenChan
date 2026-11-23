@@ -42,7 +42,13 @@ struct GameDetails: View {
             Section("Saves") {
                 LabeledContent("Folder") {
                     if game.saveDirectory != nil {
-                        Button(savesTitle) { model.openSaves(game.id) }
+                        HStack(spacing: Space.sm) {
+                            Button(savesTitle) { model.showSaves(game.id) }
+                                .help("See each save and change its variables (Shift-Command-B)")
+                            Button("Open Saves Folder", systemImage: "folder") { model.openSaves(game.id) }
+                                .labelStyle(.iconOnly)
+                                .help("Show the saves folder in the Finder (Option-Command-S)")
+                        }
                     } else {
                         Text("Found the first time you play").foregroundStyle(.secondary)
                     }

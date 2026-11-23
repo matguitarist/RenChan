@@ -491,6 +491,16 @@
         }
       }
     },
+    "Auto %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto %@"
+          }
+        }
+      }
+    },
     "Automatic Updates": {
       "localizations": {
         "fr": {
@@ -531,6 +541,16 @@
         }
       }
     },
+    "Back up the saves, then write these values into this save (Command-S)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sauvegarder une copie des sauvegardes, puis écrire ces valeurs dans cette sauvegarde (Commande-S)"
+          }
+        }
+      }
+    },
     "Backup": {
       "localizations": {
         "fr": {
@@ -561,6 +581,16 @@
         }
       }
     },
+    "Before editing a save": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant la modification d’une sauvegarde"
+          }
+        }
+      }
+    },
     "Before mods": {
       "localizations": {
         "fr": {
@@ -577,6 +607,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Avant restauration"
+          }
+        }
+      }
+    },
+    "Browse Saves…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parcourir les sauvegardes…"
           }
         }
       }
@@ -607,6 +647,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Changer de page…"
+          }
+        }
+      }
+    },
+    "Changed, not saved yet": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifiée, pas encore enregistrée"
           }
         }
       }
@@ -707,6 +757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisissez un shader .glsl dont la première ligne le nomme, par exemple // {\"name\": \"Sépia\"}."
+          }
+        }
+      }
+    },
+    "Choose a Save": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez une sauvegarde"
           }
         }
       }
@@ -1671,6 +1731,16 @@
         }
       }
     },
+    "Modded Saves": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sauvegardes avec mods"
+          }
+        }
+      }
+    },
     "Modded play keeps its own saves; yours are backed up before the first modded launch.": {
       "localizations": {
         "fr": {
@@ -1721,6 +1791,16 @@
         }
       }
     },
+    "Move %@ to the Trash?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Placer « %@ » dans la corbeille ?"
+          }
+        }
+      }
+    },
     "Move Down": {
       "localizations": {
         "fr": {
@@ -1747,6 +1827,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Placer dans la corbeille"
+          }
+        }
+      }
+    },
+    "Move to Trash…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Placer dans la corbeille…"
           }
         }
       }
@@ -1941,6 +2031,16 @@
         }
       }
     },
+    "No Saves": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune sauvegarde"
+          }
+        }
+      }
+    },
     "No Walkthrough": {
       "localizations": {
         "fr": {
@@ -1977,6 +2077,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucune étiquette"
+          }
+        }
+      }
+    },
+    "No variable matches “%@”.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune variable ne correspond à « %@ »."
           }
         }
       }
@@ -2071,6 +2181,16 @@
         }
       }
     },
+    "On/off values, numbers and text can be changed. RenChan backs up the saves first, and the game loads the save as usual.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les valeurs oui/non, les nombres et le texte peuvent être modifiés. RenChan copie d’abord les sauvegardes, et le jeu charge la sauvegarde comme d’habitude."
+          }
+        }
+      }
+    },
     "Open": {
       "localizations": {
         "fr": {
@@ -2141,6 +2261,16 @@
         }
       }
     },
+    "Page %@, slot %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page %1$@, emplacement %2$@"
+          }
+        }
+      }
+    },
     "Page %lld": {
       "localizations": {
         "fr": {
@@ -2181,6 +2311,16 @@
         }
       }
     },
+    "Place": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emplacement"
+          }
+        }
+      }
+    },
     "Play": {
       "localizations": {
         "fr": {
@@ -2197,6 +2337,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jouer à %@ (Commande-Retour)"
+          }
+        }
+      }
+    },
+    "Play %@ once first, so RenChan has its Ren'Py %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouez d’abord une fois à %1$@, pour que RenChan ait son Ren’Py %2$@."
+          }
+        }
+      }
+    },
+    "Play the game once so RenChan learns where it saves.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jouez une fois au jeu pour que RenChan sache où il sauvegarde."
+          }
+        }
+      }
+    },
+    "Played": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temps de jeu"
           }
         }
       }
@@ -2311,12 +2481,32 @@
         }
       }
     },
+    "Quick %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rapide %@"
+          }
+        }
+      }
+    },
     "Quit %@ before updating it.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Quittez %@ avant de le mettre à jour."
+          }
+        }
+      }
+    },
+    "Quit %@ first: it would write over the save.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quittez d’abord %@ : il écraserait la sauvegarde."
           }
         }
       }
@@ -2361,6 +2551,26 @@
         }
       }
     },
+    "Read the saves folder again": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relire le dossier des sauvegardes"
+          }
+        }
+      }
+    },
+    "Reading the save with Ren'Py…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecture de la sauvegarde avec Ren’Py…"
+          }
+        }
+      }
+    },
     "Refresh from VNDB": {
       "localizations": {
         "fr": {
@@ -2387,6 +2597,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sortie"
+          }
+        }
+      }
+    },
+    "Reload": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recharger"
           }
         }
       }
@@ -2521,6 +2741,16 @@
         }
       }
     },
+    "Ren'Py couldn't read this save. The Log has what it said.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ren’Py n’a pas pu lire cette sauvegarde. Le journal contient ce qu’il a indiqué."
+          }
+        }
+      }
+    },
     "Ren'Py version unknown": {
       "localizations": {
         "fr": {
@@ -2571,6 +2801,16 @@
         }
       }
     },
+    "RenChan changes on/off values, numbers and text only": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan ne modifie que les valeurs oui/non, les nombres et le texte"
+          }
+        }
+      }
+    },
     "RenChan couldn't add %@: %@": {
       "localizations": {
         "fr": {
@@ -2597,6 +2837,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan n’a pas pu créer le mod : %@"
+          }
+        }
+      }
+    },
+    "RenChan couldn't move the save to the Trash: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu placer la sauvegarde dans la corbeille : %@"
           }
         }
       }
@@ -2831,6 +3081,16 @@
         }
       }
     },
+    "Revert": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annuler les modifications"
+          }
+        }
+      }
+    },
     "Routes done, choices to try…": {
       "localizations": {
         "fr": {
@@ -2881,12 +3141,72 @@
         }
       }
     },
+    "Save Changes": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer les modifications"
+          }
+        }
+      }
+    },
+    "Saved": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrée"
+          }
+        }
+      }
+    },
+    "Saved %lld changes. The saves were backed up first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld modifications enregistrées. Les sauvegardes ont d’abord été copiées."
+          }
+        }
+      }
+    },
+    "Saved 1 change. The saves were backed up first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 modification enregistrée. Les sauvegardes ont d’abord été copiées."
+          }
+        }
+      }
+    },
     "Saves": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Sauvegardes"
+          }
+        }
+      }
+    },
+    "Saves made in the game show up here.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les sauvegardes faites dans le jeu apparaissent ici."
+          }
+        }
+      }
+    },
+    "Saves of %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sauvegardes de %@"
           }
         }
       }
@@ -2927,6 +3247,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chercher ce jeu sur VNDB (Maj-Commande-D)"
+          }
+        }
+      }
+    },
+    "Search Variables": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher des variables"
+          }
+        }
+      }
+    },
+    "See each save and change its variables (Shift-Command-B)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voir chaque sauvegarde et modifier ses variables (Maj-Commande-B)"
           }
         }
       }
@@ -3037,6 +3377,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "N’afficher que les jeux avec un statut, une note ou une étiquette"
+          }
+        }
+      }
+    },
+    "Show the saves folder in the Finder (Option-Command-S)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher le dossier des sauvegardes dans le Finder (Option-Commande-S)"
           }
         }
       }
@@ -3191,6 +3541,16 @@
         }
       }
     },
+    "The game's own saves, or the ones made with mods on": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les sauvegardes du jeu, ou celles faites avec des mods"
+          }
+        }
+      }
+    },
     "The new language applies after a restart.": {
       "localizations": {
         "fr": {
@@ -3251,6 +3611,16 @@
         }
       }
     },
+    "This game is no longer in the library": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce jeu n’est plus dans la bibliothèque"
+          }
+        }
+      }
+    },
     "This is what Ren'Py wrote when it stopped.": {
       "localizations": {
         "fr": {
@@ -3287,6 +3657,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce n’est pas un jeu Ren’Py : il ne contient pas de dossier game."
+          }
+        }
+      }
+    },
+    "This save has no variables RenChan can show.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette sauvegarde n’a aucune variable que RenChan peut afficher."
           }
         }
       }
@@ -3521,6 +3901,16 @@
         }
       }
     },
+    "Variables": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables"
+          }
+        }
+      }
+    },
     "Version": {
       "localizations": {
         "fr": {
@@ -3667,6 +4057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "A fonctionné avec Ren’Py %@"
+          }
+        }
+      }
+    },
+    "You can put it back from the Trash.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous pourrez la récupérer dans la corbeille."
           }
         }
       }

@@ -68,6 +68,9 @@ struct RenChanApp: App {
                     .disabled(menu.selection == nil)
                 Button("Save Backups…") { model.showBackups = menu.selection }
                     .disabled(menu.selection == nil)
+                Button("Browse Saves…") { if let id = menu.selection { model.showSaves(id) } }
+                    .keyboardShortcut("b", modifiers: [.command, .shift])
+                    .disabled(menu.selection == nil)
                 ShowWalkthroughButton(model: model, selection: menu.selection)
                 Divider()
                 Button("Update to New Version…") { if let id = menu.selection { model.chooseUpdate(id) } }
@@ -104,6 +107,20 @@ struct RenChanApp: App {
             .themed()
         }
         .defaultSize(width: 560, height: 760)
+
+        WindowGroup("Saves", id: "saves", for: SavesRef.self) { $ref in
+            Group {
+                if let ref {
+                    SavesWindow(ref: ref)
+                } else {
+                    ContentUnavailableView("No Saves", systemImage: "tray")
+                }
+            }
+            .frame(minWidth: 720, minHeight: 480)
+            .environment(model)
+            .themed()
+        }
+        .defaultSize(width: 900, height: 640)
 
         Settings {
             SettingsView()

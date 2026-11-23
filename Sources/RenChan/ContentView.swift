@@ -33,6 +33,9 @@ struct ContentView: View {
         .onChange(of: model.walkthroughToOpen) { _, ref in
             if let ref { openWindow(id: "walkthrough", value: ref); model.walkthroughToOpen = nil }
         }
+        .onChange(of: model.savesToOpen) { _, ref in
+            if let ref { openWindow(id: "saves", value: ref); model.savesToOpen = nil }
+        }
         .sheet(item: Binding(get: { model.findGames.map(FindGamesSheetItem.init) }, set: { if $0 == nil { model.findGames = nil } })) { item in
             FindGamesSheet(initial: item.state).environment(model).themed()
         }

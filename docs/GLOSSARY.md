@@ -30,3 +30,6 @@ One name per thing, in every button, menu, title, tooltip and error.
 | Watch | The itch.io page or F95zone thread RenChan reads for a game's new versions | Follow, subscribe, track | Suivre |
 | Game Version | The game's own version, such as 0.9, read from config.version or its folder name | Ren'Py version | Version du jeu |
 | New version | A version on the watched page newer than the game's | Update (the action) | Nouvelle version |
+| Save | One Ren'Py save file, such as page 1, slot 3 | Save backup (a copy of the saves folder) | Sauvegarde |
+| Variable | A value a save keeps, such as affection_mei = 12 | Setting, stat | Variable |
+| Save tool | RenChan's Ren'Py command that reads and changes a save, run without a window | Editor, cheat | Outil de sauvegarde |

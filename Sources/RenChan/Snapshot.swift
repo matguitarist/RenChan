@@ -81,6 +81,17 @@ enum Snapshot {
                 }
                 NSApp.windows.first { $0.title.contains("Walkthrough") }?.close()
             }
+            if only == nil || only?.contains("saves") == true, let game = model.games.first(where: { $0.title == "The Question" }) {
+                model.savesToOpen = SavesRef(game: game.id)
+                try? await Task.sleep(for: .seconds(3))
+                let window = NSApp.windows.first { $0.isVisible && $0.title.contains(game.title) }
+                for mode in ["light", "dark"] {
+                    NSApp.appearance = NSAppearance(named: mode == "light" ? .aqua : .darkAqua)
+                    try? await Task.sleep(for: .seconds(1))
+                    if let window { capture(to: "\(dir)/saves-\(mode).png", window: window) }
+                }
+                window?.close()
+            }
             await shoot("library-filtered", { model.filter = LibraryFilter(labels: ["Romance"]) }, { model.filter = LibraryFilter() })
             let saved = model.games
             await shoot("library-empty", { model.games = [] }, { model.games = saved })

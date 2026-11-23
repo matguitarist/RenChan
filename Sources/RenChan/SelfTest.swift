@@ -369,6 +369,28 @@ enum SelfTest {
         model.addFoundGames()
         check("S-030 Add Games adds only the chosen ones", model.games.count == before030 + 1 && model.findGames == nil)
 
+        // S-035 Browse saves, S-036 change a save's variables (the pretend runtime stands in for Ren'Py)
+        if let folder = model.savesFolder(model.game(first.id)!, modded: false) {
+            Fixtures.save("1-2", name: "At the bridge", minutesAgo: 5, color: .systemPink, in: folder)
+            Fixtures.save("quick-1", name: "", minutesAgo: 60, color: .systemBlue, in: folder)
+            let listed = SaveList.list(in: folder)
+            check("S-035 saves are listed newest first with their name and picture",
+                  listed.first?.slot == "1-2" && listed.first?.name == "At the bridge" && listed.first?.screenshot() != nil
+                  && listed.contains { $0.place == "Quick 1" }, "\(listed.map(\.slot))")
+            if let save = listed.first, let game = model.game(first.id) {
+                let variables = (try? await model.readVariables(save, of: game, modded: false)) ?? []
+                check("S-036 a save's variables are read with the game's Ren'Py",
+                      variables.map(\.name) == ["affection_mei", "bag", "chapter", "hero", "met_aoi"] && variables[1].editable == false)
+                let backupsBefore = model.backups(first.id).filter { $0.reason == .beforeEdit }.count
+                let changed = (try? await model.writeVariables(["affection_mei": 30], in: save, of: game, modded: false)) ?? []
+                let sent = (try? String(contentsOf: Store.workingCopy(first.id).appending(path: "renchan_last_changes.json"), encoding: .utf8)) ?? ""
+                check("S-036 a change is backed up first, then written", changed == ["affection_mei"] && sent == #"{"affection_mei":30}"#
+                      && model.backups(first.id).filter { $0.reason == .beforeEdit }.count == backupsBefore + 1, sent)
+            }
+        } else {
+            check("S-035 the game knows its saves folder", false)
+        }
+
         // S-033 Know when a new version is out (a page on disk stands in for itch.io)
         let page = shelf.appending(path: "itch-page.html")
         try? #"<div class="upload_name"><strong class="name" title="The Question - [9.9] - PC">The Question - [9.9] - PC</strong></div>"#.write(to: page, atomically: true, encoding: .utf8)

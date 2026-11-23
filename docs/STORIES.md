@@ -382,8 +382,35 @@ Acceptance:
 - [self] Games on this Mac are listed with their thread and version; games elsewhere are counted, not listed.
 Status: done
 
+## M8 Saves (0.7.0)
+
+### S-035 Browse a game's saves
+As the user, I see each save of a game with its picture, name, place, date and playtime.
+Screens: saves
+Depends: S-012
+UX:
+- Flow: inspector › Saves › "N Saves", or Game › Browse Saves… (⇧⌘B) → the Saves window: saves newest first on the left, the chosen one on the right. Saves / Modded Saves when the game has both. Context menu: Show in Finder, Move to Trash… (confirmation; it can come back).
+- Words: "Browse Saves…" / « Parcourir les sauvegardes… », "Page 1, slot 3" / « Page 1, emplacement 3 », "Quick 2" / « Rapide 2 ».
+Acceptance:
+- [unit] Ren'Py's save zips are read (stored and deflated); a file that isn't one is left out; -LT1 is dropped from the slot's name.
+- [live] A save made by real Ren'Py 7.8.7 and 8.6.1 is listed with its name and picture.
+- [self] Saves are listed newest first with their name and picture.
+Status: done
+
+### S-036 Change a save's variables
+As the user, I change a save's on/off values, numbers and text, and the game loads it as usual.
+Screens: saves
+Depends: S-035
+UX:
+- Flow: the Saves window reads the chosen save's variables with the game's own Ren'Py (a few seconds, "Reading the save with Ren'Py…"); toggles for on/off, fields for numbers and text, other values shown read-only; a dot marks a change; Save Changes (⌘S) backs up the saves ("Before editing a save"), writes, and reads the save again; Revert drops the changes. Refused while the game plays.
+- How: RenChan's save tool is a Ren'Py command in RenChan's copy of the game, run without a window. It reads the save with the game's real classes, changes the values in the save and in its rollback records (loading rolls back to the start of the statement), and signs the save with this Mac's key, so Ren'Py loads it without asking.
+Acceptance:
+- [unit] Values must fit their kind (numbers, on/off, text); the tool goes in the copy only.
+- [live] On real 7.8.7 and 8.6.1: points, a name and a flag are changed, a list is refused, and Ren'Py loads the save with the new values and no warning.
+- [self] Variables are read; a change is backed up first, then written.
+Status: done
+
 ## Later
-- Save viewer and editor (local only).
 - Download Windows-only Steam games with SteamCMD.
 - `renchan` CLI and MCP server.
 - Windows and Linux apps reusing `Resources/RenChanRuntime/`.
