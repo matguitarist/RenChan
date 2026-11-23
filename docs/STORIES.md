@@ -200,7 +200,13 @@ As the user, I pick a filter for a game (Sharpen, CRT, Night warmth, Grayscale, 
 Acceptance:
 - [unit] On 7.7+/8.2+ the loader sets `config.layer_transforms[None]`; on 7.4.6–7.6 it uses `camera`; below 7.4 the picker is off and says why.
 - [live] Each filter shows on an 8.6 and a 7.8 game.
-Status: todo
+- [self] The filter file lands in the working copy only, and leaves when the filter is off.
+UX:
+- Flow: select a game → inspector › Screen Filter › Filter (None, Sharpen, CRT, Night Warmth, Grayscale; Color Blindness: Protanopia, Deuteranopia, Tritanopia) → Strength slider → Play.
+- Surface: inline in the inspector (one value of the selection).
+- States: None hides Strength; a runtime before 7.4.6 disables the picker and says why; while playing, "Changes show the next time you play."
+- Words: "Screen Filter" / « Filtre d’écran », "Strength" / « Intensité », "Color Blindness" / « Daltonisme ».
+Status: done
 
 ### S-015 Tune a filter live
 As the user, I change a filter's strength while the game runs and see it change in the game.

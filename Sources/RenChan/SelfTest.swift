@@ -134,6 +134,18 @@ enum SelfTest {
         check("saves are found under the test home, never the real one",
               model.saveFolder(first)?.path.hasPrefix(Store.renpyHome.path) == true && model.saveCount(first) == 1)
 
+        // S-014 Turn on a filter: the loader lands in the copy only, and leaves when the filter is off
+        model.update(first.id) { $0.filter = FilterSetting(filter: .crt, strength: 0.6) }
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        let filterFile = copy.appending(path: "game/\(FilterLoader.fileName)")
+        check("S-014 a filter is written into the working copy, never the original",
+              FileManager.default.fileExists(atPath: filterFile.path) && digest(question) == before)
+        model.update(first.id) { $0.filter = nil }
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        check("S-014 turning the filter off takes it out of the copy", !FileManager.default.fileExists(atPath: filterFile.path))
+
         // S-005 See why a game didn't start
         let broken = Fixtures.game("Broken-1.0-pc", in: root, files: [
             "game/script.rpy": "label start:\n    $ crash()\n",

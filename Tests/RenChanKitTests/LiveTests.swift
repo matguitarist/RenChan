@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import Testing
 @testable import RenChanKit
 
@@ -46,6 +47,55 @@ struct Live {
         let releases = try await VNDB.releases("v31929")
         #expect(releases.first?.official == true && releases.first?.links.isEmpty == false)
         #expect(try await !VNDB.search("", renpyOnly: true).isEmpty)
+    }
+
+    /// S-014: Grayscale on a red screen gives gray, on the 7.x and the 8.x runtime. Ren'Py takes its own screenshot.
+    @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
+    func aFilterChangesWhatTheGameShows(version: String) async throws {
+        if Self.store.runtime(version) == nil {
+            try await RuntimeDownload.install(version, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        func shoot(_ setting: FilterSetting?) throws -> (r: Int, g: Int, b: Int) {
+            let copy = root.appending(path: "play-\(setting?.filter.rawValue ?? "none")")
+            let shot = root.appending(path: "shot-\(setting?.filter.rawValue ?? "none").png")
+            Fixture.game(at: copy, files: ["game/script.rpy": """
+            label start:
+                scene expression Solid("#ff0000")
+                pause 1.0
+                $ renpy.screenshot(\"\(shot.path)\")
+                $ renpy.quit()
+            """])
+            #expect(try FilterLoader.install(setting, runtime: version, copy: copy) == (setting == nil ? .unsupported : .layerTransforms))
+            let home = root.appending(path: "home")
+            let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"), environment: ["HOME": home.path])
+            let process = try plan.makeProcess()
+            try process.run()
+            let deadline = Date().addingTimeInterval(60)
+            while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.2) }
+            if process.isRunning { process.terminate() }
+            let log = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
+            let source = try #require(CGImageSourceCreateWithURL(shot as CFURL, nil), "no screenshot; log: \(log.suffix(1500))")
+            let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
+            var pixel = [UInt8](repeating: 0, count: 4)
+            let context = try #require(CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                                                 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(image, in: CGRect(x: -image.width / 2, y: -image.height / 2, width: image.width, height: image.height))
+            return (Int(pixel[0]), Int(pixel[1]), Int(pixel[2]))
+        }
+        let plain = try shoot(nil)
+        #expect(plain.r > 200 && plain.g < 40 && plain.b < 40, "without a filter: \(plain)")
+        let gray = try shoot(FilterSetting(filter: .grayscale))
+        #expect(abs(gray.r - gray.g) < 12 && abs(gray.g - gray.b) < 12 && gray.r > 40 && gray.r < 120, "grayscale: \(gray)")
+        // Every filter's shader compiles and draws: a GLSL mistake would only show when Ren'Py renders.
+        for filter in ScreenFilter.allCases where filter != .grayscale {
+            let color = try shoot(FilterSetting(filter: filter))
+            #expect(color.r > 60, "\(filter): \(color)")
+            if [.nightWarmth, .crt, .sharpen].contains(filter) { continue }
+            // Daltonizing moves some of the red into green or blue.
+            #expect(color.g > 10 || color.b > 10, "\(filter) didn't change red: \(color)")
+        }
     }
 
     @Test func playsARealGameFromAClone() async throws {

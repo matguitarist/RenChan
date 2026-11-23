@@ -20,3 +20,5 @@ One name per thing, in every button, menu, title, tooltip and error.
 | Notes | Free text the person keeps about a game | comments | Notes |
 | Backup | A dated copy of a game's saves RenChan keeps | snapshot, save copy | Copie (des sauvegardes) |
 | Restore | Put a backup's saves back in place of the current ones | revert, load | Restaurer |
+| Screen filter | A shader RenChan lays over the whole game, in its copy only | Effect, shader, mod | Filtre d’écran |
+| Strength | How much of a filter shows, 0 to 100% | Intensity, amount | Intensité |

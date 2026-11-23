@@ -74,6 +74,7 @@ enum SeedData {
             model.update(first.id) {
                 $0.status = .playing; $0.rating = 4; $0.labels = ["Romance", "Short"]
                 $0.notes = "Both endings done. Try the other answer at the bridge."
+                $0.filter = FilterSetting(filter: .crt, strength: 0.6)
             }
             if model.games.count > 2 {
                 model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }

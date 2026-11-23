@@ -39,6 +39,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var rating: Int?
     public var labels: [String] = []
     public var notes = ""
+    /// The screen filter it plays with (S-014).
+    public var filter: FilterSetting?
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
                 version: RenPyVersion? = nil, pythonLine: PythonLine? = nil, versionSource: VersionSource? = nil,
@@ -80,6 +82,7 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         rating = try c.decodeIfPresent(Int.self, forKey: .rating)
         labels = try c.decodeIfPresent([String].self, forKey: .labels) ?? []
         notes = try c.decodeIfPresent(String.self, forKey: .notes) ?? ""
+        filter = try c.decodeIfPresent(FilterSetting.self, forKey: .filter)
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

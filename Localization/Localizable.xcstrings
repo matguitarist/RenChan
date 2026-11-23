@@ -271,6 +271,16 @@
         }
       }
     },
+    "Applies when you play. The game itself isn't changed.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S’applique quand vous jouez. Le jeu lui-même n’est pas modifié."
+          }
+        }
+      }
+    },
     "Automatic Updates": {
       "localizations": {
         "fr": {
@@ -351,12 +361,32 @@
         }
       }
     },
+    "CRT": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CRT"
+          }
+        }
+      }
+    },
     "Cancel": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Annuler"
+          }
+        }
+      }
+    },
+    "Changes show the next time you play.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les changements s’afficheront la prochaine fois que vous jouerez."
           }
         }
       }
@@ -471,6 +501,16 @@
         }
       }
     },
+    "Color Blindness": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daltonisme"
+          }
+        }
+      }
+    },
     "Copies of %@'s saves, kept by RenChan. A restore backs up the current saves first.": {
       "localizations": {
         "fr": {
@@ -547,6 +587,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Détails"
+          }
+        }
+      }
+    },
+    "Deuteranopia (green)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deutéranopie (vert)"
           }
         }
       }
@@ -667,6 +717,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Des filtres sont actifs : modifiez-les ou effacez-les"
+          }
+        }
+      }
+    },
+    "Filters need Ren'Py 7.4.6 or later. This game plays on Ren'Py %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les filtres demandent Ren’Py 7.4.6 ou plus récent. Ce jeu fonctionne avec Ren’Py %@."
           }
         }
       }
@@ -827,6 +887,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Obtenez la couverture, le développeur, la date de sortie et la description depuis la Visual Novel Database."
+          }
+        }
+      }
+    },
+    "Grayscale": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niveaux de gris"
           }
         }
       }
@@ -1121,6 +1191,16 @@
         }
       }
     },
+    "Night Warmth": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lumière chaude"
+          }
+        }
+      }
+    },
     "No Backups Yet": {
       "localizations": {
         "fr": {
@@ -1217,6 +1297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucune étiquette"
+          }
+        }
+      }
+    },
+    "None": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun"
           }
         }
       }
@@ -1407,6 +1497,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aperçu de la couleur d’accentuation"
+          }
+        }
+      }
+    },
+    "Protanopia (red)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protanopie (rouge)"
           }
         }
       }
@@ -1931,6 +2031,16 @@
         }
       }
     },
+    "Screen Filter": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtre d’écran"
+          }
+        }
+      }
+    },
     "Search Games": {
       "localizations": {
         "fr": {
@@ -1987,6 +2097,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sélectionnez un jeu pour voir où l’obtenir."
+          }
+        }
+      }
+    },
+    "Sharpen": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Netteté"
           }
         }
       }
@@ -2097,6 +2217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Arrêter"
+          }
+        }
+      }
+    },
+    "Strength": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensité"
           }
         }
       }
@@ -2227,6 +2357,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Titre"
+          }
+        }
+      }
+    },
+    "Tritanopia (blue)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tritanopie (bleu)"
           }
         }
       }
