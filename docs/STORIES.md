@@ -338,7 +338,11 @@ Status: done
 
 ### S-025 Signed, notarized, updates
 As the user, I download a notarized RenChan that updates itself (Sparkle).
-Status: todo
+Acceptance:
+- [live] `tools/release.sh` signs with Developer ID, notarizes and staples: `spctl` accepts the app and the DMG as "Notarized Developer ID" (0.7.1, 2026-11-23).
+- [live] The feed (appcast.xml on the latest GitHub release) offers the new version, signed with the app's SUPublicEDKey.
+- [unit] Sparkle stays off in test runs and in builds without a real key (`Updater`).
+Status: done
 
 ### S-026 French everywhere
 As the user, every screen reads well in French.
