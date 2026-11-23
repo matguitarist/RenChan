@@ -58,6 +58,10 @@ struct RenChanApp: App {
                     .keyboardShortcut("s", modifiers: [.command, .option])
                     .disabled(menu.selection == nil)
                 Divider()
+                Button("Find on VNDB…") { if let id = menu.selection { model.findOnVNDB(id) } }
+                    .keyboardShortcut("d", modifiers: [.command, .shift])
+                    .disabled(menu.selection == nil)
+                Divider()
                 Button("Remove from Library…") { model.confirmRemove = menu.selection }
                     .disabled(menu.selection == nil)
             }
@@ -136,6 +140,8 @@ enum Store {
     /// One folder per game: play/ (the working copy), source/ (an unpacked zip), run.log.
     static func gameFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Games/\(id.uuidString)", directoryHint: .isDirectory) }
     static func workingCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play", directoryHint: .isDirectory) }
+    /// The cover from VNDB or one the person chose (S-010).
+    static func coverFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "cover") }
     /// Written while a game plays, for its playtime (S-009).
     static func sessionFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "session.json") }
 

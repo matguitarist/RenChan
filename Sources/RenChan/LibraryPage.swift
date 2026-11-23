@@ -146,11 +146,13 @@ struct GameCard: View {
     }
 }
 
-/// The game's main menu art, or a tinted tile with its first letter.
+/// The cover from VNDB or the person, else the game's main menu art, else a tinted tile with its first letter.
 struct Cover: View {
+    @Environment(AppModel.self) private var model
     let game: Game
 
     var body: some View {
+        let _ = model.coverRevision
         if let image = CoverCache.shared.image(for: game) {
             Image(nsImage: image)
                 .resizable()
@@ -171,14 +173,18 @@ struct Cover: View {
 /// Covers read once from disk; the grid redraws often.
 final class CoverCache {
     static let shared = CoverCache()
-    private var images: [String: NSImage?] = [:]
+    private var images: [Game.ID: NSImage?] = [:]
 
     func image(for game: Game) -> NSImage? {
-        if let cached = images[game.basePath] { return cached }
-        let image = GameLocator.cover(base: game.baseURL).flatMap { NSImage(contentsOf: $0) }
-        images[game.basePath] = image
+        if let cached = images[game.id] { return cached }
+        let own = Store.coverFile(game.id)
+        let file = FileManager.default.fileExists(atPath: own.path) ? own : GameLocator.cover(base: game.baseURL)
+        let image = file.flatMap { NSImage(contentsOf: $0) }
+        images[game.id] = image
         return image
     }
+
+    func forget(_ id: Game.ID) { images[id] = nil }
 }
 
 // MARK: List
@@ -232,6 +238,12 @@ struct GameActions: View {
         Button("Show in Finder") { model.showInFinder(game.id) }
         Button("Open Saves Folder") { model.openSaves(game.id) }
             .disabled(game.saveDirectory == nil)
+        Divider()
+        Button("Find on VNDB…") { model.findOnVNDB(game.id) }
+        Button("Choose Cover…") { model.chooseCover(game.id) }
+        if game.customCover {
+            Button("Reset Cover") { model.resetCover(game.id) }
+        }
         Divider()
         Button("Remove from Library…") { model.confirmRemove = game.id }
     }

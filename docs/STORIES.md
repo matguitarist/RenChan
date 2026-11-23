@@ -106,15 +106,15 @@ Screens: game-details, vndb-search
 UX:
 - Flow: inspector "Find on VNDB…" (or Game › Find on VNDB…, ⇧⌘D) → sheet "Find on VNDB" with the title already searched → pick a result → "Use This Game" (Return) → cover, developer, release date and description fill in. Escape cancels and changes nothing.
 - Matched: the Details section shows developer, released, description (four lines, "More" opens the rest), "Open on VNDB", and a … menu with "Refresh from VNDB" and "Unlink from VNDB".
-- Cover: right-click › "Choose Cover…" picks an image; "Use the Game's Own Cover" goes back. A chosen cover is never replaced by a refresh.
+- Cover: right-click › "Choose Cover…" picks an image; "Reset Cover" goes back to VNDB's cover or the game's own art. A chosen cover is never replaced by a refresh.
 - Surface: a sheet (one short task that finishes or cancels); details inline in the inspector.
 - States: searching shows a spinner in the list; no results "No games on VNDB match “…”." with the field to try another title; offline "VNDB can't be reached. Check your connection and try again." inline under the field.
 - Words: "Find on VNDB…" / « Chercher sur VNDB… », "Use This Game" / « Utiliser ce jeu », "Refresh from VNDB" / « Actualiser depuis VNDB ».
 - Access: Return picks the selected result, arrows move in the list; VoiceOver reads title, developer and year per row.
 Acceptance:
 - [unit] A title search returns candidates; a manual cover is kept on refresh.
-- [live] Matches three known games.
-Status: doing
+- [live] Matches three known games. (`RENCHAN_LIVE=1 swift test --filter Live`, passed 2026-11-22)
+Status: done
 
 ### S-011 Labels, rating and notes
 As the user, I add labels, a rating and notes to a game, and filter the library by label, rating, or status (not started, playing, finished).
@@ -126,7 +126,7 @@ UX:
 - States: no labels "No labels"; nothing matches "No Games Match These Filters" with "Clear Filters".
 - Words: "Status" / « Statut », "Not Started" / « Pas commencé », "Playing" / « En cours », "Finished" / « Terminé », "Rating" / « Note », "Labels" / « Étiquettes », "Notes" / « Notes ».
 - Access: stars are one control with a value ("3 stars") and increment/decrement; labels are buttons "Remove label Romance".
-Status: todo
+Status: doing
 
 ### S-012 Back up saves
 As the user, I back up a game's saves with one click, see past backups by date, and restore one.

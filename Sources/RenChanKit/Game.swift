@@ -30,6 +30,10 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var runtimeOverride: String?
     /// Seconds the game has run from RenChan, summed over every session (S-009).
     public var playtime: TimeInterval = 0
+    /// The VNDB entry this game is linked to (S-010).
+    public var vndb: VNDBInfo?
+    /// The person chose the cover; refreshing from VNDB keeps it.
+    public var customCover = false
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
                 version: RenPyVersion? = nil, pythonLine: PythonLine? = nil, versionSource: VersionSource? = nil,
@@ -64,6 +68,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         lastPlayed = try c.decodeIfPresent(Date.self, forKey: .lastPlayed)
         runtimeOverride = try c.decodeIfPresent(String.self, forKey: .runtimeOverride)
         playtime = try c.decodeIfPresent(TimeInterval.self, forKey: .playtime) ?? 0
+        vndb = try c.decodeIfPresent(VNDBInfo.self, forKey: .vndb)
+        customCover = try c.decodeIfPresent(Bool.self, forKey: .customCover) ?? false
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

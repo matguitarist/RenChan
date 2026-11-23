@@ -23,6 +23,9 @@ struct ContentView: View {
         .sheet(item: Binding(get: { model.download.map(DownloadSheetItem.init) }, set: { _ in })) { item in
             DownloadSheet(initial: item.state).environment(model).themed()
         }
+        .sheet(item: Binding(get: { model.vndbSearch.map(VNDBSheetItem.init) }, set: { if $0 == nil { model.vndbSearch = nil } })) { item in
+            VNDBSearchSheet(initial: item.search).environment(model).themed()
+        }
         .sheet(item: $model.launchError) { failure in
             LaunchErrorSheet(failure: failure).environment(model).themed()
         }
@@ -84,6 +87,12 @@ struct ContentView: View {
                 .navigationTitle(SidebarItem.log.title)
         }
     }
+}
+
+/// The VNDB sheet stays up while its results change underneath.
+private struct VNDBSheetItem: Identifiable {
+    let search: VNDBSearch
+    var id: Game.ID { search.game }
 }
 
 /// The download sheet stays up for the whole download; its state changes underneath.

@@ -9,7 +9,7 @@ import SwiftUI
 /// settings-<tab>-light.png and settings-<tab>-dark.png for every Settings tab, then quits.
 /// Each PNG gets a <page>-<mode>-layout.json with the grid probes (tools/check-layout.swift).
 /// APP_SNAPSHOT_PAGES=library,runtimes,log limits the pages. Also: "library-list", "library-empty", "game-details",
-/// "runtime-download", "launch-error", "settings".
+/// "runtime-download", "launch-error", "vndb-search", "settings".
 /// Add APP_ACCENT=<id> to see the pages in another accent.
 /// Add APP_SNAPSHOT_MIN=1 to shrink the main window to its smallest size first.
 enum Snapshot {
@@ -71,6 +71,13 @@ enum Snapshot {
                     text: "I'm sorry, but an uncaught exception occurred.\n\nWhile running game code:\n  File \"game/script.rpy\", line 112, in script\n    $ renpy.pause(hard=True)\nTypeError: pause() got an unexpected keyword argument 'hard'\n",
                     tracebackFile: nil, exactVersion: "6.99.14.3")
             }, { model.launchError = nil })
+            await shoot("vndb-search", sheet: true, {
+                model.vndbSearch = VNDBSearch(game: saved.first?.id ?? UUID(), query: "The Question", results: [
+                    VNDBInfo(id: "v3625", title: "The Question", developer: "ATP Projects", released: "2006-12-03"),
+                    VNDBInfo(id: "v31774", title: "The Question", developer: "Little Smug Studio", released: "2020-05-01"),
+                    VNDBInfo(id: "v19376", title: "The Question: The Tease", originalTitle: "ザ・クエスチョン", developer: "Forestmaster Games", released: "2012-10-16"),
+                ], selection: "v3625", searched: true)
+            }, { model.vndbSearch = nil })
             if only == nil || only?.contains("settings") == true {
                 let main = main()
                 openSettings()

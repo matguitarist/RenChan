@@ -27,6 +27,18 @@ struct Live {
         #expect(python.terminationStatus == 0)
     }
 
+    /// S-010: three known Ren'Py games are found by title, first.
+    @Test(arguments: [("Katawa Shoujo", "v945"), ("Doki Doki Literature Club", "v21905"), ("Butterfly Soup", "v21875")])
+    func matchesAKnownGameOnVNDB(title: String, id: String) async throws {
+        let found = try await VNDB.search(title)
+        #expect(found.first?.id == id, "\(found.prefix(3).map { "\($0.id) \($0.title)" })")
+        let details = try await VNDB.details(id)
+        #expect(details?.imageURL != nil && details?.developer != nil)
+        let cover = Fixture.folder().appending(path: "cover")
+        try await VNDB.downloadCover(try #require(details?.imageURL.flatMap(URL.init(string:))), to: cover)
+        #expect(((try? Data(contentsOf: cover))?.count ?? 0) > 1000)
+    }
+
     @Test func playsARealGameFromAClone() async throws {
         let game = ProcessInfo.processInfo.environment["RENCHAN_LIVE_GAME"].map { URL(fileURLWithPath: $0) }
         let base = try #require(game, "set RENCHAN_LIVE_GAME to a game's base folder")

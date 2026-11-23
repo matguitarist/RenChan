@@ -42,6 +42,9 @@ final class AppModel {
     var confirmFullCopy: FullCopyRequest?
     var confirmZip: ZipRequest?
     var confirmRemoveRuntime: String?
+    var vndbSearch: VNDBSearch?
+    /// Bumped when a cover file changes, so covers redraw.
+    var coverRevision = 0
     /// One-line message in an alert.
     var notice: String?
 

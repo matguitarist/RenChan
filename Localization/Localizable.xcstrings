@@ -211,12 +211,42 @@
         }
       }
     },
+    "Choose": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisir"
+          }
+        }
+      }
+    },
+    "Choose Cover…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisir une couverture…"
+          }
+        }
+      }
+    },
     "Choose a game folder, a Mac .app, or a zip.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Choisissez un dossier de jeu, une app Mac ou un zip."
+          }
+        }
+      }
+    },
+    "Choose a picture for the game's cover.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisissez une image pour la couverture du jeu."
           }
         }
       }
@@ -271,6 +301,26 @@
         }
       }
     },
+    "Details": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Détails"
+          }
+        }
+      }
+    },
+    "Developer": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Développeur"
+          }
+        }
+      }
+    },
     "Downloading Ren'Py %@": {
       "localizations": {
         "fr": {
@@ -307,6 +357,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fichiers"
+          }
+        }
+      }
+    },
+    "Find on VNDB": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher sur VNDB"
+          }
+        }
+      }
+    },
+    "Find on VNDB…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher sur VNDB…"
           }
         }
       }
@@ -351,6 +421,16 @@
         }
       }
     },
+    "From vndb.org": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuis vndb.org"
+          }
+        }
+      }
+    },
     "Game": {
       "localizations": {
         "fr": {
@@ -367,6 +447,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Général"
+          }
+        }
+      }
+    },
+    "Get the cover, developer, release date and description from the Visual Novel Database.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtenez la couverture, le développeur, la date de sortie et la description depuis la Visual Novel Database."
           }
         }
       }
@@ -407,6 +497,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dernière partie"
+          }
+        }
+      }
+    },
+    "Less": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moins"
           }
         }
       }
@@ -481,6 +581,26 @@
         }
       }
     },
+    "More": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus"
+          }
+        }
+      }
+    },
+    "More Actions": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autres actions"
+          }
+        }
+      }
+    },
     "Native": {
       "localizations": {
         "fr": {
@@ -531,12 +651,32 @@
         }
       }
     },
+    "No Results": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun résultat"
+          }
+        }
+      }
+    },
     "No Runtimes Yet": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Aucune version de Ren’Py pour l’instant"
+          }
+        }
+      }
+    },
+    "No games on VNDB match “%@”. Try another title.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun jeu sur VNDB ne correspond à « %@ ». Essayez un autre titre."
           }
         }
       }
@@ -557,6 +697,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvrir le dossier des sauvegardes"
+          }
+        }
+      }
+    },
+    "Open on VNDB": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir sur VNDB"
           }
         }
       }
@@ -677,6 +827,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quitter le jeu (Commande-Point)"
+          }
+        }
+      }
+    },
+    "Refresh from VNDB": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiser depuis VNDB"
+          }
+        }
+      }
+    },
+    "Refresh or unlink the VNDB details": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiser ou délier les détails VNDB"
+          }
+        }
+      }
+    },
+    "Released": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sortie"
           }
         }
       }
@@ -821,6 +1001,16 @@
         }
       }
     },
+    "RenChan couldn't use this picture: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu utiliser cette image : %@"
+          }
+        }
+      }
+    },
     "RenChan deletes its working copy. The game you added and your saves stay where they are.": {
       "localizations": {
         "fr": {
@@ -891,6 +1081,16 @@
         }
       }
     },
+    "Reset Cover": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rétablir la couverture"
+          }
+        }
+      }
+    },
     "Restart Now": {
       "localizations": {
         "fr": {
@@ -937,6 +1137,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rechercher un jeu"
+          }
+        }
+      }
+    },
+    "Search VNDB for this game (Shift-Command-D)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher ce jeu sur VNDB (Maj-Commande-D)"
           }
         }
       }
@@ -1141,6 +1351,16 @@
         }
       }
     },
+    "Unlink from VNDB": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Délier de VNDB"
+          }
+        }
+      }
+    },
     "Unpack": {
       "localizations": {
         "fr": {
@@ -1177,6 +1397,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les mises à jour sont désactivées dans cette version."
+          }
+        }
+      }
+    },
+    "Use This Game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser ce jeu"
+          }
+        }
+      }
+    },
+    "VNDB can't be reached. Check your connection and try again.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNDB est injoignable. Vérifiez votre connexion et réessayez."
           }
         }
       }

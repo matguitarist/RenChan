@@ -132,6 +132,24 @@ enum SelfTest {
             model.launchError = nil
         }
 
+        // S-010 Details from VNDB: a cover the person chose stays when VNDB details change
+        let picture = root.appending(path: "cover.png")
+        if let tiff = NSImage(size: NSSize(width: 8, height: 8), flipped: false, drawingHandler: { rect in NSColor.systemPink.setFill(); rect.fill(); return true }).tiffRepresentation,
+           let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+            try? png.write(to: picture)
+        }
+        model.setCover(first.id, from: picture)
+        check("S-010 a chosen cover is stored by RenChan, not in the game",
+              model.game(first.id)?.customCover == true && FileManager.default.fileExists(atPath: Store.coverFile(first.id).path)
+              && CoverCache.shared.image(for: model.game(first.id)!) != nil)
+        model.update(first.id) { _ = VNDB.apply(VNDBInfo(id: "v3625", title: "The Question", imageURL: "https://t.vndb.org/x.jpg"), to: &$0) }
+        model.unlinkVNDB(first.id)
+        check("S-010 linking and unlinking VNDB keeps the chosen cover",
+              model.game(first.id)?.vndb == nil && FileManager.default.fileExists(atPath: Store.coverFile(first.id).path))
+        model.resetCover(first.id)
+        check("S-010 Reset Cover goes back to the game's own art", model.game(first.id)?.customCover == false
+              && !FileManager.default.fileExists(atPath: Store.coverFile(first.id).path))
+
         // S-008 Remove a game
         model.remove(first.id)
         check("removing deletes the working copy and keeps the original and saves",

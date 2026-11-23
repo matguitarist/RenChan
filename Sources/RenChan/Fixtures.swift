@@ -66,6 +66,10 @@ enum SeedData {
         if let first = model.games.first {
             model.update(first.id) { $0.lastPlayed = Date(timeIntervalSinceNow: -3600); $0.playtime = 3 * 3600 + 20 * 60 }
             if model.games.count > 2 { model.update(model.games[2].id) { $0.lastPlayed = Date(timeIntervalSinceNow: -86400 * 3); $0.playtime = 47 * 60 } }
+            model.update(first.id) {
+                $0.vndb = VNDBInfo(id: "v3625", title: "The Question", developer: "ATP Projects", released: "2006-12-03",
+                                   description: "A short story about a boy, a girl, and a question he has been meaning to ask her for a while. Made as a sample game for Ren'Py, it shows what a visual novel can do in a few minutes.")
+            }
             model.selection = first.id
         }
         model.runtimes = model.runtimeStore.installed()
