@@ -204,6 +204,51 @@ struct Live {
         #expect(!FileManager.default.fileExists(atPath: home.appending(path: "Library/RenPy/renchan-mod-test/1-1-LT1.save").path))
     }
 
+    /// S-022, S-023, S-024: in real Ren'Py, the API loads, a template mod's hooks run, state is kept, dev tools are on.
+    @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
+    func theModAPIAndDevToolsWork(version: String) async throws {
+        if Self.store.runtime(version) == nil {
+            try await RuntimeDownload.install(version, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        let report = root.appending(path: "report.txt")
+        let base = Fixture.game(at: root.appending(path: "Base"), files: ["game/script.rpy": "label start:\n    pause 0.5\n    $ renpy.quit()\n"])
+        let library = root.appending(path: "Mods")
+        let template = try ModTemplate.create("Sample Mod", into: library)
+        // A second mod checks what the API and the template did, from inside the game.
+        let checker = root.appending(path: "Checker")
+        try FileManager.default.createDirectory(at: checker, withIntermediateDirectories: true)
+        try """
+        init 20 python:
+            def checker_started():
+                s = renchan.state("checker")
+                s["ran"] = True
+                renchan.save_state("checker")
+                open("\(report.path)", "w").write("api=%d entries=%s console=%s fast=%s" % (
+                    renchan.version, ",".join(l for l, f in renchan.entries()), config.console, config.fast_skipping))
+            renchan.on_start(checker_started)
+            renchan.keymap("K_F9", checker_started)
+        """.write(to: checker.appending(path: "checker.rpy"), atomically: true, encoding: .utf8)
+        let check = try ModLibrary.importMod(checker, into: library)
+        let copy = root.appending(path: "play-modded")
+        try WorkingCopy.prepare(base: base, copy: copy, allowFullCopy: true)
+        try ModInstaller.apply([template, check], root: library, base: base, copy: copy)
+        try ModAPI.install(copy: copy)
+        try DevToolsLoader.install(DevTools(console: true, fastSkip: true), copy: copy)
+        let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"),
+                              environment: ["HOME": root.appending(path: "home").path])
+        let process = try plan.makeProcess()
+        try process.run()
+        let deadline = Date().addingTimeInterval(60)
+        while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
+        let log = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
+        let text = (try? String(contentsOf: report, encoding: .utf8)) ?? ""
+        #expect(text == "api=1 entries=Sample Mod console=True fast=True", "\(text) \(log.suffix(1500))")
+        let state = ModAPI.stateFolder(copy).appending(path: "checker.json")
+        #expect((try? String(contentsOf: state, encoding: .utf8))?.contains("\"ran\": true") == true)
+    }
+
     @Test func playsARealGameFromAClone() async throws {
         let game = ProcessInfo.processInfo.environment["RENCHAN_LIVE_GAME"].map { URL(fileURLWithPath: $0) }
         let base = try #require(game, "set RENCHAN_LIVE_GAME to a game's base folder")

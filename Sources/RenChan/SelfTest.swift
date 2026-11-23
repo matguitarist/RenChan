@@ -212,6 +212,30 @@ enum SelfTest {
         model.removeMod(urm, from: first.id)
         check("S-017 a mod no game uses leaves the library", model.mods.isEmpty)
 
+        // S-022 Developer console
+        model.update(first.id) { $0.devTools = DevTools(console: true, fastSkip: true) }
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        let devFile = copy.appending(path: "game/\(DevToolsLoader.fileName)")
+        check("S-022 the console and fast skip go in the copy only",
+              ((try? String(contentsOf: devFile, encoding: .utf8)) ?? "").contains("config.console = True") && digest(question) == before)
+        model.update(first.id) { $0.devTools = DevTools() }
+        // S-027 Compatibility report
+        check("S-027 each run is recorded", (model.game(first.id)?.runs.count ?? 0) >= 1 && model.game(first.id)?.runs.first?.outcome == .worked
+              && model.game(first.id)?.runs.first?.runtime == RuntimeCatalog.python3)
+        let compat = model.compatibilityReport()
+        check("S-027 the report lists each game and its last run", compat.contains("| The Question |") && compat.contains("| worked |"), compat)
+        // S-023, S-024 a mod made from the template, with the API beside it
+        model.createMod(named: "Bridge Helper", for: first.id)
+        model.play(first.id)
+        await waitUntilStopped(model, first.id)
+        let modded024 = Store.moddedCopy(first.id)
+        check("S-024 New Mod makes a mod from the template and plays it",
+              FileManager.default.fileExists(atPath: modded024.appending(path: "game/bridge_helper.rpy").path)
+              && ModLibrary.manifest(model.mods.first { $0.name == "Bridge Helper" }!, root: Store.modsFolder)?.name == "Bridge Helper")
+        check("S-023 the mod API is beside the mods", FileManager.default.fileExists(atPath: modded024.appending(path: "game/\(ModAPI.fileName)").path))
+        if let helper = model.mods.first(where: { $0.name == "Bridge Helper" }) { model.removeMod(helper.id, from: first.id) }
+
         // S-032 Walkthroughs
         let guide = root.appending(path: "Question_Walkthrough.pdf")
         Fixtures.pdf(["Page one", "Page two", "Page three"], to: guide)

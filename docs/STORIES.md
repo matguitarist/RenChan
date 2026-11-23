@@ -305,18 +305,33 @@ Status: done
 
 ### S-022 Developer console
 As the user, I switch on Ren'Py's console (Shift+O) and fast skip for a game.
-Status: todo
+Acceptance:
+- [unit] The dev tools file goes in the copy and leaves when both are off.
+- [live] config.console and config.fast_skipping are on in real 7.8.7 and 8.6.1.
+UX:
+- Flow: inspector › Ren'Py › Console (Shift+O), Fast Skip (>) switches; used from the next launch.
+- Words: "Console (Shift+O)" / « Console (Maj+O) », "Fast Skip (>)" / « Avance rapide (>) ».
+Status: done
 
 ### S-023 RenChan mod API
 As a mod author, I write a mod with a `renchan-mod.json` manifest and the `renchan` module (on start, after load, menu entry, keymap, own state kept outside saves) that works on Ren'Py 7.4+ and 8.x.
 Acceptance:
 - [unit] The sample mod loads on the 7.8 and 8.6 fixtures.
 - Docs in `docs/MODDING.md`.
-Status: todo
+- [live] A template mod and a checker mod use on_start, menu_entry, keymap and state in real 7.8.7 and 8.6.1.
+- [self] The API file sits beside the mods in the modded copy.
+UX:
+- In game: F8 opens a small Mods menu with each mod's entries.
+Status: done
 
 ### S-024 New mod from a template
 As a mod author, I create a mod for a game from a template and open it in my editor; RenChan reloads it on relaunch.
-Status: todo
+Acceptance:
+- [unit] The template uses the API; files added later go in at the next launch.
+- [self] New Mod makes a mod from the template and plays it.
+UX:
+- Flow: inspector › Mods › New Mod… → alert with a Name field → Create → mod on for this game, script opened in the default editor. Row context menu › Show in Finder. The row shows version · author · files from the manifest.
+Status: done
 
 ## M6 Ready to share (1.0.0)
 
@@ -330,7 +345,12 @@ Status: todo
 
 ### S-027 Compatibility report
 As the user, I see per game whether it ran, on which runtime, and can export that for a bug report.
-Status: todo
+Acceptance:
+- [unit] The report lists each game with its last run; at most 20 runs are kept per game.
+- [self] A run is recorded with its runtime and outcome; the report lists it.
+UX:
+- Flow: inspector › Ren'Py › Last Run ("Worked on Ren'Py 8.6.1", relative date). File › Export Compatibility Report… (Markdown, shown in Finder) or Copy Compatibility Report.
+Status: done
 
 ## Later
 - F95zone and itch.io update checks with alerts.

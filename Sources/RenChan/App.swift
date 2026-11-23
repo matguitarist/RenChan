@@ -37,6 +37,9 @@ struct RenChanApp: App {
                     .keyboardShortcut("o")
                 Button("Find Games on This Mac…") { model.sidebar = .library; model.findGames() }
                     .keyboardShortcut("o", modifiers: [.command, .shift])
+                Divider()
+                Button("Export Compatibility Report…") { model.exportCompatibilityReport() }
+                Button("Copy Compatibility Report") { model.copyCompatibilityReport() }
             }
             CommandGroup(after: .sidebar) {
                 Button("as Grid") { model.sidebar = .library; model.layout = .grid }

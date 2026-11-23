@@ -60,6 +60,8 @@ extension AppModel {
                 }
             }
             var environment = try prepareMods(game, copy: copy)
+            // S-022: Ren'Py's console and fast skip, in the copy only.
+            try DevToolsLoader.install(game.devTools, copy: copy)
             if Store.isOverridden { environment["HOME"] = Store.renpyHome.path }
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: Store.gameFolder(game.id).appending(path: "run.log"),
                                   environment: environment)
@@ -96,6 +98,13 @@ extension AppModel {
             log.post(.info, "\(game.title) keeps its saves in ~/Library/RenPy/\(found)", source: "Library")
         }
         let result = LaunchResult.read(copy: plan.copy, outputFile: plan.outputFile, exitCode: status, started: started)
+        // S-027: every run goes into the compatibility report.
+        let errorLine = result.failed ? (result.traceback ?? result.outputTail).split(separator: "\n").last.map(String.init) : nil
+        update(id) {
+            $0.record(RunRecord(date: started, runtime: plan.runtime.version, outcome: result.failed ? .failed : .worked, exitCode: status,
+                                seconds: seconds, modded: plan.copy.lastPathComponent == Store.moddedCopy(id).lastPathComponent,
+                                filter: game.filter?.name, error: errorLine))
+        }
         guard result.failed else {
             log.post(.info, "\(game.title) quit", source: "Play")
             return

@@ -71,6 +71,7 @@ struct GameDetails: View {
                         Text(runtimeNote).font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                RunAndDevToolsRows(game: game)
             }
             Section("Files") {
                 LabeledContent("Location") {

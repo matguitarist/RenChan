@@ -105,6 +105,7 @@ public enum ModLibrary {
     /// The folder whose contents go under game/: a game/ folder at any depth that holds scripts,
     /// else the folder itself, unwrapping lone folders.
     static func contentRoot(_ folder: URL) -> URL {
+        if let found = findManifest(folder, depth: 3) { return found }
         var queue: [(URL, Int)] = [(folder, 0)]
         while !queue.isEmpty {
             let (current, depth) = queue.removeFirst()
@@ -119,6 +120,23 @@ public enum ModLibrary {
             root = only
         }
     }
+
+    static func findManifest(_ folder: URL, depth: Int) -> URL? {
+        if FileManager.default.fileExists(atPath: folder.appending(path: ModManifest.fileName).path) { return folder }
+        guard depth > 0 else { return nil }
+        for child in children(folder) where GameLocator.isDirectory(child) {
+            if let found = findManifest(child, depth: depth - 1) { return found }
+        }
+        return nil
+    }
+
+    /// The mod's files now, so files an author adds to a mod made from the template go in at the next launch (S-024).
+    public static func currentFiles(_ mod: Mod, root: URL) -> [String] {
+        let found = files(in: folder(mod, root: root)).filter { $0 != ModManifest.fileName }
+        return found.isEmpty ? mod.files : found
+    }
+
+    public static func manifest(_ mod: Mod, root: URL) -> ModManifest? { ModManifest.read(folder(mod, root: root)) }
 
     static func children(_ folder: URL) -> [URL] {
         ((try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
@@ -148,14 +166,16 @@ public enum ModLibrary {
     }
 
     static func place(_ content: URL, id: UUID, name: String, target: URL) throws -> Mod {
-        let files = files(in: content)
+        let manifest = ModManifest.read(content)
+        let files = files(in: content).filter { $0 != ModManifest.fileName || manifest == nil }
         guard files.contains(where: { scriptExtensions.contains(($0 as NSString).pathExtension.lowercased()) }) else { throw ModError.noScripts }
         for file in files {
             let destination = target.appending(path: file)
             try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
             try FileManager.default.copyItem(at: content.appending(path: file), to: destination)
         }
-        return Mod(id: id, name: name, files: files)
+        if manifest != nil { try FileManager.default.copyItem(at: content.appending(path: ModManifest.fileName), to: target.appending(path: ModManifest.fileName)) }
+        return Mod(id: id, name: manifest?.name ?? name, files: files)
     }
 }
 
@@ -185,7 +205,7 @@ public enum ModInstaller {
         var placed: [String] = []
         for mod in mods {
             let folder = ModLibrary.folder(mod, root: root)
-            for file in mod.files {
+            for file in ModLibrary.currentFiles(mod, root: root) {
                 let destination = game.appending(path: file)
                 try fm.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
                 // A compiled file of the game's own beside a mod's source would shadow it.
@@ -236,7 +256,7 @@ public enum ModConflicts {
         var byScreen: [String: [String]] = [:]
         var screenOrder: [String] = []
         for mod in mods {
-            for file in mod.files {
+            for file in ModLibrary.currentFiles(mod, root: root) {
                 let key = file.lowercased()
                 if byFile[key] == nil { fileOrder.append(key) }
                 byFile[key, default: []].append(mod.name)

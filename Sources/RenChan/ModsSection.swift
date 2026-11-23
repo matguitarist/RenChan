@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 struct ModsSection: View {
     @Environment(AppModel.self) private var model
     let game: Game
+    @State private var naming = false
+    @State private var newName = ""
 
     var body: some View {
         Section("Mods") {
@@ -31,6 +33,8 @@ struct ModsSection: View {
             HStack {
                 Button("Add Mod…") { model.addModWithPanel(to: game.id) }
                     .help("Add a mod or walkthrough to this game: a zip, a folder, or .rpy, .rpyc or .rpa files")
+                Button("New Mod…") { newName = ""; naming = true }
+                    .help("Make your own mod for this game from RenChan's template and open it in your editor")
                 let others = model.otherMods(game)
                 if !others.isEmpty {
                     Menu("Add from Library") {
@@ -45,6 +49,21 @@ struct ModsSection: View {
             for url in urls { model.addMod(url, to: game.id) }
             return !urls.isEmpty
         }
+        .alert("New Mod", isPresented: $naming) {
+            TextField("Name", text: $newName)
+            Button("Create") { model.createMod(named: newName, for: game.id) }
+                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("RenChan makes a mod with a starter script that uses its mod API, turns it on for this game, and opens it in your editor. Changes go in at each launch.")
+        }
+    }
+
+    private func details(_ mod: Mod) -> String {
+        let count = ModLibrary.currentFiles(mod, root: Store.modsFolder).count
+        let files = count == 1 ? String(localized: "1 file") : String(localized: "\(count) files")
+        let manifest = ModLibrary.manifest(mod, root: Store.modsFolder)
+        return [manifest?.version.map { "v\($0)" }, manifest?.author, files].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     private func row(_ mod: Mod, _ use: ModUse) -> some View {
@@ -52,13 +71,13 @@ struct ModsSection: View {
         return Toggle(isOn: Binding(get: { use.enabled }, set: { model.setMod(mod.id, enabled: $0, in: game.id) })) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: mod.name)
-                Text(mod.files.count == 1 ? String(localized: "1 file") : String(localized: "\(mod.files.count) files"))
-                    .font(.caption).foregroundStyle(.secondary)
+                Text(details(mod)).font(.caption).foregroundStyle(.secondary)
             }
         }
         .contextMenu {
             Button("Move Up") { model.moveMod(mod.id, by: -1, in: game.id) }.disabled(index == 0)
             Button("Move Down") { model.moveMod(mod.id, by: 1, in: game.id) }.disabled(index == game.mods.count - 1)
+            Button("Show in Finder") { model.showModInFinder(mod.id) }
             Divider()
             Button("Remove from This Game") { model.removeMod(mod.id, from: game.id) }
         }

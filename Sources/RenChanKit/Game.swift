@@ -47,6 +47,10 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var backedUpBeforeMods = false
     /// PDF or text walkthroughs kept with the game (S-032).
     public var walkthroughs: [Walkthrough] = []
+    /// Ren'Py's console and fast skip (S-022).
+    public var devTools = DevTools()
+    /// What happened the last times it was played, newest first (S-027).
+    public var runs: [RunRecord] = []
     public var hasModsOn: Bool { mods.contains(where: \.enabled) }
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
@@ -93,6 +97,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         mods = try c.decodeIfPresent([ModUse].self, forKey: .mods) ?? []
         backedUpBeforeMods = try c.decodeIfPresent(Bool.self, forKey: .backedUpBeforeMods) ?? false
         walkthroughs = try c.decodeIfPresent([Walkthrough].self, forKey: .walkthroughs) ?? []
+        devTools = try c.decodeIfPresent(DevTools.self, forKey: .devTools) ?? DevTools()
+        runs = try c.decodeIfPresent([RunRecord].self, forKey: .runs) ?? []
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

@@ -46,6 +46,29 @@ extension AppModel {
         }
     }
 
+    /// S-024: a new mod from the template, on for this game, opened in the person's editor.
+    func createMod(named name: String, for id: Game.ID) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let game = game(id) else { return }
+        do {
+            let mod = try ModTemplate.create(trimmed, author: NSFullUserName(), into: Store.modsFolder)
+            mods.append(mod)
+            try ModLibrary.save(mods, to: Store.modsFolder)
+            update(id) { $0.mods.append(ModUse(mod: mod.id)) }
+            log.post(.info, "Made the mod \(mod.name) for \(game.title) from the template", source: "Mods")
+            if !Store.isOverridden, let script = mod.files.first {
+                NSWorkspace.shared.open(ModLibrary.folder(mod, root: Store.modsFolder).appending(path: script))
+            }
+        } catch {
+            notice = String(localized: "RenChan couldn't make the mod: \(error.localizedDescription)")
+        }
+    }
+
+    func showModInFinder(_ modID: UUID) {
+        guard let mod = mod(modID) else { return }
+        NSWorkspace.shared.activateFileViewerSelecting([ModLibrary.folder(mod, root: Store.modsFolder)])
+    }
+
     func attachMod(_ modID: UUID, to id: Game.ID) {
         update(id) { game in if !game.mods.contains(where: { $0.mod == modID }) { game.mods.append(ModUse(mod: modID)) } }
     }
@@ -85,6 +108,8 @@ extension AppModel {
         guard game.hasModsOn else { return [:] }
         let enabled = enabledMods(game)
         try ModInstaller.apply(enabled, root: Store.modsFolder, base: game.baseURL, copy: copy)
+        // S-023: the renchan module mods call.
+        try ModAPI.install(copy: copy)
         if !game.backedUpBeforeMods {
             if let saves = saveFolder(game), FileManager.default.fileExists(atPath: saves.path) {
                 _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(game.id), reason: .beforeMods)

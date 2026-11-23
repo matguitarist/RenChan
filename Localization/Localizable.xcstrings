@@ -751,6 +751,16 @@
         }
       }
     },
+    "Console (Shift+O)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Console (Maj+O)"
+          }
+        }
+      }
+    },
     "Copies of %@'s saves, kept by RenChan. A restore backs up the current saves first.": {
       "localizations": {
         "fr": {
@@ -767,6 +777,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copier"
+          }
+        }
+      }
+    },
+    "Copy Compatibility Report": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier le rapport de compatibilité"
           }
         }
       }
@@ -797,6 +817,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copier « %@ » pour y jouer ?"
+          }
+        }
+      }
+    },
+    "Create": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Créer"
           }
         }
       }
@@ -951,6 +981,26 @@
         }
       }
     },
+    "Each game, its Ren'Py version, and how it last ran. Attach it to a bug report.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chaque jeu, sa version de Ren’Py et son dernier lancement. Joignez-le à un rapport de bogue."
+          }
+        }
+      }
+    },
+    "Export Compatibility Report…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporter le rapport de compatibilité…"
+          }
+        }
+      }
+    },
     "FSR Sharpen": {
       "localizations": {
         "fr": {
@@ -971,12 +1021,32 @@
         }
       }
     },
+    "Failed on Ren'Py %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échec avec Ren’Py %@"
+          }
+        }
+      }
+    },
     "Fan release": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Version de fans"
+          }
+        }
+      }
+    },
+    "Fast Skip (>)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avance rapide (>)"
           }
         }
       }
@@ -1301,6 +1371,16 @@
         }
       }
     },
+    "Last Run": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dernier lancement"
+          }
+        }
+      }
+    },
     "Less": {
       "localizations": {
         "fr": {
@@ -1317,6 +1397,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Moins d’une minute"
+          }
+        }
+      }
+    },
+    "Let the > key skip ahead to the next choice, from the next launch": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laisser la touche > avancer jusqu’au prochain choix, dès le prochain lancement"
           }
         }
       }
@@ -1431,6 +1521,16 @@
         }
       }
     },
+    "Make your own mod for this game from RenChan's template and open it in your editor": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Créer votre propre mod pour ce jeu à partir du modèle de RenChan et l’ouvrir dans votre éditeur"
+          }
+        }
+      }
+    },
     "Modded play keeps its own saves; yours are backed up before the first modded launch.": {
       "localizations": {
         "fr": {
@@ -1521,6 +1621,16 @@
         }
       }
     },
+    "Name": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom"
+          }
+        }
+      }
+    },
     "Native": {
       "localizations": {
         "fr": {
@@ -1547,6 +1657,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jamais"
+          }
+        }
+      }
+    },
+    "New Mod": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau mod"
+          }
+        }
+      }
+    },
+    "New Mod…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau mod…"
           }
         }
       }
@@ -1707,6 +1837,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pas commencé"
+          }
+        }
+      }
+    },
+    "Not played yet": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore joué"
           }
         }
       }
@@ -2221,6 +2361,16 @@
         }
       }
     },
+    "RenChan couldn't make the mod: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu créer le mod : %@"
+          }
+        }
+      }
+    },
     "RenChan couldn't restore the saves: %@": {
       "localizations": {
         "fr": {
@@ -2237,6 +2387,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan n’a pas pu enregistrer la bibliothèque : %@"
+          }
+        }
+      }
+    },
+    "RenChan couldn't save the report: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu enregistrer le rapport : %@"
           }
         }
       }
@@ -2287,6 +2447,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan télécharge depuis renpy.org la version de Ren’Py dont un jeu a besoin la première fois que vous y jouez."
+          }
+        }
+      }
+    },
+    "RenChan makes a mod with a starter script that uses its mod API, turns it on for this game, and opens it in your editor. Changes go in at each launch.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan crée un mod avec un script de départ qui utilise son API de mods, l’active pour ce jeu et l’ouvre dans votre éditeur. Vos changements sont pris en compte à chaque lancement."
           }
         }
       }
@@ -2901,6 +3071,16 @@
         }
       }
     },
+    "Turn on Ren'Py's developer console for this game, from its next launch": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activer la console de développement de Ren’Py pour ce jeu, dès son prochain lancement"
+          }
+        }
+      }
+    },
     "Unknown": {
       "localizations": {
         "fr": {
@@ -3117,6 +3297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Où l’obtenir"
+          }
+        }
+      }
+    },
+    "Worked on Ren'Py %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fonctionné avec Ren’Py %@"
           }
         }
       }
