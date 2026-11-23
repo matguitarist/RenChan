@@ -2,6 +2,7 @@
 # Snapshots of every page in light and dark, with seed data, on a fresh test store.
 # Usage: tools/snap.sh            all pages
 #        APP_SNAPSHOT_PAGES=all,settings tools/snap.sh
+#        APP_LANG=fr tools/snap.sh   in French
 set -u
 app=~/Applications/RenChan.app/Contents/MacOS/RenChan
 store=/tmp/RenChan-test.json
@@ -17,7 +18,10 @@ domain=com.mathieuares.renchan
 saved=$(mktemp -t renchan-defaults)
 defaults export $domain $saved
 defaults delete $domain "NSWindow Frame main" 2>/dev/null
-APP_STORE=$store APP_SEED=1 APP_SNAPSHOT=$shots $app
+# APP_LANG=fr shoots the pages in French.
+lang_args=()
+[ -n "${APP_LANG:-}" ] && lang_args=(-AppleLanguages "($APP_LANG)")
+APP_STORE=$store APP_SEED=1 APP_SNAPSHOT=$shots $app $lang_args
 code=$?
 defaults import $domain $saved
 rm -f $saved

@@ -341,7 +341,9 @@ Status: todo
 
 ### S-026 French everywhere
 As the user, every screen reads well in French.
-Status: todo
+Acceptance:
+- [snap] APP_LANG=fr tools/snap.sh shoots all 18 pages in French; reviewed 2026-11-22: no clipped French, French spacing, vous throughout.
+Status: done
 
 ### S-027 Compatibility report
 As the user, I see per game whether it ran, on which runtime, and can export that for a bug report.
