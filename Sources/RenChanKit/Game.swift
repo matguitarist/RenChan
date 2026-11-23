@@ -45,6 +45,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var mods: [ModUse] = []
     /// Saves were backed up before the first modded launch (S-020).
     public var backedUpBeforeMods = false
+    /// PDF or text walkthroughs kept with the game (S-032).
+    public var walkthroughs: [Walkthrough] = []
     public var hasModsOn: Bool { mods.contains(where: \.enabled) }
 
     public init(id: UUID = UUID(), title: String, sourcePath: String, kind: SourceKind, basePath: String,
@@ -90,6 +92,7 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         filter = try c.decodeIfPresent(FilterSetting.self, forKey: .filter)
         mods = try c.decodeIfPresent([ModUse].self, forKey: .mods) ?? []
         backedUpBeforeMods = try c.decodeIfPresent(Bool.self, forKey: .backedUpBeforeMods) ?? false
+        walkthroughs = try c.decodeIfPresent([Walkthrough].self, forKey: .walkthroughs) ?? []
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

@@ -288,6 +288,19 @@ UX:
 - Flow: Mods › Add from Library › Universal Ren'Py Mod. One copy in the library serves every game.
 Status: done
 
+### S-032 Read a walkthrough beside the game
+As the user, I keep a game's PDF or text walkthrough (like Eternum's on itch.io) in RenChan and read it in a window that floats above the game, back at the page I left.
+Screens: walkthrough, game-mods
+Acceptance:
+- [unit] A PDF is copied in; a file named .pdf that isn't one (an expired itch.io link) is refused; text works; other files are refused.
+- [self] Added, opens with its pages, page remembered, fake refused with why, removed with its file.
+UX:
+- Flow: inspector › Walkthroughs › Add Walkthrough… or drop (also on Mods) → Open, or Game › Show Walkthrough (⇧⌘J) → window titled "<walkthrough> — <game>", at the last page.
+- Surface: its own window (kept open beside the game), pinned above other apps by default; the pin toggles it.
+- States: empty explains drop and itch.io; not really a PDF → says the link may have expired; removed → "Walkthrough Removed".
+- Words: "Walkthrough" / « Soluce », "Float Above Game" / « Garder au-dessus du jeu », "Find in Walkthrough".
+Status: done
+
 ## M5 Mod API and tools (0.5.0)
 
 ### S-022 Developer console

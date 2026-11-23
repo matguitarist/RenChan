@@ -46,6 +46,25 @@ enum Fixtures {
     }
 }
 
+extension Fixtures {
+    /// A small PDF with one page of text per item, for walkthrough seed data and the self-test.
+    static func pdf(_ pages: [String], to url: URL) {
+        var box = CGRect(x: 0, y: 0, width: 612, height: 792)
+        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        guard let context = CGContext(url as CFURL, mediaBox: &box, nil) else { return }
+        for text in pages {
+            context.beginPDFPage(nil)
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
+            NSAttributedString(string: text, attributes: [.font: NSFont.systemFont(ofSize: 15), .foregroundColor: NSColor.black])
+                .draw(in: CGRect(x: 54, y: 54, width: 504, height: 684))
+            NSGraphicsContext.restoreGraphicsState()
+            context.endPDFPage()
+        }
+        context.closePDF()
+    }
+}
+
 /// Seed data for snapshots (APP_SEED=1 with APP_STORE): a few games, two runtimes, a morning of log.
 enum SeedData {
     static func addIfRequested(model: AppModel) {
@@ -94,6 +113,14 @@ enum SeedData {
                     model.addMod(folder, to: model.games[1].id)
                 }
                 if let urm = model.mods.last { model.setMod(urm.id, enabled: false, in: model.games[1].id) }
+                let pdf = modsRoot.appending(path: "Moonlit_Letters_Walkthrough_v1.2.pdf")
+                Fixtures.pdf([
+                    "Moonlit Letters — Walkthrough v1.2\n\nChapter 1\n\n• Answer the first letter: \"I remember the lake.\" (+1 Mei)\n• At the station, wait for the last train. (+1 Aoi)\n• Keep the pressed flower.",
+                    "Chapter 2\n\n• Read the letter aloud. (+1 Mei)\n• Skip the festival only if you want Aoi's route.\n• The bridge: say \"Not yet.\" for the good ending.",
+                ], to: pdf)
+                if let walkthrough = model.addWalkthrough(pdf, to: model.games[1].id) {
+                    model.setWalkthroughPage(1, WalkthroughRef(game: model.games[1].id, walkthrough: walkthrough.id))
+                }
             }
             if model.games.count > 2 {
                 model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }

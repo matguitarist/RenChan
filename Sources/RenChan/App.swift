@@ -64,6 +64,7 @@ struct RenChanApp: App {
                     .disabled(menu.selection == nil)
                 Button("Save Backups…") { model.showBackups = menu.selection }
                     .disabled(menu.selection == nil)
+                ShowWalkthroughButton(model: model, selection: menu.selection)
                 Divider()
                 Button("Update to New Version…") { if let id = menu.selection { model.chooseUpdate(id) } }
                     .keyboardShortcut("u", modifiers: [.command, .shift])
@@ -83,6 +84,20 @@ struct RenChanApp: App {
                 Link("RenChan on GitHub", destination: URL(string: "https://github.com/matguitarist/RenChan")!)
             }
         }
+
+        WindowGroup("Walkthrough", id: "walkthrough", for: WalkthroughRef.self) { $ref in
+            Group {
+                if let ref {
+                    WalkthroughWindow(ref: ref)
+                } else {
+                    ContentUnavailableView("No Walkthrough", systemImage: "book.closed")
+                        .frame(minWidth: 380, minHeight: 420)
+                }
+            }
+            .environment(model)
+            .themed()
+        }
+        .defaultSize(width: 560, height: 760)
 
         Settings {
             SettingsView()
@@ -154,6 +169,8 @@ enum Store {
     static func moddedCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play-modded", directoryHint: .isDirectory) }
     /// Where modded play keeps its saves, through RENPY_PATH_TO_SAVES (S-020).
     static func moddedSaves(_ id: UUID) -> URL { gameFolder(id).appending(path: "Modded Saves", directoryHint: .isDirectory) }
+    /// A game's walkthroughs (S-032). Removed with the game.
+    static func walkthroughsFolder(_ id: UUID) -> URL { gameFolder(id).appending(path: "Walkthroughs", directoryHint: .isDirectory) }
     /// The mod library (S-017).
     static var modsFolder: URL { dataFolder.appending(path: "Mods", directoryHint: .isDirectory) }
     /// The person's own .glsl filters (S-016).

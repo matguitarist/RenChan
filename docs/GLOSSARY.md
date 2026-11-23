@@ -26,3 +26,4 @@ One name per thing, in every button, menu, title, tooltip and error.
 | Mod library | RenChan's one copy of every mod added, shared by the games that use it | mod store | Bibliothèque (de mods) |
 | Load order | The order of a game's mods; a later mod wins a file both have | priority | Ordre de chargement |
 | Modded saves | The saves of play with mods on, kept apart from the game's | mod saves | Sauvegardes avec mods |
+| Walkthrough | A PDF or text guide kept with a game and read in its own window; a walkthrough mod is a mod | guide, soluce file | Soluce |

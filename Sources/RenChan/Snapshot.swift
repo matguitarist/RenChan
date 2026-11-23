@@ -33,6 +33,12 @@ enum Snapshot {
                                         IOPMAssertionLevel(kIOPMAssertionLevelOn), "Snapshots" as CFString, &awake)
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
             try? await Task.sleep(for: .seconds(1.5))
+            // The same window every run, whatever size or tiling the person's own RenChan window was saved with.
+            if let main = NSApp.windows.first(where: { $0.canBecomeMain && !$0.isSheet }) {
+                main.setFrameAutosaveName("")
+                main.setFrame(NSRect(x: 80, y: 80, width: 1080, height: 720), display: true)
+                try? await Task.sleep(for: .seconds(0.5))
+            }
             if env["APP_SNAPSHOT_MIN"] != nil, let main = NSApp.windows.first(where: { $0.canBecomeMain && !$0.isSheet }) {
                 // The window clamps to its content's minimum size.
                 main.setContentSize(NSSize(width: 1, height: 1))
@@ -63,6 +69,18 @@ enum Snapshot {
             await shoot("game-details", { model.showInspector = true }, {})
             await shoot("game-mods", { model.selection = model.games.count > 1 ? model.games[1].id : nil; model.showInspector = true },
                         { model.selection = model.games.first?.id })
+            if only == nil || only?.contains("walkthrough") == true, model.games.count > 1, let walkthrough = model.games[1].walkthroughs.first {
+                model.walkthroughToOpen = WalkthroughRef(game: model.games[1].id, walkthrough: walkthrough.id)
+                try? await Task.sleep(for: .seconds(1.5))
+                for mode in ["light", "dark"] {
+                    NSApp.appearance = NSAppearance(named: mode == "light" ? .aqua : .darkAqua)
+                    try? await Task.sleep(for: .seconds(1))
+                    if let window = NSApp.windows.first(where: { $0.title.contains("Walkthrough") && $0.isVisible }) {
+                        capture(to: "\(dir)/walkthrough-\(mode).png", window: window)
+                    }
+                }
+                NSApp.windows.first { $0.title.contains("Walkthrough") }?.close()
+            }
             await shoot("library-filtered", { model.filter = LibraryFilter(labels: ["Romance"]) }, { model.filter = LibraryFilter() })
             let saved = model.games
             await shoot("library-empty", { model.games = [] }, { model.games = saved })

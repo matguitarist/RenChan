@@ -60,6 +60,8 @@ final class AppModel {
     var mods: [Mod] = []
     /// The copy each running game plays from.
     var runningCopies: [Game.ID: URL] = [:]
+    /// A walkthrough window to open from code, such as snapshot mode (S-032).
+    var walkthroughToOpen: WalkthroughRef?
     var releases: [String: [VNDBRelease]] = [:]
     var releasesLoading: Set<String> = []
     @ObservationIgnored var cameFromDiscover: (info: VNDBInfo, opened: Date)?

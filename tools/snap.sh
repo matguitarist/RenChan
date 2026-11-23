@@ -11,4 +11,14 @@ rm -rf ~/Library/Saved\ Application\ State/com.mathieuares.renchan.savedState
 # Seed data only fills an empty store, so start from nothing.
 rm -rf $store ${store:r}.log ${store:r}-data
 rm -rf $shots
+# The person's saved window frame can carry macOS tiling state, and a tiled window crashes AppKit's layout
+# while snapshots switch appearance. Set it aside for the run and put it back exactly as it was.
+domain=com.mathieuares.renchan
+saved=$(mktemp -t renchan-defaults)
+defaults export $domain $saved
+defaults delete $domain "NSWindow Frame main" 2>/dev/null
 APP_STORE=$store APP_SEED=1 APP_SNAPSHOT=$shots $app
+code=$?
+defaults import $domain $saved
+rm -f $saved
+exit $code

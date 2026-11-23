@@ -28,6 +28,11 @@ extension AppModel {
     /// Copies a mod into the library and turns it on for the game, last in the load order.
     func addMod(_ url: URL, to id: Game.ID) {
         guard let game = game(id) else { return }
+        // A walkthrough PDF dropped on Mods is a walkthrough, not a mod.
+        if Walkthroughs.isWalkthrough(url) {
+            addWalkthrough(url, to: id)
+            return
+        }
         do {
             let mod = try ModLibrary.importMod(url, into: Store.modsFolder)
             mods.append(mod)

@@ -37,6 +37,7 @@ struct GameDetails: View {
                 }
             }
             FilterSection(game: game)
+            WalkthroughsSection(game: game)
             ModsSection(game: game)
             Section("Saves") {
                 LabeledContent("Folder") {

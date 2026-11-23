@@ -3,6 +3,7 @@ import RenChanKit
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.openWindow) private var openWindow
     @Environment(AppModel.self) private var model
     @Environment(\.openSettings) private var openSettings
 
@@ -28,6 +29,9 @@ struct ContentView: View {
         }
         .sheet(item: Binding(get: { model.showBackups.map(BackupsSheetItem.init) }, set: { if $0 == nil { model.showBackups = nil } })) { item in
             SaveBackupsSheet(gameID: item.id).environment(model).themed()
+        }
+        .onChange(of: model.walkthroughToOpen) { _, ref in
+            if let ref { openWindow(id: "walkthrough", value: ref); model.walkthroughToOpen = nil }
         }
         .sheet(item: Binding(get: { model.findGames.map(FindGamesSheetItem.init) }, set: { if $0 == nil { model.findGames = nil } })) { item in
             FindGamesSheet(initial: item.state).environment(model).themed()

@@ -1,3 +1,4 @@
+import PDFKit
 import AppKit
 import RenChanKit
 
@@ -210,6 +211,24 @@ enum SelfTest {
         model.removeMod(walkthrough, from: first.id)
         model.removeMod(urm, from: first.id)
         check("S-017 a mod no game uses leaves the library", model.mods.isEmpty)
+
+        // S-032 Walkthroughs
+        let guide = root.appending(path: "Question_Walkthrough.pdf")
+        Fixtures.pdf(["Page one", "Page two", "Page three"], to: guide)
+        let added032 = model.addWalkthrough(guide, to: first.id)
+        let stored = added032.map { model.walkthroughURL(model.game(first.id)!, $0) }
+        check("S-032 a walkthrough PDF is kept by RenChan and opens", stored.flatMap { PDFDocument(url: $0) }?.pageCount == 3)
+        if let added032 { model.setWalkthroughPage(2, WalkthroughRef(game: first.id, walkthrough: added032.id)) }
+        check("S-032 the page read is remembered", model.game(first.id)?.walkthroughs.first?.page == 2)
+        let fake = root.appending(path: "expired.pdf")
+        try? "<Error><Code>ExpiredRequest</Code></Error>".write(to: fake, atomically: true, encoding: .utf8)
+        model.notice = nil
+        model.addWalkthrough(fake, to: first.id)
+        check("S-032 a PDF that isn't one is refused with why", model.game(first.id)?.walkthroughs.count == 1 && model.notice != nil)
+        model.notice = nil
+        if let added032 { model.removeWalkthrough(added032.id, from: first.id) }
+        check("S-032 removing a walkthrough takes its file out", model.game(first.id)?.walkthroughs.isEmpty == true
+              && !(stored.map { FileManager.default.fileExists(atPath: $0.path) } ?? true))
 
         // S-005 See why a game didn't start
         let broken = Fixtures.game("Broken-1.0-pc", in: root, files: [
