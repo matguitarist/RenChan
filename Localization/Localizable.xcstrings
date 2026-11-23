@@ -251,6 +251,76 @@
         }
       }
     },
+    "Back Up Now": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier maintenant"
+          }
+        }
+      }
+    },
+    "Back Up Saves": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier les sauvegardes"
+          }
+        }
+      }
+    },
+    "Back up the saves before a big choice, or before trying a mod.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiez les sauvegardes avant un choix important ou avant d’essayer un mod."
+          }
+        }
+      }
+    },
+    "Backup": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copie"
+          }
+        }
+      }
+    },
+    "Backups": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies"
+          }
+        }
+      }
+    },
+    "Backups…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies…"
+          }
+        }
+      }
+    },
+    "Before restore": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant restauration"
+          }
+        }
+      }
+    },
     "Cancel": {
       "localizations": {
         "fr": {
@@ -351,6 +421,16 @@
         }
       }
     },
+    "Copies of %@'s saves, kept by RenChan. A restore backs up the current saves first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies des sauvegardes de %@, gardées par RenChan. Une restauration copie d’abord les sauvegardes actuelles."
+          }
+        }
+      }
+    },
     "Copy": {
       "localizations": {
         "fr": {
@@ -371,12 +451,32 @@
         }
       }
     },
+    "Copy the saves into RenChan's backups (Option-Command-B)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copier les sauvegardes dans les copies de RenChan (Option-Commande-B)"
+          }
+        }
+      }
+    },
     "Copy “%@” to play it?": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Copier « %@ » pour y jouer ?"
+          }
+        }
+      }
+    },
+    "Date": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
           }
         }
       }
@@ -407,6 +507,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Développeur"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminé"
           }
         }
       }
@@ -511,6 +621,16 @@
         }
       }
     },
+    "Folder": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dossier"
+          }
+        }
+      }
+    },
     "Found the first time you play": {
       "localizations": {
         "fr": {
@@ -597,6 +717,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Boîte de réception"
+          }
+        }
+      }
+    },
+    "Kind": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
           }
         }
       }
@@ -731,6 +861,16 @@
         }
       }
     },
+    "Move to Trash": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Placer dans la corbeille"
+          }
+        }
+      }
+    },
     "My Game": {
       "localizations": {
         "fr": {
@@ -767,6 +907,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jamais"
+          }
+        }
+      }
+    },
+    "No Backups Yet": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune copie pour l’instant"
           }
         }
       }
@@ -837,6 +987,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucune étiquette"
+          }
+        }
+      }
+    },
+    "None yet": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune pour l’instant"
           }
         }
       }
@@ -1017,6 +1177,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quitter le jeu (Commande-Point)"
+          }
+        }
+      }
+    },
+    "Quit the game to restore": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quittez le jeu pour restaurer"
           }
         }
       }
@@ -1211,6 +1381,36 @@
         }
       }
     },
+    "RenChan backs up the current saves first, so you can go back.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan copie d’abord les sauvegardes actuelles, pour que vous puissiez revenir en arrière."
+          }
+        }
+      }
+    },
+    "RenChan couldn't back up the saves: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu copier les sauvegardes : %@"
+          }
+        }
+      }
+    },
+    "RenChan couldn't restore the saves: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu restaurer les sauvegardes : %@"
+          }
+        }
+      }
+    },
     "RenChan couldn't save the library: %@": {
       "localizations": {
         "fr": {
@@ -1331,6 +1531,36 @@
         }
       }
     },
+    "Restore": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurer"
+          }
+        }
+      }
+    },
+    "Restore the saves from %@?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurer les sauvegardes du %@ ?"
+          }
+        }
+      }
+    },
+    "Restore…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurer…"
+          }
+        }
+      }
+    },
     "Routes done, choices to try…": {
       "localizations": {
         "fr": {
@@ -1361,6 +1591,26 @@
         }
       }
     },
+    "Save Backups": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies des sauvegardes"
+          }
+        }
+      }
+    },
+    "Save Backups…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies des sauvegardes…"
+          }
+        }
+      }
+    },
     "Saves": {
       "localizations": {
         "fr": {
@@ -1387,6 +1637,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chercher ce jeu sur VNDB (Maj-Commande-D)"
+          }
+        }
+      }
+    },
+    "See, restore or remove backups of the saves": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voir, restaurer ou supprimer les copies des sauvegardes"
           }
         }
       }
@@ -1427,6 +1687,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "N’afficher que les jeux avec un statut, une note ou une étiquette"
+          }
+        }
+      }
+    },
+    "Size": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taille"
           }
         }
       }

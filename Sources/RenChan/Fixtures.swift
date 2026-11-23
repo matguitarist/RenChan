@@ -78,6 +78,14 @@ enum SeedData {
                 model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }
                 model.update(model.games[1].id) { $0.labels = ["Short"] }
             }
+            let saves = Store.saveRoot.appending(path: "The_Question-7.0-pc", directoryHint: .isDirectory)
+            try? FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)
+            for name in ["1-1-LT1.save", "1-2-LT1.save", "auto-1-LT1.save", "persistent"] {
+                try? Data(repeating: 7, count: 48_000).write(to: saves.appending(path: name))
+            }
+            _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -86400 * 6))
+            _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforeRestore, at: Date(timeIntervalSinceNow: -86400 * 2))
+            _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -7200))
             model.selection = first.id
         }
         model.runtimes = model.runtimeStore.installed()

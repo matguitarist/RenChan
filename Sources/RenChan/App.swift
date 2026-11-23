@@ -57,6 +57,11 @@ struct RenChanApp: App {
                 Button("Open Saves Folder") { if let id = menu.selection { model.openSaves(id) } }
                     .keyboardShortcut("s", modifiers: [.command, .option])
                     .disabled(menu.selection == nil)
+                Button("Back Up Saves") { if let id = menu.selection { model.backUpSaves(id) } }
+                    .keyboardShortcut("b", modifiers: [.command, .option])
+                    .disabled(menu.selection == nil)
+                Button("Save Backups…") { model.showBackups = menu.selection }
+                    .disabled(menu.selection == nil)
                 Divider()
                 Button("Find on VNDB…") { if let id = menu.selection { model.findOnVNDB(id) } }
                     .keyboardShortcut("d", modifiers: [.command, .shift])
@@ -140,6 +145,8 @@ enum Store {
     /// One folder per game: play/ (the working copy), source/ (an unpacked zip), run.log.
     static func gameFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Games/\(id.uuidString)", directoryHint: .isDirectory) }
     static func workingCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play", directoryHint: .isDirectory) }
+    /// Save backups, one folder per game. Kept when a game is removed (S-012).
+    static func backupsFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Backups/\(id.uuidString)", directoryHint: .isDirectory) }
     /// The cover from VNDB or one the person chose (S-010).
     static func coverFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "cover") }
     /// Written while a game plays, for its playtime (S-009).

@@ -31,6 +31,22 @@ struct GameDetails: View {
                     }
                 }
             }
+            Section("Saves") {
+                LabeledContent("Folder") {
+                    if game.saveDirectory != nil {
+                        Button(savesTitle) { model.openSaves(game.id) }
+                    } else {
+                        Text("Found the first time you play").foregroundStyle(.secondary)
+                    }
+                }
+                if let folder = game.saveDirectory {
+                    Text(verbatim: "~/Library/RenPy/\(folder)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                    BackupRow(game: game)
+                }
+            }
             Section("Ren'Py") {
                 LabeledContent("Version") {
                     VStack(alignment: .trailing, spacing: 2) {
@@ -51,19 +67,6 @@ struct GameDetails: View {
             Section("Files") {
                 LabeledContent("Location") {
                     Button("Show in Finder") { model.showInFinder(game.id) }
-                }
-                LabeledContent("Saves") {
-                    if game.saveDirectory != nil {
-                        Button(savesTitle) { model.openSaves(game.id) }
-                    } else {
-                        Text("Found the first time you play").foregroundStyle(.secondary)
-                    }
-                }
-                if let folder = game.saveDirectory {
-                    Text(verbatim: "~/Library/RenPy/\(folder)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .textSelection(.enabled)
                 }
             }
             Section {

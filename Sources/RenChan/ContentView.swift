@@ -26,6 +26,9 @@ struct ContentView: View {
         .sheet(item: Binding(get: { model.vndbSearch.map(VNDBSheetItem.init) }, set: { if $0 == nil { model.vndbSearch = nil } })) { item in
             VNDBSearchSheet(initial: item.search).environment(model).themed()
         }
+        .sheet(item: Binding(get: { model.showBackups.map(BackupsSheetItem.init) }, set: { if $0 == nil { model.showBackups = nil } })) { item in
+            SaveBackupsSheet(gameID: item.id).environment(model).themed()
+        }
         .sheet(item: $model.launchError) { failure in
             LaunchErrorSheet(failure: failure).environment(model).themed()
         }
@@ -87,6 +90,10 @@ struct ContentView: View {
                 .navigationTitle(SidebarItem.log.title)
         }
     }
+}
+
+private struct BackupsSheetItem: Identifiable {
+    let id: Game.ID
 }
 
 /// The VNDB sheet stays up while its results change underneath.

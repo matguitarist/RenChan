@@ -132,14 +132,14 @@ Status: done
 As the user, I back up a game's saves with one click, see past backups by date, and restore one.
 Screens: game-details, save-backups
 UX:
-- Flow: inspector "Back Up Saves" (or Game › Back Up Saves, ⌥⌘B) → a backup with today's date, the inspector says "Last backup: just now". "Backups…" (Game › Save Backups…) → sheet "Save Backups" listing each backup with its date, number of saves and size → "Restore…" asks "Restore the saves from <date>?" with "Restore" → RenChan backs up the current saves first, then restores. Move to Trash removes a backup (it can come back from the Trash).
+- Flow: inspector "Back Up Saves" (or Game › Back Up Saves, ⌥⌘B) → a backup with today's date, the inspector's Saves section says when the last backup was made. "Backups…" (Game › Save Backups…) → sheet "Save Backups" listing each backup with its date, number of saves and size → "Restore…" asks "Restore the saves from <date>?" with "Restore" → RenChan backs up the current saves first, then restores. Move to Trash removes a backup (it can come back from the Trash).
 - Surface: a button inline; the list in a sheet; a confirmation dialog for Restore.
 - States: no saves folder yet "Found the first time you play" and the buttons off; no backups "No backups yet" with "Back Up Now"; while the game plays, Restore is off with "Quit the game to restore".
-- Words: "Back Up Saves" / « Sauvegarder les parties », "Save Backups" / « Copies des parties », "Restore…" / « Restaurer… », "Before restore" / « Avant restauration ».
+- Words: "Back Up Saves" / « Copier les sauvegardes », "Save Backups" / « Copies des sauvegardes », "Restore…" / « Restaurer… », "Before restore" / « Avant restauration ».
 - Access: the list is a Table; Return on a row asks to restore.
 Acceptance:
 - [unit] A restore keeps a backup of the saves it replaces.
-Status: doing
+Status: done
 
 ### S-013 Update a game to a new version
 As the user, I point a game at its new version's folder or zip; its labels, playtime, filter and mods carry over.

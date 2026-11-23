@@ -166,12 +166,25 @@ enum SelfTest {
         check("S-010 Reset Cover goes back to the game's own art", model.game(first.id)?.customCover == false
               && !FileManager.default.fileExists(atPath: Store.coverFile(first.id).path))
 
+        // S-012 Back up saves
+        if let saves = model.saveFolder(first) {
+            model.backUpSaves(first.id)
+            check("S-012 Back Up Saves makes a dated backup in RenChan's folder",
+                  model.backups(first.id).count == 1 && model.backups(first.id).first?.saveCount == 1)
+            try? "later".write(to: saves.appending(path: "2-1-LT1.save"), atomically: true, encoding: .utf8)
+            if let backup = model.backups(first.id).first { model.restore(backup, for: first.id) }
+            check("S-012 a restore brings back the saves and backs up the ones it replaced",
+                  !FileManager.default.fileExists(atPath: saves.appending(path: "2-1-LT1.save").path)
+                  && model.backups(first.id).first?.reason == .beforeRestore && model.backups(first.id).first?.saveCount == 2)
+        }
+
         // S-008 Remove a game
         model.remove(first.id)
         check("removing deletes the working copy and keeps the original and saves",
               !FileManager.default.fileExists(atPath: copy.path) && FileManager.default.fileExists(atPath: question.path)
               && FileManager.default.fileExists(atPath: Store.saveRoot.appending(path: "the_question-7").path)
               && model.game(first.id) == nil)
+        check("S-012 removing a game keeps its save backups", FileManager.default.fileExists(atPath: Store.backupsFolder(first.id).path))
         model.notice = nil
     }
 
