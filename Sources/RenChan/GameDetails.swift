@@ -11,14 +11,16 @@ struct GameDetails: View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: Space.md) {
-                    Text(game.title).font(.title3.weight(.semibold))
-                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(alignment: .firstTextBaseline, spacing: Space.sm) {
+                        Text(game.title).font(.title3.weight(.semibold))
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                        playButton
+                    }
                     Cover(game: game)
                         .aspectRatio(Cover.ratio, contentMode: .fit)
                         .frame(width: 180)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
-                        .frame(maxWidth: .infinity)
-                    playButton
                         .frame(maxWidth: .infinity)
                 }
             }
