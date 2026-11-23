@@ -143,6 +143,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// The self-test's result becomes the exit code, after a normal quit.
     func applicationWillTerminate(_ notification: Notification) {
+        MainActor.assumeIsolated { AppModel.current?.flushLibrary() }
         Store.log.flushFile()
         if SelfTest.requested { exit(SelfTest.exitCode) }
     }

@@ -113,9 +113,14 @@ extension AppModel {
         game.saveDirectory.map { Store.saveRoot.appending(path: $0, directoryHint: .isDirectory) }
     }
 
+    /// Read again when a backup or restore happens, or the game starts or stops.
     func saveCount(_ game: Game) -> Int? {
-        guard let folder = saveFolder(game), FileManager.default.fileExists(atPath: folder.path) else { return nil }
-        return SaveFolder.count(folder)
+        var key = Hasher()
+        key.combine(backupRevision); key.combine(playing.contains(game.id)); key.combine(game.saveDirectory); key.combine(game.lastPlayed)
+        return memoized("saves-\(game.id)", key: key.finalize()) {
+            guard let folder = saveFolder(game), FileManager.default.fileExists(atPath: folder.path) else { return nil }
+            return SaveFolder.count(folder)
+        }
     }
 
     func openSaves(_ id: Game.ID) {

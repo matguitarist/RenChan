@@ -5,6 +5,14 @@ import LogKitUI
 import Observation
 import RenChanKit
 
+/// Serializes library writes, newest last.
+actor LibraryWriter {
+    static let shared = LibraryWriter()
+    func write(_ games: [Game], to url: URL) -> (any Error)? {
+        do { try LibraryFile.save(games, to: url); return nil } catch { return error }
+    }
+}
+
 /// The app's state: the library, runtimes, what is selected and playing, and the open sheets.
 /// Actions live in Models+Library.swift and Models+Play.swift.
 @Observable
@@ -67,6 +75,13 @@ final class AppModel {
     /// Games whose watched page is being read now (S-033).
     var checkingVersions: Set<Game.ID> = []
     @ObservationIgnored var watchTask: Task<Void, Never>?
+    @ObservationIgnored var pendingSave: Task<Void, Never>?
+    /// Disk reads the inspector shows, kept until what they depend on changes.
+    @ObservationIgnored var memo: [String: (key: Int, value: Any)] = [:]
+    /// Bumped when a mod's files may have changed, so the Mods section reads them again.
+    var modsRevision = 0
+    /// The model, for the app delegate's flush on quit.
+    @ObservationIgnored nonisolated(unsafe) static weak var current: AppModel?
     var releases: [String: [VNDBRelease]] = [:]
     var releasesLoading: Set<String> = []
     @ObservationIgnored var cameFromDiscover: (info: VNDBInfo, opened: Date)?
@@ -89,6 +104,7 @@ final class AppModel {
         logViewer = LogViewerModel(store: log)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
         log.post(.info, "RenChan \(version) started", source: "App")
+        AppModel.current = self
         loadLibrary()
         recoverSessions()
         startWatchChecks()
@@ -121,6 +137,7 @@ final class AppModel {
     }
 
     func loadLibrary() {
+        flushLibrary()
         do {
             games = try LibraryFile.load(Store.url)
         } catch {
@@ -138,19 +155,45 @@ final class AppModel {
         if changed { saveLibrary() }
     }
 
+    /// Writes the library a moment after the last change, off the main thread: a big library takes tens of
+    /// milliseconds to encode, and a play session or a check of watched pages changes it several times in a row.
     func saveLibrary() {
-        do {
-            try LibraryFile.save(games, to: Store.url)
-        } catch {
-            log.post(.error, "Couldn't save the library: \(error.localizedDescription)", source: "Library")
-            notice = String(localized: "RenChan couldn't save the library: \(error.localizedDescription)")
+        pendingSave?.cancel()
+        pendingSave = Task {
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !Task.isCancelled else { return }
+            pendingSave = nil
+            let snapshot = games
+            let url = Store.url
+            if let error = await LibraryWriter.shared.write(snapshot, to: url) { reportSaveError(error) }
         }
+    }
+
+    /// Writes now: before quitting, and before reading the file again.
+    func flushLibrary() {
+        guard let pending = pendingSave else { return }
+        pending.cancel()
+        pendingSave = nil
+        do { try LibraryFile.save(games, to: Store.url) } catch { reportSaveError(error) }
+    }
+
+    private func reportSaveError(_ error: any Error) {
+        log.post(.error, "Couldn't save the library: \(error.localizedDescription)", source: "Library")
+        notice = String(localized: "RenChan couldn't save the library: \(error.localizedDescription)")
     }
 
     func update(_ id: Game.ID, _ change: (inout Game) -> Void) {
         guard let index = games.firstIndex(where: { $0.id == id }) else { return }
         change(&games[index])
         saveLibrary()
+    }
+
+    /// A value read from disk, kept while key stays the same.
+    func memoized<T>(_ name: String, key: Int, _ make: () -> T) -> T {
+        if let hit = memo[name], hit.key == key, let value = hit.value as? T { return value }
+        let value = make()
+        memo[name] = (key, value)
+        return value
     }
 
     private func syncMenu() {

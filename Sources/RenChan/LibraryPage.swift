@@ -1,4 +1,5 @@
 import AppKit
+import ImageIO
 import RenChanKit
 import SwiftUI
 
@@ -193,12 +194,24 @@ final class CoverCache {
         if let cached = images[game.id] { return cached }
         let own = Store.coverFile(game.id)
         let file = FileManager.default.fileExists(atPath: own.path) ? own : GameLocator.cover(base: game.baseURL)
-        let image = file.flatMap { NSImage(contentsOf: $0) }
+        let image = file.flatMap(Self.thumbnail)
         images[game.id] = image
         return image
     }
 
     func forget(_ id: Game.ID) { images[id] = nil }
+
+    /// A cover decoded at the size the grid and inspector draw it: a 1920×2880 cover is 22 MB as a full
+    /// bitmap and about 1 MB at 720 px, and decodes in half the time.
+    static func thumbnail(_ url: URL) -> NSImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,
+                                        kCGImageSourceThumbnailMaxPixelSize: 720,
+                                        kCGImageSourceCreateThumbnailWithTransform: true,
+                                        kCGImageSourceShouldCacheImmediately: true]
+        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        return NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height))
+    }
 }
 
 // MARK: List

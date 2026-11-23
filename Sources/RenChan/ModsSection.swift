@@ -59,19 +59,12 @@ struct ModsSection: View {
         }
     }
 
-    private func details(_ mod: Mod) -> String {
-        let count = ModLibrary.currentFiles(mod, root: Store.modsFolder).count
-        let files = count == 1 ? String(localized: "1 file") : String(localized: "\(count) files")
-        let manifest = ModLibrary.manifest(mod, root: Store.modsFolder)
-        return [manifest?.version.map { "v\($0)" }, manifest?.author, files].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
-    }
-
     private func row(_ mod: Mod, _ use: ModUse) -> some View {
         let index = game.mods.firstIndex(of: use) ?? 0
         return Toggle(isOn: Binding(get: { use.enabled }, set: { model.setMod(mod.id, enabled: $0, in: game.id) })) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: mod.name)
-                Text(details(mod)).font(.caption).foregroundStyle(.secondary)
+                Text(model.modDetails(mod)).font(.caption).foregroundStyle(.secondary)
             }
         }
         .contextMenu {

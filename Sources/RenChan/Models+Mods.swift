@@ -8,7 +8,23 @@ extension AppModel {
     /// The game's mods that are on, in load order.
     func enabledMods(_ game: Game) -> [Mod] { game.mods.filter(\.enabled).compactMap { mod($0.mod) } }
 
-    func modConflicts(_ game: Game) -> [ModConflict] { ModConflicts.find(enabledMods(game), root: Store.modsFolder) }
+    func modConflicts(_ game: Game) -> [ModConflict] {
+        var key = Hasher()
+        key.combine(modsRevision); key.combine(game.mods); key.combine(playing.contains(game.id))
+        return memoized("conflicts-\(game.id)", key: key.finalize()) { ModConflicts.find(enabledMods(game), root: Store.modsFolder) }
+    }
+
+    /// "v1.2 · Ana · 3 files", read from the mod's folder.
+    func modDetails(_ mod: Mod) -> String {
+        var key = Hasher()
+        key.combine(modsRevision); key.combine(playing.count)
+        return memoized("mod-\(mod.id)", key: key.finalize()) {
+            let count = ModLibrary.currentFiles(mod, root: Store.modsFolder).count
+            let files = count == 1 ? String(localized: "1 file") : String(localized: "\(count) files")
+            let manifest = ModLibrary.manifest(mod, root: Store.modsFolder)
+            return [manifest?.version.map { "v\($0)" }, manifest?.author, files].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        }
+    }
 
     /// Library mods this game doesn't use yet, to add with one click (S-021).
     func otherMods(_ game: Game) -> [Mod] {
@@ -36,6 +52,7 @@ extension AppModel {
         do {
             let mod = try ModLibrary.importMod(url, into: Store.modsFolder)
             mods.append(mod)
+            modsRevision += 1
             try ModLibrary.save(mods, to: Store.modsFolder)
             update(id) { $0.mods.append(ModUse(mod: mod.id)) }
             log.post(.info, "Added the mod \(mod.name) (\(mod.files.count) files) to \(game.title)", source: "Mods")
@@ -53,6 +70,7 @@ extension AppModel {
         do {
             let mod = try ModTemplate.create(trimmed, author: NSFullUserName(), into: Store.modsFolder)
             mods.append(mod)
+            modsRevision += 1
             try ModLibrary.save(mods, to: Store.modsFolder)
             update(id) { $0.mods.append(ModUse(mod: mod.id)) }
             log.post(.info, "Made the mod \(mod.name) for \(game.title) from the template", source: "Mods")
@@ -98,6 +116,7 @@ extension AppModel {
         guard !games.contains(where: { $0.mods.contains { $0.mod == modID } }), let mod = mod(modID) else { return }
         try? FileManager.default.trashItem(at: ModLibrary.folder(mod, root: Store.modsFolder), resultingItemURL: nil)
         mods.removeAll { $0.id == modID }
+        modsRevision += 1
         try? ModLibrary.save(mods, to: Store.modsFolder)
         log.post(.info, "Moved the mod \(mod.name) to the Trash: no game uses it", source: "Mods")
     }

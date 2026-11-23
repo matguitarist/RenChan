@@ -4,8 +4,7 @@ import RenChanKit
 /// Save backups (S-012): back up, list, restore, move to Trash.
 extension AppModel {
     func backups(_ id: Game.ID) -> [SaveBackup] {
-        _ = backupRevision
-        return SaveBackups.list(Store.backupsFolder(id))
+        memoized("backups-\(id)", key: backupRevision) { SaveBackups.list(Store.backupsFolder(id)) }
     }
 
     func canBackUp(_ game: Game) -> Bool {
