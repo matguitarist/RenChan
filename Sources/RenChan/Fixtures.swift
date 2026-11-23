@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import RenChanKit
 
@@ -77,6 +78,17 @@ enum SeedData {
             if model.games.count > 2 {
                 model.update(model.games[2].id) { $0.status = .finished; $0.rating = 5; $0.labels = ["Mystery", "Romance"] }
                 model.update(model.games[1].id) { $0.labels = ["Short"] }
+            }
+            // A 2:3 portrait like VNDB's covers, so snapshots show how one is framed.
+            let portrait = NSImage(size: NSSize(width: 600, height: 900), flipped: false) { rect in
+                NSGradient(colors: [.systemIndigo, .systemPink, .systemOrange])?.draw(in: rect, angle: 90)
+                NSColor.white.withAlphaComponent(0.85).setFill()
+                NSBezierPath(ovalIn: NSRect(x: 200, y: 420, width: 200, height: 200)).fill()
+                return true
+            }
+            if let tiff = portrait.tiffRepresentation, let jpeg = NSBitmapImageRep(data: tiff)?.representation(using: .jpeg, properties: [:]) {
+                try? FileManager.default.createDirectory(at: Store.gameFolder(first.id), withIntermediateDirectories: true)
+                try? jpeg.write(to: Store.coverFile(first.id))
             }
             let saves = Store.saveRoot.appending(path: "The_Question-7.0-pc", directoryHint: .isDirectory)
             try? FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)

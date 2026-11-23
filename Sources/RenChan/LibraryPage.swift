@@ -96,7 +96,7 @@ struct LibraryGrid: View {
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 200, maximum: 280), spacing: Space.lg)], spacing: Space.xl) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160, maximum: 200), spacing: Space.lg)], spacing: Space.xl) {
                 ForEach(model.shownGames) { game in
                     GameCard(game: game, selected: model.selection == game.id, playing: model.playing.contains(game.id))
                         .onTapGesture(count: 2) { model.play(game.id) }
@@ -120,7 +120,7 @@ struct GameCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Space.sm) {
             Cover(game: game)
-                .aspectRatio(16 / 9, contentMode: .fit)
+                .aspectRatio(Cover.ratio, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
@@ -155,6 +155,9 @@ struct GameCard: View {
 
 /// The cover from VNDB or the person, else the game's main menu art, else a tinted tile with its first letter.
 struct Cover: View {
+    /// VNDB's covers are 2:3 portraits; the game's own landscape art is cropped to the middle.
+    static let ratio: CGFloat = 2 / 3
+
     @Environment(AppModel.self) private var model
     let game: Game
 

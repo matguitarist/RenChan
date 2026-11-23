@@ -10,13 +10,22 @@ struct GameDetails: View {
     var body: some View {
         Form {
             Section {
-                Cover(game: game)
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
-                    .listRowInsets(EdgeInsets())
-                VStack(alignment: .leading, spacing: Space.sm) {
-                    Text(game.title).font(.title3.weight(.semibold))
-                    playButton
+                HStack(alignment: .top, spacing: Space.md) {
+                    Cover(game: game)
+                        .aspectRatio(Cover.ratio, contentMode: .fit)
+                        .frame(width: 112)
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+                    VStack(alignment: .leading, spacing: Space.sm) {
+                        Text(game.title).font(.title3.weight(.semibold))
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let developer = game.vndb?.developer {
+                            Text(developer).foregroundStyle(.secondary)
+                        }
+                        Text(game.versionLine).font(.caption).foregroundStyle(.secondary)
+                        playButton
+                            .padding(.top, Space.xs)
+                    }
+                    Spacer(minLength: 0)
                 }
             }
             MyGameSection(game: game)
