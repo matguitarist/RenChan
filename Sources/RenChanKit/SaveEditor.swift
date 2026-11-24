@@ -8,11 +8,14 @@ public struct SaveVariable: Codable, Hashable, Sendable, Identifiable {
     public var kind: Kind
     /// The value: true/false, a number, the text, or a short description for other kinds.
     public var value: String
+    /// For a value inside a list or dictionary, the name of the item it belongs to, such as "Hawaiian Dream".
+    public var note: String?
 
-    public init(name: String, kind: Kind, value: String) {
+    public init(name: String, kind: Kind, value: String, note: String? = nil) {
         self.name = name
         self.kind = kind
         self.value = value
+        self.note = note
     }
 
     public var editable: Bool { [.bool, .int, .float, .string].contains(kind) }
@@ -136,6 +139,64 @@ public enum SaveTool {
                     return (value.encode("utf-8") if PY2 and isinstance(old, str) else value,)
                 return None
 
+            import re
+            ident = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+            budget = [5000]
+
+            def label(item):
+                # A list item's own name, such as a gallery entry's, to show beside its values.
+                try:
+                    if hasattr(item, "keys"):
+                        for key in ("name", "title", "label", "id"):
+                            if key in item and isinstance(item[key], text_types):
+                                return describe(item[key])
+                except Exception:
+                    pass
+                return None
+
+            def walk(path, v, depth, out, note):
+                # Lists and dictionaries of plain values are opened, so each value inside can change:
+                # renders[3].unlocked. Tuples, sets and objects stay whole and read-only.
+                is_list = isinstance(v, list)
+                is_dict = hasattr(v, "keys") and hasattr(v, "__setitem__") and not isinstance(v, type)
+                if depth < 3 and budget[0] > 0 and (is_list or is_dict) and len(v) > 0:
+                    if is_list:
+                        for i, item in enumerate(v):
+                            walk("%s[%d]" % (path, i), item, depth + 1, out, label(item) or note)
+                        return
+                    keys = list(v.keys())
+                    if all(isinstance(k, text_types) for k in keys):
+                        for k in sorted(keys):
+                            step = ("." + k) if ident.match(k) else "[%s]" % json.dumps(k)
+                            walk(path + step, v[k], depth + 1, out, label(v) or note)
+                        return
+                budget[0] -= 1
+                row = {"name": path, "kind": kind(v), "value": describe(v)}
+                if note:
+                    row["note"] = note
+                out.append(row)
+
+            step_re = re.compile(r'\[(\d+)\]|\.([A-Za-z_][A-Za-z0-9_]*)|\[("(?:[^"\\]|\\.)*")\]')
+
+            def split_path(path):
+                # "renders[3].unlocked" -> ("renders", [3, "unlocked"])
+                head = re.match(r"^[A-Za-z_][A-Za-z0-9_]*", path)
+                if head is None:
+                    raise KeyError(path)
+                steps, at = [], head.end()
+                while at < len(path):
+                    m = step_re.match(path, at)
+                    if m is None:
+                        raise KeyError(path)
+                    if m.group(1) is not None:
+                        steps.append(int(m.group(1)))
+                    elif m.group(2) is not None:
+                        steps.append(m.group(2))
+                    else:
+                        steps.append(json.loads(m.group(3)))
+                    at = m.end()
+                return head.group(0), steps
+
             def read_changes():
                 with io.open(args.files[0], "r", encoding="utf-8") as f:
                     return json.load(f)
@@ -152,18 +213,32 @@ public enum SaveTool {
                             v = fields[name]
                             if name.startswith("_") or callable(v) or isinstance(v, type(os)):
                                 continue
-                            found.append({"name": name, "kind": kind(v), "value": describe(v)})
+                            walk(name, v, 0, found, None)
                         report["variables"] = found
                         report["images"] = len(renpy.list_images())
                     elif args.action == "pset":
                         changed, refused = [], []
                         for name, value in read_changes().items():
-                            new = None if name.startswith("_") or name not in fields else convert(fields[name], value)
-                            if new is None:
+                            try:
+                                root, steps = split_path(name)
+                                if root.startswith("_") or root not in fields:
+                                    raise KeyError(name)
+                                if not steps:
+                                    new = convert(fields[root], value)
+                                    if new is None:
+                                        raise TypeError(name)
+                                    setattr(p, root, new[0])
+                                else:
+                                    target = fields[root]
+                                    for step in steps[:-1]:
+                                        target = target[step]
+                                    new = convert(target[steps[-1]], value)
+                                    if new is None or isinstance(target, tuple):
+                                        raise TypeError(name)
+                                    target[steps[-1]] = new[0]
+                                changed.append(name)
+                            except Exception:
                                 refused.append(name)
-                                continue
-                            setattr(p, name, new[0])
-                            changed.append(name)
                         if changed:
                             renpy.save_persistent()
                         report["changed"] = sorted(changed)

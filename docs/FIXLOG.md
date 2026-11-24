@@ -1,5 +1,11 @@
 # RenChan — Fix log
 
+## 2026-11-23 Eden's gallery lists couldn't be changed
+
+Eden keeps its gallery in persistent lists, `renders` (45) and `scenes` (15), of dictionaries such as `{'id': 'PizzaBoxRender', 'unlocked': False, 'name': 'Hawaiian Dream'}`. The editor showed each list as one read-only value ("RevertableList (45)"), so nothing could be unlocked. The save tool now opens lists and dictionaries of plain values into paths like `renders[0].unlocked`, notes the item's name, and writes a change into the same object.
+Test: `persistentDataIsReadChangedAndUnlocked` (Live) changes values inside a list of dictionaries and a dictionary on 7.8.7 and 8.6.1.
+Rule: the state a person wants to change is often nested; an editor of game data should reach plain values wherever they sit, not only at the top.
+
 ## 2026-11-23 Unlock All did nothing in Cosy Cafe's gallery
 
 Unlock All worked for Eternum, but Cosy Cafe's gallery stayed locked even though RenChan marked 20,262 images as seen. Cosy Cafe doesn't use Ren'Py's Gallery: it checks its own persistent values, such as `akari_img_main32_50_unlocked` and `gallery_lucy1`, which is why turning one on by hand worked. The persistent page now finds a game's own unlock values (on/off values named with "unlock" or "gallery") and turns them all on with one button; a search can turn on any other set.

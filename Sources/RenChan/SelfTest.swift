@@ -498,7 +498,7 @@ enum SelfTest {
             var failure = ""
             do { read = try await model.readPersistent(of: game, modded: false) } catch { failure = error.localizedDescription }
             check("S-040 persistent values are read with the game's Ren'Py",
-                  read?.variables.map(\.name) == ["endings_seen", "gallery_lucy1", "lucy_img_201_unlocked", "true_ending"] && read?.images == 42, "\(String(describing: read)) \(failure)")
+                  read?.variables.map(\.name) == ["endings_seen", "gallery_lucy1", "lucy_img_201_unlocked", "renders[0].unlocked", "true_ending"] && read?.images == 42, "\(String(describing: read)) \(failure)")
             let editsBefore = model.backups(first.id).filter { $0.reason == .beforeEdit }.count
             let unlocked = try? await model.unlockImages(of: game, modded: false)
             check("S-040 Unlock All Images backs up the saves, then marks the images as seen",

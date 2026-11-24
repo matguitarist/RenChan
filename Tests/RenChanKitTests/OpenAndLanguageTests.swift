@@ -102,8 +102,9 @@ import Testing
                  SaveVariable(name: "gallery_lucy1", kind: .bool, value: "true"),
                  SaveVariable(name: "GalleryUnlocked", kind: .bool, value: "false"),
                  SaveVariable(name: "characters_lucy", kind: .bool, value: "false"),
-                 SaveVariable(name: "gallery_page", kind: .int, value: "2")]
-    #expect(flags.filter(\.isUnlockFlag).map(\.name) == ["lucy_img_main8_201_unlocked", "gallery_lucy1", "GalleryUnlocked"])
+                 SaveVariable(name: "gallery_page", kind: .int, value: "2"),
+                 SaveVariable(name: "renders[0].unlocked", kind: .bool, value: "false", note: "Hawaiian Dream")]
+    #expect(flags.filter(\.isUnlockFlag).map(\.name) == ["lucy_img_main8_201_unlocked", "gallery_lucy1", "GalleryUnlocked", "renders[0].unlocked"])
 }
 
 @Test func theSaveToolHasPersistentCommands() {

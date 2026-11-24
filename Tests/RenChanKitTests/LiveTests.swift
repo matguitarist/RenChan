@@ -422,11 +422,14 @@ struct Live {
             define config.save_directory = "renchan-persistent-test"
             default persistent.endings = 1
             default persistent.true_end = False
+            default persistent.renders = [{"id": "a", "unlocked": False, "name": "Hawaiian Dream"}, {"id": "b", "unlocked": False, "name": "Pool day"}]
+            default persistent.opts = {"hard mode": False}
+            default persistent.pair = (1, 2)
             image bg one = Solid("#f00")
             image bg two = Solid("#0f0")
             label start:
                 if renpy.os.path.exists("\(marker.path)"):
-                    $ open("\(report.path)", "w").write("%s %s %s" % (persistent.endings, persistent.true_end, renpy.seen_image("bg two")))
+                    $ open("\(report.path)", "w").write("%s %s %s %s %s %s" % (persistent.endings, persistent.true_end, renpy.seen_image("bg two"), persistent.renders[0]["unlocked"], persistent.renders[1]["unlocked"], persistent.opts["hard mode"]))
                 $ renpy.quit()
             """])
         var log = try await Self.runGame(runtime, copy: copy, home: home)
@@ -437,17 +440,22 @@ struct Live {
         let vars = Dictionary(uniqueKeysWithValues: (dump.variables ?? []).map { ($0.name, $0) })
         #expect(vars["endings"]?.value == "1" && vars["endings"]?.kind == .int && vars["true_end"]?.value == "false", "\(String(describing: dump)) \(log.suffix(1500))")
         #expect(!vars.keys.contains { $0.hasPrefix("_") } && (dump.images ?? 0) >= 2)
+        // Lists and dictionaries open up; each value inside carries its item's name.
+        #expect(vars["renders[1].unlocked"]?.kind == .bool && vars["renders[1].unlocked"]?.note == "Pool day", "\(vars.keys.sorted())")
+        #expect(vars[#"opts["hard mode"]"#]?.value == "false" && vars["pair"]?.kind == .other && vars["renders"] == nil)
         let changes = root.appending(path: "changes.json")
-        try SaveTool.writeChanges(["endings": 3, "true_end": true, "_seen_ever": 1, "nope": 2], to: changes)
+        try SaveTool.writeChanges(["endings": 3, "true_end": true, "_seen_ever": 1, "nope": 2, "renders[1].unlocked": true,
+                                   #"opts["hard mode"]"#: true, "renders[9].unlocked": true, "pair": 5], to: changes)
         log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.persistentSetArguments(changes: changes, output: out))
         let set = try SaveTool.readReport(out)
-        #expect(set.changed == ["endings", "true_end"] && set.refused == ["_seen_ever", "nope"], "\(String(describing: set)) \(log.suffix(1500))")
+        #expect(set.changed == [#"opts["hard mode"]"#, "endings", "renders[1].unlocked", "true_end"].sorted()
+                 && set.refused == ["_seen_ever", "nope", "pair", "renders[9].unlocked"], "\(String(describing: set)) \(log.suffix(1500))")
         log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.unlockImagesArguments(output: out))
         let unlock = try SaveTool.readReport(out)
         #expect((unlock.unlocked ?? 0) >= 2 && unlock.error == nil, "\(String(describing: unlock)) \(log.suffix(1500))")
         try "".write(to: marker, atomically: true, encoding: .utf8)
         log = try await Self.runGame(runtime, copy: copy, home: home)
-        #expect((try? String(contentsOf: report, encoding: .utf8)) == "3 True True", "\(log.suffix(2000))")
+        #expect((try? String(contentsOf: report, encoding: .utf8)) == "3 True True False True True", "\(log.suffix(2000))")
     }
 
     @Test func playsARealGameFromAClone() async throws {

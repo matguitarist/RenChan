@@ -143,7 +143,7 @@ struct SaveDetail: View {
     }
 
     private var shown: [SaveVariable] {
-        search.isEmpty ? variables : variables.filter { $0.name.localizedCaseInsensitiveContains(search) }
+        search.isEmpty ? variables : variables.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.note?.localizedCaseInsensitiveContains(search) == true }
     }
 
     private var invalid: Bool {
@@ -171,7 +171,11 @@ struct SaveDetail: View {
             }
         } label: {
             HStack(spacing: Space.xs) {
-                Text(verbatim: variable.name).font(.body.monospaced())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: variable.name).font(.body.monospaced())
+                    // The list item a value belongs to, such as a gallery entry's name.
+                    if let note = variable.note { Text(verbatim: note).font(.caption).foregroundStyle(.secondary) }
+                }
                 if edits[variable.name] != nil { Circle().fill(Palette.accent).frame(width: Space.sm, height: Space.sm).help("Changed, not saved yet") }
             }
         }
