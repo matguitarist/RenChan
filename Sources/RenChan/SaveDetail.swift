@@ -19,6 +19,9 @@ struct SaveDetail: View {
     @State private var done: String?
     @State private var images = 0
     @State private var confirmUnlock = false
+    @State private var labels = 0
+    @State private var seenLabels = 0
+    @State private var confirmReplays = false
 
     var body: some View {
         Form {
@@ -69,6 +72,11 @@ struct SaveDetail: View {
             }
             load()
         }
+        .confirmationDialog(String(localized: "Mark all \(labels) scenes as seen?"), isPresented: $confirmReplays) {
+            Button("Mark All Seen") { unlockReplays() }
+        } message: {
+            Text("This unlocks the game’s replays. Text you haven’t read stays unread, so Skip still stops there. RenChan backs up the saves first.")
+        }
         .confirmationDialog(String(localized: "Mark all \(images) images as seen?"), isPresented: $confirmUnlock) {
             Button("Unlock All Images") { unlock() }
         } message: {
@@ -106,7 +114,7 @@ struct SaveDetail: View {
                         Text("\(off.count) of \(unlockFlags.count) off").foregroundStyle(.secondary).monospacedDigit()
                         Button("Turn All On") { for variable in off { edits[variable.name] = "true" } }
                             .disabled(loading || off.isEmpty)
-                            .help("Turn on the game’s own gallery and unlock values below, then Save Changes to write them")
+                            .help("Turn on the game’s own on/off values for galleries, unlocks, endings, achievements and replays, then Save Changes to write them")
                     }
                 }
             }
@@ -118,6 +126,14 @@ struct SaveDetail: View {
                         .help("Mark every image the game defines as seen. This unlocks galleries made with Ren'Py’s own Gallery; games with their own gallery use the unlock values above.")
                 }
             }
+            LabeledContent("Scenes Seen") {
+                HStack(spacing: Space.sm) {
+                    Text("\(seenLabels) of \(labels)").foregroundStyle(.secondary).monospacedDigit()
+                    Button("Mark All Seen…") { confirmReplays = true }
+                        .disabled(loading || labels == 0 || seenLabels >= labels || model.playing.contains(game.id))
+                        .help("Mark every scene as played, which unlocks replays made with Ren'Py’s Replay. Text you haven’t read stays unread for Skip.")
+                }
+            }
         } header: {
             Text("Persistent Data")
         }
@@ -125,6 +141,24 @@ struct SaveDetail: View {
 
     /// The game's own gallery and unlock switches, which games with their own gallery check.
     private var unlockFlags: [SaveVariable] { variables.filter(\.isUnlockFlag) }
+
+    private func unlockReplays() {
+        loading = true
+        error = nil
+        Task {
+            do {
+                let count = try await model.unlockReplays(of: game, modded: modded)
+                done = count == 1 ? String(localized: "Marked 1 scene as seen. The saves were backed up first.")
+                                  : String(localized: "Marked \(count) scenes as seen. The saves were backed up first.")
+                saved()
+                loading = false
+                load()
+            } catch {
+                loading = false
+                self.error = error.localizedDescription
+            }
+        }
+    }
 
     private func unlock() {
         loading = true
@@ -190,7 +224,8 @@ struct SaveDetail: View {
                 if let save {
                     variables = try await model.readVariables(save, of: game, modded: modded)
                 } else {
-                    (variables, images) = try await model.readPersistent(of: game, modded: modded)
+                    let info = try await model.readPersistent(of: game, modded: modded)
+                    (variables, images, labels, seenLabels) = (info.variables, info.images, info.labels, info.seenLabels)
                 }
             } catch {
                 self.error = error.localizedDescription

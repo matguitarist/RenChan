@@ -103,14 +103,21 @@ import Testing
                  SaveVariable(name: "GalleryUnlocked", kind: .bool, value: "false"),
                  SaveVariable(name: "characters_lucy", kind: .bool, value: "false"),
                  SaveVariable(name: "gallery_page", kind: .int, value: "2"),
-                 SaveVariable(name: "renders[0].unlocked", kind: .bool, value: "false", note: "Hawaiian Dream")]
-    #expect(flags.filter(\.isUnlockFlag).map(\.name) == ["lucy_img_main8_201_unlocked", "gallery_lucy1", "GalleryUnlocked", "renders[0].unlocked"])
+                 SaveVariable(name: "renders[0].unlocked", kind: .bool, value: "false", note: "Hawaiian Dream"),
+                 SaveVariable(name: "ending_good", kind: .bool, value: "false"),
+                 SaveVariable(name: "achievement_5", kind: .bool, value: "false"),
+                 SaveVariable(name: "intro_seen", kind: .bool, value: "false"),
+                 SaveVariable(name: "ch3_completed", kind: .bool, value: "false"),
+                 SaveVariable(name: "skip_puzzles", kind: .bool, value: "false")]
+    #expect(flags.filter(\.isUnlockFlag).map(\.name) == ["lucy_img_main8_201_unlocked", "gallery_lucy1", "GalleryUnlocked", "renders[0].unlocked",
+                                                         "ending_good", "achievement_5", "intro_seen", "ch3_completed"])
 }
 
 @Test func theSaveToolHasPersistentCommands() {
     let out = URL(fileURLWithPath: "/tmp/out.json")
     #expect(SaveTool.persistentDumpArguments(output: out) == ["renchan_saves", "pdump", "-", "/tmp/out.json"])
     #expect(SaveTool.unlockImagesArguments(output: out) == ["renchan_saves", "unlock", "-", "/tmp/out.json"])
+    #expect(SaveTool.unlockReplaysArguments(output: out) == ["renchan_saves", "replays", "-", "/tmp/out.json"])
     #expect(SaveTool.persistentSetArguments(changes: URL(fileURLWithPath: "/tmp/c.json"), output: out) == ["renchan_saves", "pset", "-", "/tmp/c.json", "/tmp/out.json"])
     #expect(SaveTool.source.contains("renpy.save_persistent()") && SaveTool.source.contains("_seen_images"))
 }

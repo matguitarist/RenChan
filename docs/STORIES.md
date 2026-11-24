@@ -467,11 +467,13 @@ Depends: S-036
 UX:
 - Flow: Saves window › "Persistent Data" (the first row) → its values, edited like a save's (toggles, numbers, text; Save Changes ⌘S) → "Gallery Images: 42 images" with "Unlock All…" → "Mark all 42 images as seen?" → Unlock All Images. Every change backs up the saves first ("Before editing a save").
 - Games with their own gallery (Cosy Cafe keeps `lucy_img_main8_201_unlocked`, `gallery_lucy1`…) ignore seen images: "Unlock Values: 238 of 240 off" with "Turn All On" turns on every on/off value whose name has "unlock" or "gallery", and with a search, "Turn On 12 Shown" turns on the matching ones. Both wait for Save Changes.
+- Turn All On reaches every on/off value whose name has unlock, gallery, seen, ending, achiev(ement), replay, complete or cleared.
+- "Scenes Seen: 30 of 120" with "Mark All Seen…" marks every label of the game as played, which unlocks replays made with Ren'Py's Replay (it checks seen labels). Seen labels are kept apart from seen dialogue, so Skip still stops at unread text.
 - Lists and dictionaries open up (three levels, 5,000 values at most): Eden's `persistent.renders` shows as `renders[0].unlocked` with the item's name ("Hawaiian Dream") under it, so Turn All On and search reach them. Tuples, sets and objects stay read-only.
 - How: RenChan's save tool runs Ren'Py without a window; Ren'Py has already loaded the persistent data, the tool changes it and saves it Ren'Py's own way, signed for this Mac. Unlock marks each image the game defines as seen (`persistent._seen_images`), which is what Ren'Py galleries check. Ren'Py's own fields (starting with _) are not shown.
 - Words: "Persistent Data" / « Données persistantes », "Unlock All…" / « Tout débloquer… ».
 Acceptance:
-- [live] On real 7.8.7 and 8.6.1: an int and a flag are read and changed, _ fields and unknown names are refused, values inside a list of dictionaries and a dictionary change, a tuple and a missing index are refused, images are unlocked, and the game sees all of it without asking.
+- [live] On real 7.8.7 and 8.6.1: an int and a flag are read and changed, _ fields and unknown names are refused, values inside a list of dictionaries and a dictionary change, a tuple and a missing index are refused, images are unlocked, two unplayed scenes are marked as seen, and the game sees all of it without asking.
 - Eden (8.5.3, a copy of its persistent data in a temp HOME): 60 gallery entries listed with their names, the 59 that were off turned on (2026-11-23).
 - [unit] A game's own unlock values are found by name (unlock, gallery) among on/off values only.
 - [self] Values are read, Unlock backs up then unlocks, a change is sent.

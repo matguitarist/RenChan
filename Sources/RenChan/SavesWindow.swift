@@ -82,9 +82,18 @@ extension AppModel {
 
 /// Persistent data (S-040): the values every save shares, such as unlocked galleries and endings seen.
 extension AppModel {
-    func readPersistent(of game: Game, modded: Bool) async throws -> (variables: [SaveVariable], images: Int) {
+    func readPersistent(of game: Game, modded: Bool) async throws -> PersistentInfo {
         let report = try await runSaveTool(game, modded: modded) { SaveTool.persistentDumpArguments(output: $0) }
-        return (report.variables ?? [], report.images ?? 0)
+        return PersistentInfo(variables: report.variables ?? [], images: report.images ?? 0,
+                              labels: report.labels ?? 0, seenLabels: report.seenLabels ?? 0)
+    }
+
+    /// Marks every scene (label) as seen, which unlocks Ren'Py replays. Returns how many were new.
+    func unlockReplays(of game: Game, modded: Bool) async throws -> Int {
+        backUpBeforeEditing(game, modded: modded)
+        let report = try await runSaveTool(game, modded: modded) { SaveTool.unlockReplaysArguments(output: $0) }
+        log.post(.info, "Marked \(report.unlocked ?? 0) scenes of \(game.title) as seen", source: "Saves")
+        return report.unlocked ?? 0
     }
 
     func writePersistent(_ changes: [String: Any], of game: Game, modded: Bool) async throws -> [String] {
@@ -109,6 +118,14 @@ extension AppModel {
         _ = try? SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit)
         backupRevision += 1
     }
+}
+
+/// What the persistent page shows: the values, and the images and scenes the game defines.
+struct PersistentInfo {
+    var variables: [SaveVariable]
+    var images: Int
+    var labels: Int
+    var seenLabels: Int
 }
 
 struct SaveToolError: LocalizedError {

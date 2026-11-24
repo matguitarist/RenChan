@@ -494,16 +494,19 @@ enum SelfTest {
 
         // S-040 Change persistent data (the pretend runtime stands in for Ren'Py)
         if let game = model.game(first.id) {
-            var read: (variables: [SaveVariable], images: Int)?
+            var read: PersistentInfo?
             var failure = ""
             do { read = try await model.readPersistent(of: game, modded: false) } catch { failure = error.localizedDescription }
             check("S-040 persistent values are read with the game's Ren'Py",
-                  read?.variables.map(\.name) == ["endings_seen", "gallery_lucy1", "lucy_img_201_unlocked", "renders[0].unlocked", "true_ending"] && read?.images == 42, "\(String(describing: read)) \(failure)")
+                  read?.variables.map(\.name) == ["endings_seen", "gallery_lucy1", "lucy_img_201_unlocked", "renders[0].unlocked", "true_ending"] && read?.images == 42
+                  && read?.labels == 120 && read?.seenLabels == 30, "\(String(describing: read)) \(failure)")
             let editsBefore = model.backups(first.id).filter { $0.reason == .beforeEdit }.count
             let unlocked = try? await model.unlockImages(of: game, modded: false)
             check("S-040 Unlock All Images backs up the saves, then marks the images as seen",
                   unlocked == 40 && model.backups(first.id).filter { $0.reason == .beforeEdit }.count == editsBefore + 1
                   && FileManager.default.fileExists(atPath: Store.workingCopy(first.id).appending(path: "renchan_unlocked").path))
+            let replays = try? await model.unlockReplays(of: game, modded: false)
+            check("S-040 Mark All Seen marks every scene as seen", replays == 90)
             _ = try? await model.writePersistent(["true_ending": true], of: game, modded: false)
             let sent = (try? String(contentsOf: Store.workingCopy(first.id).appending(path: "renchan_last_changes.json"), encoding: .utf8)) ?? ""
             check("S-040 a persistent change is sent to Ren'Py", sent == #"{"true_ending":true}"#, sent)

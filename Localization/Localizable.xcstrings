@@ -161,6 +161,16 @@
         }
       }
     },
+    "%lld of %lld": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld sur %lld"
+          }
+        }
+      }
+    },
     "%lld of %lld off": {
       "localizations": {
         "fr": {
@@ -1851,6 +1861,26 @@
         }
       }
     },
+    "Mark All Seen": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tout marquer comme vu"
+          }
+        }
+      }
+    },
+    "Mark All Seen…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tout marquer comme vu…"
+          }
+        }
+      }
+    },
     "Mark all %lld images as seen?": {
       "localizations": {
         "fr": {
@@ -1861,12 +1891,52 @@
         }
       }
     },
+    "Mark all %lld scenes as seen?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer les %lld scènes comme vues ?"
+          }
+        }
+      }
+    },
     "Mark every image the game defines as seen. This unlocks galleries made with Ren'Py’s own Gallery; games with their own gallery use the unlock values above.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Marquer comme vue chaque image du jeu. Cela débloque les galeries faites avec la Gallery de Ren’Py ; les jeux qui ont leur propre galerie utilisent les valeurs de déblocage ci-dessus."
+          }
+        }
+      }
+    },
+    "Mark every scene as played, which unlocks replays made with Ren'Py’s Replay. Text you haven’t read stays unread for Skip.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer chaque scène comme jouée, ce qui débloque les reprises faites avec le Replay de Ren’Py. Le texte que vous n’avez pas lu reste non lu pour l’avance rapide."
+          }
+        }
+      }
+    },
+    "Marked %lld scenes as seen. The saves were backed up first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld scènes marquées comme vues. Les sauvegardes ont d’abord été copiées."
+          }
+        }
+      }
+    },
+    "Marked 1 scene as seen. The saves were backed up first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 scène marquée comme vue. Les sauvegardes ont d’abord été copiées."
           }
         }
       }
@@ -3411,6 +3481,16 @@
         }
       }
     },
+    "Scenes Seen": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scènes vues"
+          }
+        }
+      }
+    },
     "Screen Filter": {
       "localizations": {
         "fr": {
@@ -3901,6 +3981,16 @@
         }
       }
     },
+    "This unlocks the game’s replays. Text you haven’t read stays unread, so Skip still stops there. RenChan backs up the saves first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les reprises du jeu seront débloquées. Le texte que vous n’avez pas lu reste non lu, donc l’avance rapide s’y arrête toujours. RenChan copie d’abord les sauvegardes."
+          }
+        }
+      }
+    },
     "This unlocks them in the game’s gallery. RenChan backs up the saves first.": {
       "localizations": {
         "fr": {
@@ -4031,12 +4121,12 @@
         }
       }
     },
-    "Turn on the game’s own gallery and unlock values below, then Save Changes to write them": {
+    "Turn on the game’s own on/off values for galleries, unlocks, endings, achievements and replays, then Save Changes to write them": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Activer les valeurs de galerie et de déblocage propres au jeu ci-dessous, puis Enregistrer les modifications pour les écrire"
+            "value": "Activer les valeurs oui/non propres au jeu pour les galeries, déblocages, fins, succès et reprises, puis Enregistrer les modifications pour les écrire"
           }
         }
       }

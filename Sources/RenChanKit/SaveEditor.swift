@@ -20,12 +20,15 @@ public struct SaveVariable: Codable, Hashable, Sendable, Identifiable {
 
     public var editable: Bool { [.bool, .int, .float, .string].contains(kind) }
 
+    /// Words in the names of values games use to remember what the player unlocked, saw or finished.
+    public static let unlockWords = ["unlock", "gallery", "seen", "ending", "achiev", "replay", "complete", "cleared"]
+
     /// On/off values a game keeps for its own gallery or unlocks, such as "lucy_img_main8_201_unlocked" or
     /// "gallery_lucy1": games with their own gallery check these, not Ren'Py's list of seen images (S-040).
     public var isUnlockFlag: Bool {
         guard kind == .bool else { return false }
         let name = name.lowercased()
-        return name.contains("unlock") || name.contains("gallery")
+        return Self.unlockWords.contains { name.contains($0) }
     }
 
     /// The JSON value to send back for the text typed, or nil when it doesn't fit the kind.
@@ -59,6 +62,8 @@ public enum SaveTool {
     public static func persistentDumpArguments(output: URL) -> [String] { ["renchan_saves", "pdump", "-", output.path] }
     public static func persistentSetArguments(changes: URL, output: URL) -> [String] { ["renchan_saves", "pset", "-", changes.path, output.path] }
     public static func unlockImagesArguments(output: URL) -> [String] { ["renchan_saves", "unlock", "-", output.path] }
+    /// Marks every label of the game as seen, which unlocks Ren'Py replays (S-040).
+    public static func unlockReplaysArguments(output: URL) -> [String] { ["renchan_saves", "replays", "-", output.path] }
 
     public struct Report: Decodable, Sendable {
         public var variables: [SaveVariable]?
@@ -68,6 +73,9 @@ public enum SaveTool {
         public var unlocked: Int?
         /// Images the game defines, for unlock.
         public var images: Int?
+        /// The game's own labels (scenes), and how many were played, for replays.
+        public var labels: Int?
+        public var seenLabels: Int?
         public var error: String?
     }
 
@@ -202,7 +210,11 @@ public enum SaveTool {
                     return json.load(f)
 
             try:
-                if args.action in ("pdump", "pset", "unlock"):
+                def story_labels():
+                    # The game's labels; Ren'Py's own start with _.
+                    return [l for l in renpy.get_all_labels() if isinstance(l, text_types) and not l.startswith("_")]
+
+                if args.action in ("pdump", "pset", "unlock", "replays"):
                     # Persistent data: Ren'Py loaded it before running this command, and saving it the
                     # usual way signs it with this Mac's key, so the game reads it without asking.
                     p = renpy.game.persistent
@@ -216,6 +228,9 @@ public enum SaveTool {
                             walk(name, v, 0, found, None)
                         report["variables"] = found
                         report["images"] = len(renpy.list_images())
+                        labels = story_labels()
+                        report["labels"] = len(labels)
+                        report["seenLabels"] = len([l for l in labels if renpy.seen_label(l)])
                     elif args.action == "pset":
                         changed, refused = [], []
                         for name, value in read_changes().items():
@@ -243,6 +258,23 @@ public enum SaveTool {
                             renpy.save_persistent()
                         report["changed"] = sorted(changed)
                         report["refused"] = sorted(refused)
+                    elif args.action == "replays":
+                        # Seen labels are kept apart from seen lines of dialogue, so Skip still stops at unread text.
+                        mark = getattr(renpy, "mark_label_seen", None)
+                        count = 0
+                        labels = story_labels()
+                        for l in labels:
+                            if renpy.seen_label(l):
+                                continue
+                            if mark is not None:
+                                mark(l)
+                            else:
+                                p._seen_ever[l] = True
+                            count += 1
+                        if count:
+                            renpy.save_persistent()
+                        report["unlocked"] = count
+                        report["labels"] = len(labels)
                     else:
                         seen = getattr(p, "_seen_images", None)
                         if seen is None:

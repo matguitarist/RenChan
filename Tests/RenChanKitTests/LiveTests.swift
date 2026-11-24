@@ -427,9 +427,14 @@ struct Live {
             default persistent.pair = (1, 2)
             image bg one = Solid("#f00")
             image bg two = Solid("#0f0")
+            label scene_one:
+                return
+            label scene_two:
+                "A line nobody has read."
+                return
             label start:
                 if renpy.os.path.exists("\(marker.path)"):
-                    $ open("\(report.path)", "w").write("%s %s %s %s %s %s" % (persistent.endings, persistent.true_end, renpy.seen_image("bg two"), persistent.renders[0]["unlocked"], persistent.renders[1]["unlocked"], persistent.opts["hard mode"]))
+                    $ open("\(report.path)", "w").write("%s %s %s %s %s %s %s" % (persistent.endings, persistent.true_end, renpy.seen_image("bg two"), persistent.renders[0]["unlocked"], persistent.renders[1]["unlocked"], persistent.opts["hard mode"], renpy.seen_label("scene_two")))
                 $ renpy.quit()
             """])
         var log = try await Self.runGame(runtime, copy: copy, home: home)
@@ -453,9 +458,14 @@ struct Live {
         log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.unlockImagesArguments(output: out))
         let unlock = try SaveTool.readReport(out)
         #expect((unlock.unlocked ?? 0) >= 2 && unlock.error == nil, "\(String(describing: unlock)) \(log.suffix(1500))")
+        // start ran in the first play; the two scenes never did.
+        #expect(dump.labels == 3 && dump.seenLabels == 1, "\(String(describing: dump.labels)) \(String(describing: dump.seenLabels))")
+        log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.unlockReplaysArguments(output: out))
+        let replays = try SaveTool.readReport(out)
+        #expect(replays.unlocked == 2 && replays.labels == 3, "\(String(describing: replays)) \(log.suffix(1500))")
         try "".write(to: marker, atomically: true, encoding: .utf8)
         log = try await Self.runGame(runtime, copy: copy, home: home)
-        #expect((try? String(contentsOf: report, encoding: .utf8)) == "3 True True False True True", "\(log.suffix(2000))")
+        #expect((try? String(contentsOf: report, encoding: .utf8)) == "3 True True False True True True", "\(log.suffix(2000))")
     }
 
     @Test func playsARealGameFromAClone() async throws {
