@@ -8,6 +8,8 @@ struct SaveDetail: View {
     @Environment(AppModel.self) private var model
     let game: Game
     let save: SaveFile?
+    /// Every save in the window, for Save to All Saves.
+    let allSaves: [SaveFile]
     let modded: Bool
     let saved: () -> Void
     @State private var screenshot: NSImage?
@@ -22,6 +24,8 @@ struct SaveDetail: View {
     @State private var labels = 0
     @State private var seenLabels = 0
     @State private var confirmReplays = false
+    @State private var onlyChanges = false
+    @State private var confirmAll = false
 
     var body: some View {
         Form {
@@ -35,6 +39,12 @@ struct SaveDetail: View {
                 } else if variables.isEmpty {
                     Text(save == nil ? "The game keeps no persistent values of its own." : "This save has no variables RenChan can show.").foregroundStyle(.secondary)
                 } else {
+                    if !edits.isEmpty {
+                        // Turn All On can stage many changes; this shows exactly what Save Changes will write.
+                        Toggle(isOn: $onlyChanges) {
+                            Text(edits.count == 1 ? String(localized: "Show Only the 1 Change") : String(localized: "Show Only the \(edits.count) Changes"))
+                        }
+                    }
                     let offShown = shown.filter { $0.kind == .bool && (edits[$0.name] ?? $0.value) == "false" }
                     if !search.isEmpty && !offShown.isEmpty {
                         Button("Turn On \(offShown.count) Shown") { for variable in offShown { edits[variable.name] = "true" } }
@@ -57,6 +67,11 @@ struct SaveDetail: View {
             HStack {
                 Spacer()
                 Button("Revert") { edits = [:] }.disabled(edits.isEmpty)
+                if save != nil && allSaves.count > 1 {
+                    Button("Save to All Saves…") { confirmAll = true }
+                        .disabled(edits.isEmpty || loading || invalid || model.playing.contains(game.id))
+                        .help("Write these changes into every save of the game. Saves without a value skip it.")
+                }
                 Button("Save Changes") { write() }
                     .buttonStyle(.borderedProminent)
                     .disabled(edits.isEmpty || loading || invalid || model.playing.contains(game.id))
@@ -71,6 +86,12 @@ struct SaveDetail: View {
                 screenshot = await Task.detached(priority: .utility) { SaveList.read(url)?.screenshot() }.value.flatMap(NSImage.init(data:))
             }
             load()
+        }
+        .confirmationDialog(edits.count == 1 ? String(localized: "Write 1 change into all \(allSaves.count) saves?")
+                                             : String(localized: "Write \(edits.count) changes into all \(allSaves.count) saves?"), isPresented: $confirmAll) {
+            Button("Save to All Saves") { write(everySave: true) }
+        } message: {
+            Text("RenChan backs up the saves first. A save that doesn’t have a value is left as it is.")
         }
         .confirmationDialog(String(localized: "Mark all \(labels) scenes as seen?"), isPresented: $confirmReplays) {
             Button("Mark All Seen") { unlockReplays() }
@@ -184,8 +205,12 @@ struct SaveDetail: View {
         }
     }
 
+    /// The search, then only the changes when asked, with pinned values first.
     private var shown: [SaveVariable] {
-        search.isEmpty ? variables : variables.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.note?.localizedCaseInsensitiveContains(search) == true }
+        var list = search.isEmpty ? variables : variables.filter { $0.name.localizedCaseInsensitiveContains(search) || $0.note?.localizedCaseInsensitiveContains(search) == true }
+        if onlyChanges && !edits.isEmpty { list = list.filter { edits[$0.name] != nil } }
+        let pinned = Set(game.pinnedVariables)
+        return list.filter { pinned.contains($0.name) } + list.filter { !pinned.contains($0.name) }
     }
 
     private var invalid: Bool {
@@ -213,6 +238,9 @@ struct SaveDetail: View {
             }
         } label: {
             HStack(spacing: Space.xs) {
+                if game.pinnedVariables.contains(variable.name) {
+                    Image(systemName: "pin.fill").font(.caption).foregroundStyle(Palette.accent).help("Pinned to the top")
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: variable.name).font(.body.monospaced())
                     // The list item a value belongs to, such as a gallery entry's name.
@@ -220,6 +248,9 @@ struct SaveDetail: View {
                 }
                 if edits[variable.name] != nil { Circle().fill(Palette.accent).frame(width: Space.sm, height: Space.sm).help("Changed, not saved yet") }
             }
+        }
+        .contextMenu {
+            Button(game.pinnedVariables.contains(variable.name) ? "Unpin" : "Pin to Top") { model.togglePin(variable.name, in: game.id) }
         }
     }
 
@@ -241,17 +272,23 @@ struct SaveDetail: View {
         }
     }
 
-    private func write() {
+    private func write(everySave: Bool = false) {
         var changes: [String: Any] = [:]
         for (name, text) in edits { if let value = variables.first(where: { $0.name == name })?.encode(text) { changes[name] = value } }
         loading = true
         Task {
             do {
-                let changed = if let save { try await model.writeVariables(changes, in: save, of: game, modded: modded) }
-                              else { try await model.writePersistent(changes, of: game, modded: modded) }
+                if everySave {
+                    let result = try await model.writeVariables(changes, in: allSaves, of: game, modded: modded)
+                    done = String(localized: "Saved \(result.changed.count) changes in \(result.saves) saves. The saves were backed up first.")
+                } else {
+                    let changed = if let save { try await model.writeVariables(changes, in: save, of: game, modded: modded) }
+                                  else { try await model.writePersistent(changes, of: game, modded: modded) }
+                    done = changed.count == 1 ? String(localized: "Saved 1 change. The saves were backed up first.")
+                                              : String(localized: "Saved \(changed.count) changes. The saves were backed up first.")
+                }
                 edits = [:]
-                done = changed.count == 1 ? String(localized: "Saved 1 change. The saves were backed up first.")
-                                          : String(localized: "Saved \(changed.count) changes. The saves were backed up first.")
+                onlyChanges = false
                 saved()
                 loading = false
                 load()

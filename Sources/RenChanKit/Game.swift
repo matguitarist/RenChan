@@ -57,6 +57,8 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var watch: UpdateWatch?
     /// The translation it starts in, a folder under game/tl such as "french"; nil keeps the game's own choice (S-039).
     public var language: String?
+    /// Variables pinned to the top of the Saves window, such as money or affection (save and persistent names).
+    public var pinnedVariables: [String] = []
     /// A newer version on the watched page, if any.
     public var newVersion: String? { watch?.news(installed: gameVersion) }
     public var hasModsOn: Bool { mods.contains(where: \.enabled) }
@@ -110,6 +112,7 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
         gameVersion = try c.decodeIfPresent(String.self, forKey: .gameVersion)
         watch = try c.decodeIfPresent(UpdateWatch.self, forKey: .watch)
         language = try c.decodeIfPresent(String.self, forKey: .language)
+        pinnedVariables = try c.decodeIfPresent([String].self, forKey: .pinnedVariables) ?? []
     }
 
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }

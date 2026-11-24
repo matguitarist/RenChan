@@ -8,6 +8,12 @@ struct GameDetails: View {
     let game: Game
 
     var body: some View {
+        ScrollViewReader { proxy in form.onChange(of: model.inspectorScroll) { _, id in
+            if let id { withAnimation { proxy.scrollTo(id, anchor: .center) } }
+        } }
+    }
+
+    private var form: some View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: Space.md) {

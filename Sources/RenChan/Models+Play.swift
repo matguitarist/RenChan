@@ -130,7 +130,7 @@ extension AppModel {
         do {
             if let backup = try SaveBackups.backUpBeforePlay(saves: saves, into: Store.backupsFolder(game.id)) {
                 backupRevision += 1
-                log.post(.info, "Backed up \(backup.saveCount) saves of \(game.title) before playing", source: "Saves")
+                log.post(.info, "Backed up \(backup.contents) of \(game.title) before playing", source: "Saves")
             }
         } catch {
             log.post(.warning, "Couldn't back up the saves of \(game.title) before playing: \(error.localizedDescription)", source: "Saves")

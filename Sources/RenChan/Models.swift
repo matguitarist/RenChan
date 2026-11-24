@@ -38,6 +38,8 @@ final class AppModel {
         didSet { UserDefaults.standard.set(layout.rawValue, forKey: "library.layout") }
     }
     var showInspector = true
+    /// Scrolls the inspector to a row by its id, such as "language" for the snapshots.
+    var inspectorScroll: String?
 
     // MARK: Playing and sheets
 

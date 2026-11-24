@@ -60,10 +60,24 @@ public enum GameLanguages {
     }
 
     /// "french" → "French", "schinese" → "Schinese", "pt_br" → "Pt br".
-    public static func title(_ name: String) -> String {
+    public static func title(_ name: String, locale: Locale = .current) -> String {
+        // Ren'Py's translation folders use English names ("french"); show them in the person's language when known.
+        if let code = codes[name.lowercased()], let local = locale.localizedString(forLanguageCode: code) {
+            return local.prefix(1).uppercased() + local.dropFirst()
+        }
         let spaced = name.replacingOccurrences(of: "_", with: " ")
         return spaced.prefix(1).uppercased() + spaced.dropFirst()
     }
+
+    /// The usual English folder names of Ren'Py translations, with their language codes.
+    static let codes: [String: String] = [
+        "english": "en", "french": "fr", "francais": "fr", "spanish": "es", "espanol": "es", "german": "de", "deutsch": "de",
+        "italian": "it", "portuguese": "pt", "brazilian": "pt-BR", "portuguese_br": "pt-BR", "russian": "ru", "ukrainian": "uk",
+        "polish": "pl", "czech": "cs", "dutch": "nl", "swedish": "sv", "finnish": "fi", "danish": "da", "norwegian": "nb",
+        "turkish": "tr", "greek": "el", "hungarian": "hu", "romanian": "ro", "japanese": "ja", "korean": "ko",
+        "chinese": "zh", "schinese": "zh-Hans", "tchinese": "zh-Hant", "simplified_chinese": "zh-Hans", "traditional_chinese": "zh-Hant",
+        "arabic": "ar", "hebrew": "he", "vietnamese": "vi", "thai": "th", "indonesian": "id", "piglatin": "",
+    ].filter { !$0.value.isEmpty }
 }
 
 /// Writes RenChan's language file into the copy before a launch, or takes it out (S-039).

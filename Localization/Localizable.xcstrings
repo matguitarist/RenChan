@@ -2561,6 +2561,36 @@
         }
       }
     },
+    "Persistent data only: no saves yet": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données persistantes seulement : aucune sauvegarde encore"
+          }
+        }
+      }
+    },
+    "Pin to Top": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Épingler en haut"
+          }
+        }
+      }
+    },
+    "Pinned to the top": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Épinglée en haut"
+          }
+        }
+      }
+    },
     "Place": {
       "localizations": {
         "fr": {
@@ -3061,6 +3091,16 @@
         }
       }
     },
+    "RenChan backs up the saves first. A save that doesn’t have a value is left as it is.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan copie d’abord les sauvegardes. Une sauvegarde qui n’a pas une valeur la laisse telle quelle."
+          }
+        }
+      }
+    },
     "RenChan changes on/off values, numbers and text only": {
       "localizations": {
         "fr": {
@@ -3421,12 +3461,42 @@
         }
       }
     },
+    "Save to All Saves": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer dans toutes les sauvegardes"
+          }
+        }
+      }
+    },
+    "Save to All Saves…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer dans toutes les sauvegardes…"
+          }
+        }
+      }
+    },
     "Saved": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Enregistrée"
+          }
+        }
+      }
+    },
+    "Saved %lld changes in %lld saves. The saves were backed up first.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld modifications enregistrées dans %2$lld sauvegardes. Les sauvegardes ont d’abord été copiées."
           }
         }
       }
@@ -3597,6 +3667,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher le dossier des filtres"
+          }
+        }
+      }
+    },
+    "Show Only the %lld Changes": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher seulement les %lld modifications"
+          }
+        }
+      }
+    },
+    "Show Only the 1 Change": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher seulement la modification"
           }
         }
       }
@@ -4221,6 +4311,16 @@
         }
       }
     },
+    "Unpin": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désépingler"
+          }
+        }
+      }
+    },
     "Update": {
       "localizations": {
         "fr": {
@@ -4497,6 +4597,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "A fonctionné avec Ren’Py %@"
+          }
+        }
+      }
+    },
+    "Write %lld changes into all %lld saves?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écrire %1$lld modifications dans les %2$lld sauvegardes ?"
+          }
+        }
+      }
+    },
+    "Write 1 change into all %lld saves?": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écrire 1 modification dans les %lld sauvegardes ?"
+          }
+        }
+      }
+    },
+    "Write these changes into every save of the game. Saves without a value skip it.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écrire ces modifications dans chaque sauvegarde du jeu. Une sauvegarde sans la valeur l’ignore."
           }
         }
       }

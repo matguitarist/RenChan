@@ -33,7 +33,14 @@ struct SaveBackupsSheet: View {
                                 .foregroundStyle(backup.reason == .manual ? .primary : .secondary)
                         }
                         .width(min: 100, ideal: 120)
-                        TableColumn("Saves") { backup in Text(backup.saveCount, format: .number).monospacedDigit() }
+                        TableColumn("Saves") { backup in
+                            if backup.saveCount == 0 {
+                                // Only the persistent data (gallery, endings), before the first save.
+                                Text(verbatim: "—").foregroundStyle(.secondary).help("Persistent data only: no saves yet")
+                            } else {
+                                Text(backup.saveCount, format: .number).monospacedDigit()
+                            }
+                        }
                             .width(min: 50, ideal: 60)
                         TableColumn("Size") { backup in Text(backup.size.bytesText).monospacedDigit() }
                             .width(min: 60, ideal: 80)
@@ -96,6 +103,17 @@ struct BackupRow: View {
                 .help("Copy the saves into RenChan's backups (Option-Command-B)")
             Button("Backups…") { model.showBackups = game.id }
                 .help("See, restore or remove backups of the saves")
+        }
+    }
+}
+
+extension SaveBackup {
+    /// For the log: "3 saves", "1 save", or "the persistent data" when the game has no saves yet.
+    var contents: String {
+        switch saveCount {
+        case 0: "the persistent data"
+        case 1: "1 save"
+        default: "\(saveCount) saves"
         }
     }
 }

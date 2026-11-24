@@ -68,15 +68,28 @@ extension AppModel {
 
     /// Backs up the saves, then writes the changes. Returns what Ren'Py changed.
     func writeVariables(_ changes: [String: Any], in save: SaveFile, of game: Game, modded: Bool) async throws -> [String] {
+        try await writeVariables(changes, in: [save], of: game, modded: modded).changed
+    }
+
+    /// The same changes in several saves, after one backup: "Save to All Saves". Returns what changed and in how many saves.
+    func writeVariables(_ changes: [String: Any], in saves: [SaveFile], of game: Game, modded: Bool) async throws -> (changed: [String], saves: Int) {
         if let folder = savesFolder(game, modded: modded) {
             _ = try SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit)
             backupRevision += 1
         }
         let changesFile = Store.gameFolder(game.id).appending(path: "save-changes.json")
         try SaveTool.writeChanges(changes, to: changesFile)
-        let report = try await runSaveTool(game, modded: modded) { SaveTool.setArguments(slot: save.slot, changes: changesFile, output: $0) }
-        log.post(.info, "Changed \(report.changed?.joined(separator: ", ") ?? "nothing") in \(game.title)'s save \(save.slot)", source: "Saves")
-        return report.changed ?? []
+        let report = try await runSaveTool(game, modded: modded) { SaveTool.setArguments(slots: saves.map(\.slot), changes: changesFile, output: $0) }
+        let slots = saves.count == 1 ? "save \(saves[0].slot)" : "\(report.saves ?? 0) of \(saves.count) saves"
+        log.post(.info, "Changed \(report.changed?.joined(separator: ", ") ?? "nothing") in \(game.title)'s \(slots)", source: "Saves")
+        return (report.changed ?? [], report.saves ?? (report.changed?.isEmpty == false ? 1 : 0))
+    }
+
+    /// Pins a variable to the top of the Saves window for this game, or unpins it.
+    func togglePin(_ name: String, in id: Game.ID) {
+        update(id) { game in
+            if let index = game.pinnedVariables.firstIndex(of: name) { game.pinnedVariables.remove(at: index) } else { game.pinnedVariables.append(name) }
+        }
     }
 }
 
@@ -176,10 +189,10 @@ struct SavesWindow: View {
                 .navigationSplitViewColumnWidth(min: 240, ideal: 280)
             } detail: {
                 if let save = saves.first(where: { $0.id == selection }) {
-                    SaveDetail(game: game, save: save, modded: modded) { reload(game) }
+                    SaveDetail(game: game, save: save, allSaves: saves, modded: modded) { reload(game) }
                         .id(save.id)
                 } else if selection == Self.persistentTag {
-                    SaveDetail(game: game, save: nil, modded: modded) { reload(game) }
+                    SaveDetail(game: game, save: nil, allSaves: saves, modded: modded) { reload(game) }
                         .id("\(Self.persistentTag)-\(modded)")
                 } else {
                     ContentUnavailableView("Choose a Save", systemImage: "square.stack")

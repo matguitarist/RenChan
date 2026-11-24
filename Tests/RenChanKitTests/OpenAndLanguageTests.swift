@@ -47,7 +47,7 @@ import Testing
     #expect(GameLanguages.find(base: base, extraPaths: ["tl/italian/script.rpy", "tl/notafolder"]) == ["french", "german", "italian", "spanish"])
     #expect(GameLanguages.translationPath("Xgame/tl/russian/a.rpy") == "tl/russian/a.rpy")
     #expect(GameLanguages.translationPath("images/tl/x.png") == nil)
-    #expect(GameLanguages.title("french") == "French" && GameLanguages.title("pt_br") == "Pt br")
+    #expect(GameLanguages.title("french", locale: Locale(identifier: "en")) == "French" && GameLanguages.title("my_mod") == "My mod")
 }
 
 @Test func theLanguageFileGoesInTheCopyAndLeavesWhenOff() throws {
@@ -120,4 +120,11 @@ import Testing
     #expect(SaveTool.unlockReplaysArguments(output: out) == ["renchan_saves", "replays", "-", "/tmp/out.json"])
     #expect(SaveTool.persistentSetArguments(changes: URL(fileURLWithPath: "/tmp/c.json"), output: out) == ["renchan_saves", "pset", "-", "/tmp/c.json", "/tmp/out.json"])
     #expect(SaveTool.source.contains("renpy.save_persistent()") && SaveTool.source.contains("_seen_images"))
+}
+
+@Test func languageFoldersShowInThePersonsLanguage() {
+    #expect(GameLanguages.title("french", locale: Locale(identifier: "fr")) == "Français")
+    #expect(GameLanguages.title("french", locale: Locale(identifier: "en")) == "French")
+    #expect(GameLanguages.title("spanish", locale: Locale(identifier: "fr")) == "Espagnol")
+    #expect(GameLanguages.title("klingon_mod", locale: Locale(identifier: "fr")) == "Klingon mod")
 }

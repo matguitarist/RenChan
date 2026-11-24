@@ -16,7 +16,7 @@ extension AppModel {
         do {
             let backup = try SaveBackups.backUp(saves: saves, into: Store.backupsFolder(id))
             backupRevision += 1
-            log.post(.info, "Backed up \(backup.saveCount) saves of \(game.title)", source: "Saves")
+            log.post(.info, "Backed up \(backup.contents) of \(game.title)", source: "Saves")
         } catch {
             log.post(.error, "Couldn't back up the saves of \(game.title): \(error.localizedDescription)", source: "Saves")
             notice = String(localized: "RenChan couldn't back up the saves: \(error.localizedDescription)")

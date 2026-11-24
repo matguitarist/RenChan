@@ -380,6 +380,16 @@ enum SelfTest {
             check("S-035 saves are listed newest first with their name and picture",
                   listed.first?.slot == "1-2" && listed.first?.name == "At the bridge" && listed.first?.screenshot() != nil
                   && listed.contains { $0.place == "Quick 1" }, "\(listed.map(\.slot))")
+            if let game = model.game(first.id), listed.count > 1 {
+                let all = try? await model.writeVariables(["met_aoi": false], in: listed, of: game, modded: false)
+                let sent = (try? String(contentsOf: Store.workingCopy(first.id).appending(path: "renchan_last_changes.json"), encoding: .utf8)) ?? ""
+                let slots = (try? String(contentsOf: Store.workingCopy(first.id).appending(path: "renchan_last_slots"), encoding: .utf8)) ?? ""
+                check("Save to All Saves sends one change for every save", all != nil && sent == #"{"met_aoi":false}"#
+                      && Set(slots.split(separator: ",").map(String.init)) == Set(listed.map(\.slot)), "\(sent) \(slots)")
+                model.togglePin("affection_mei", in: first.id)
+                check("a pinned variable is kept with the game", model.game(first.id)?.pinnedVariables == ["affection_mei"])
+                model.togglePin("affection_mei", in: first.id)
+            }
             if let save = listed.first, let game = model.game(first.id) {
                 let variables = (try? await model.readVariables(save, of: game, modded: false)) ?? []
                 check("S-036 a save's variables are read with the game's Ren'Py",

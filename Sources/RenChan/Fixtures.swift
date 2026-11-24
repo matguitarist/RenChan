@@ -44,6 +44,7 @@ enum Fixtures {
             printf '%s' '{"unlocked":40,"images":42}' > "$last"
           else
             cp "$7" "$base/renchan_last_changes.json"
+            printf '%s' "$6" > "$base/renchan_last_slots"
             printf '%s' '{"changed":["affection_mei"],"refused":[]}' > "$last"
           fi
           exit 0
@@ -195,7 +196,7 @@ enum SeedData {
                 try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
                 try? "".write(to: folder.appending(path: "strings.rpy"), atomically: true, encoding: .utf8)
             }
-            model.update(first.id) { $0.language = "french" }
+            model.update(first.id) { $0.language = "french"; $0.pinnedVariables = ["affection_mei"] }
             let saves = Store.saveRoot.appending(path: "The_Question-7.0-pc", directoryHint: .isDirectory)
             try? FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)
             // Saves laid out as Ren'Py writes them, to browse (S-035) and back up (S-012).

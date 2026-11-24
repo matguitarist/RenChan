@@ -27,15 +27,16 @@ struct RunAndDevToolsRows: View {
                 Text("Original Language").tag(String?.some(LanguageLoader.original))
                 Divider()
                 ForEach(languages, id: \.self) { language in
-                    Text(verbatim: GameLanguages.title(language)).tag(String?.some(language))
+                    Text(verbatim: GameLanguages.title(language, locale: .app)).tag(String?.some(language))
                 }
                 if let chosen = game.language, chosen != LanguageLoader.original, !languages.contains(chosen) {
-                    Text("\(GameLanguages.title(chosen)) (missing)").tag(String?.some(chosen))
+                    Text("\(GameLanguages.title(chosen, locale: .app)) (missing)").tag(String?.some(chosen))
                 }
             } label: {
                 Text("Language")
             }
             .help("The language the game starts in, from its next launch. Game’s Choice starts in the one last used in the game.")
+            .id("language")
         }
         Toggle(isOn: Binding(get: { game.devTools.console }, set: { on in model.update(game.id) { $0.devTools.console = on } })) {
             Text("Console (Shift+O)")
@@ -91,4 +92,9 @@ extension AppModel {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(compatibilityReport(), forType: .string)
     }
+}
+
+extension Locale {
+    /// The language RenChan shows itself in (Settings > General), which can differ from the Mac's region.
+    static var app: Locale { Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en") }
 }

@@ -323,6 +323,7 @@ struct Live {
                 $ renpy.load("1-1")
             $ points = 7
             $ renpy.save("1-1", "Before the bridge")
+            $ renpy.save("1-2", "Second")
             $ renpy.quit()
         """
         let copy = Fixture.game(at: root.appending(path: "Game"), files: ["game/script.rpy": script])
@@ -340,8 +341,8 @@ struct Live {
         var log = try await run()
         let folder = home.appending(path: "Library/RenPy/renchan-save-test")
         let saves = SaveList.list(in: folder)
-        #expect(saves.map(\.slot) == ["1-1"], "\(log.suffix(1500))")
-        #expect(saves.first?.name == "Before the bridge" && saves.first?.screenshot() != nil)
+        #expect(Set(saves.map(\.slot)) == ["1-1", "1-2"], "\(log.suffix(1500))")
+        #expect(saves.first { $0.slot == "1-1" }?.name == "Before the bridge" && saves.first?.screenshot() != nil)
         // Read and change it.
         try SaveTool.install(copy: copy)
         let out = root.appending(path: "dump.json")
@@ -360,6 +361,13 @@ struct Live {
         try "".write(to: marker, atomically: true, encoding: .utf8)
         log = try await run()
         #expect((try? String(contentsOf: report, encoding: .utf8)) == "42 Bo True", "\(log.suffix(2000))")
+        // The same change in every save at once.
+        try SaveTool.writeChanges(["met": true], to: changes)
+        log = try await run(SaveTool.setArguments(slots: ["1-1", "1-2"], changes: changes, output: out))
+        let both = try SaveTool.readReport(out)
+        #expect(both.changed == ["met"] && both.saves == 2, "\(String(describing: both)) \(log.suffix(1500))")
+        log = try await run(SaveTool.dumpArguments(slot: "1-2", output: out))
+        #expect(try SaveTool.readReport(out).variables?.first { $0.name == "met" }?.value == "true", "\(log.suffix(1500))")
     }
 
     /// Runs a game in `copy` with HOME in `home` until it quits; returns its output.

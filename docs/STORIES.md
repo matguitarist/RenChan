@@ -480,6 +480,23 @@ Acceptance:
 - [self] Values are read, Unlock backs up then unlocks, a change is sent.
 Status: done
 
+### S-041 Change saves with care
+As the user, I see exactly what Save Changes will write, write the same change into every save at once, and keep the values I change often at the top.
+Screens: saves
+Depends: S-036, S-040
+UX:
+- "Show Only the 12 Changes" appears above the variables once anything is changed, so Turn All On never writes what I didn't see.
+- "Save to All Saves…" next to Save Changes (a save's page, two saves or more) → "Write 4 changes into all 9 saves?" → one backup, then every save gets the values it has; the others are left as they are. Eden: turn on the four character cards in every save in one go.
+- Right-click a variable → "Pin to Top" / "Unpin": pinned values (money, affection) come first for that game, in every save and in persistent data.
+- A backup made before the first save holds only the persistent data: the Backups list shows "—" for Saves, and the log says "Backed up the persistent data".
+- Language names follow RenChan's language: a game's "french" folder shows as "Français" in French.
+Acceptance:
+- [live] On real 7.8.7 and 8.6.1: one change is written into two saves, and the second save reads it back.
+- [unit] Translation folders show in the person's language; unknown ones keep their name.
+- [self] Save to All Saves sends one change and every slot; a pinned variable is kept with the game.
+- Snapshots: saves (pinned row, Save to All Saves…), game-language (inspector scrolled to Language), light and dark, English and French.
+Status: done
+
 ## Later
 - Download Windows-only Steam games with SteamCMD.
 - `renchan` CLI and MCP server.

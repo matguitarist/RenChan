@@ -67,6 +67,9 @@ enum Snapshot {
             model.sidebar = .library
             await shoot("library-list", { model.layout = .list }, { model.layout = .grid })
             await shoot("game-details", { model.showInspector = true }, {})
+            // The Language picker sits low in the inspector, so this one scrolls to it.
+            await shoot("game-language", { model.selection = model.games.first { $0.title == "The Question" }?.id; model.showInspector = true; model.inspectorScroll = "language" },
+                        { model.inspectorScroll = nil; model.selection = model.games.first?.id })
             await shoot("game-mods", { model.selection = model.games.count > 1 ? model.games[1].id : nil; model.showInspector = true },
                         { model.selection = model.games.first?.id })
             if only == nil || only?.contains("walkthrough") == true, model.games.count > 1, let walkthrough = model.games[1].walkthroughs.first {

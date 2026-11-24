@@ -58,6 +58,8 @@ public enum SaveTool {
     /// renchan_saves dump SLOT OUT.json, or renchan_saves set SLOT CHANGES.json OUT.json
     public static func dumpArguments(slot: String, output: URL) -> [String] { ["renchan_saves", "dump", slot, output.path] }
     public static func setArguments(slot: String, changes: URL, output: URL) -> [String] { ["renchan_saves", "set", slot, changes.path, output.path] }
+    /// The same changes in several saves at once, such as every save of the game.
+    public static func setArguments(slots: [String], changes: URL, output: URL) -> [String] { setArguments(slot: slots.joined(separator: ","), changes: changes, output: output) }
     /// Persistent data, shared by every save (S-040): its fields, changes to them, and every image marked as seen.
     public static func persistentDumpArguments(output: URL) -> [String] { ["renchan_saves", "pdump", "-", output.path] }
     public static func persistentSetArguments(changes: URL, output: URL) -> [String] { ["renchan_saves", "pset", "-", changes.path, output.path] }
@@ -69,6 +71,8 @@ public enum SaveTool {
         public var variables: [SaveVariable]?
         public var changed: [String]?
         public var refused: [String]?
+        /// How many saves a change was written into.
+        public var saves: Int?
         /// Images newly marked as seen by unlock.
         public var unlocked: Int?
         /// Images the game defines, for unlock.
@@ -291,69 +295,84 @@ public enum SaveTool {
                         report["images"] = len(renpy.list_images())
                     raise _RenChanDone()
 
-                location = renpy.loadsave.location.newest(args.slot)
-                if location is None:
-                    raise Exception("No save in slot %s" % args.slot)
-                path = location.filename(args.slot)
-                zf = zipfile.ZipFile(path, "r")
-                entries = [(info, zf.read(info.filename)) for info in zf.infolist()]
-                zf.close()
-                log_data = dict((i.filename, d) for i, d in entries)["log"]
-                roots, log = _pickle.loads(log_data)
-                deleted = getattr(renpy.rollback, "deleted", object())
-                # Loading rolls back to the start of the statement the save was made in, from these records.
-                records = [(getattr(rb, "stores", None) or {}).get("store") for rb in list(getattr(log, "log", [])) + [getattr(log, "current", None)] if rb is not None]
-                # In the store, dict means Ren'Py's RevertableDict, so check for a mapping by its methods.
-                records = [r for r in records if hasattr(r, "keys") and hasattr(r, "__setitem__")]
+                def one(slot):
+                    location = renpy.loadsave.location.newest(slot)
+                    if location is None:
+                        raise Exception("No save in slot %s" % slot)
+                    path = location.filename(slot)
+                    zf = zipfile.ZipFile(path, "r")
+                    entries = [(info, zf.read(info.filename)) for info in zf.infolist()]
+                    zf.close()
+                    log_data = dict((i.filename, d) for i, d in entries)["log"]
+                    roots, log = _pickle.loads(log_data)
+                    deleted = getattr(renpy.rollback, "deleted", object())
+                    # Loading rolls back to the start of the statement the save was made in, from these records.
+                    records = [(getattr(rb, "stores", None) or {}).get("store") for rb in list(getattr(log, "log", [])) + [getattr(log, "current", None)] if rb is not None]
+                    # In the store, dict means Ren'Py's RevertableDict, so check for a mapping by its methods.
+                    records = [r for r in records if hasattr(r, "keys") and hasattr(r, "__setitem__")]
 
-                def effective(name, value):
-                    for r in reversed(records):
-                        if name in r and r[name] is not deleted:
-                            return r[name]
-                    return value
-
-                if args.action == "dump":
-                    found = []
-                    for key in sorted(roots):
-                        if not key.startswith("store.") or key.startswith("store._") or "." in key[6:]:
-                            continue
-                        v = effective(key[6:], roots[key])
-                        if callable(v) or isinstance(v, type(os)):
-                            continue
-                        found.append({"name": key[6:], "kind": kind(v), "value": describe(v)})
-                    report["variables"] = found
-
-                elif args.action == "set":
-                    changed, refused = [], []
-                    for name, value in read_changes().items():
-                        key = "store." + name
-                        new = convert(effective(name, roots[key]), value) if key in roots else None
-                        if new is None:
-                            refused.append(name)
-                            continue
-                        new = new[0]
-                        roots[key] = new
-                        for r in records:
+                    def effective(name, value):
+                        for r in reversed(records):
                             if name in r and r[name] is not deleted:
-                                r[name] = new
-                        changed.append(name)
-                    if changed:
-                        new_log = _pickle.dumps((roots, log))
-                        signatures = renpy.savetoken.sign_data(new_log)
-                        tmp = path + ".renchan"
-                        zout = zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED)
-                        for info, data in entries:
-                            if info.filename == "log":
-                                data = new_log
-                            elif info.filename == "signatures":
+                                return r[name]
+                        return value
+
+                    if args.action == "dump":
+                        found = []
+                        for key in sorted(roots):
+                            if not key.startswith("store.") or key.startswith("store._") or "." in key[6:]:
                                 continue
-                            zout.writestr(info, data)
-                        if signatures:
-                            zout.writestr("signatures", signatures)
-                        zout.close()
-                        os.rename(tmp, path)
+                            v = effective(key[6:], roots[key])
+                            if callable(v) or isinstance(v, type(os)):
+                                continue
+                            found.append({"name": key[6:], "kind": kind(v), "value": describe(v)})
+                        return found
+
+                    elif args.action == "set":
+                        changed, refused = [], []
+                        for name, value in read_changes().items():
+                            key = "store." + name
+                            new = convert(effective(name, roots[key]), value) if key in roots else None
+                            if new is None:
+                                refused.append(name)
+                                continue
+                            new = new[0]
+                            roots[key] = new
+                            for r in records:
+                                if name in r and r[name] is not deleted:
+                                    r[name] = new
+                            changed.append(name)
+                        if changed:
+                            new_log = _pickle.dumps((roots, log))
+                            signatures = renpy.savetoken.sign_data(new_log)
+                            tmp = path + ".renchan"
+                            zout = zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED)
+                            for info, data in entries:
+                                if info.filename == "log":
+                                    data = new_log
+                                elif info.filename == "signatures":
+                                    continue
+                                zout.writestr(info, data)
+                            if signatures:
+                                zout.writestr("signatures", signatures)
+                            zout.close()
+                            os.rename(tmp, path)
+                        return changed, refused
+
+                slots = [s for s in args.slot.split(",") if s]
+                if args.action == "dump":
+                    report["variables"] = one(slots[0])
+                elif args.action == "set":
+                    # One or several saves, such as every save of the game; each keeps its own values otherwise.
+                    changed, refused, written = set(), set(), 0
+                    for slot in slots:
+                        c, r = one(slot)
+                        changed.update(c)
+                        refused.update(r)
+                        written += 1 if c else 0
                     report["changed"] = sorted(changed)
-                    report["refused"] = sorted(refused)
+                    report["refused"] = sorted(refused - changed)
+                    report["saves"] = written
                 else:
                     raise Exception("Unknown action %s" % args.action)
             except _RenChanDone:
