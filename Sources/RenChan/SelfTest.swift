@@ -380,6 +380,19 @@ enum SelfTest {
             check("S-035 saves are listed newest first with their name and picture",
                   listed.first?.slot == "1-2" && listed.first?.name == "At the bridge" && listed.first?.screenshot() != nil
                   && listed.contains { $0.place == "Quick 1" }, "\(listed.map(\.slot))")
+            if let game = model.game(first.id) {
+                for root in [game.baseURL, Store.workingCopy(game.id)] {
+                    for (index, path) in ["images/cg/a.png", "images/cg/b.png", "images/bg/c.png", "images/bg/d.png",
+                                          "images/e.png", "images/f.png", "images/g.png", "gui/button/idle.png"].enumerated() {
+                        Fixtures.picture(index.isMultiple(of: 2) ? .systemPink : .systemTeal, to: root.appending(path: "game/\(path)"), size: NSSize(width: 32, height: 16))
+                    }
+                }
+                let pictures = (try? await model.readPictures(of: game)) ?? []
+                check("the gallery lists the game's pictures and hides interface ones by default",
+                      pictures.count == 8 && pictures.filter { !$0.isInterface }.count == 7, "\(pictures.map(\.path))")
+                check("the gallery keeps its list and reads a picture's bytes",
+                      model.cachedPictures(of: game)?.count == 8 && pictures.first.flatMap { $0.thumbnail(maxPixels: 64) } != nil)
+            }
             if let game = model.game(first.id), listed.count > 1 {
                 let all = try? await model.writeVariables(["met_aoi": false], in: listed, of: game, modded: false)
                 let sent = (try? String(contentsOf: Store.workingCopy(first.id).appending(path: "renchan_last_changes.json"), encoding: .utf8)) ?? ""

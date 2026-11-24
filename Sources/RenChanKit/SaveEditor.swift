@@ -64,6 +64,8 @@ public enum SaveTool {
     public static func persistentDumpArguments(output: URL) -> [String] { ["renchan_saves", "pdump", "-", output.path] }
     public static func persistentSetArguments(changes: URL, output: URL) -> [String] { ["renchan_saves", "pset", "-", changes.path, output.path] }
     public static func unlockImagesArguments(output: URL) -> [String] { ["renchan_saves", "unlock", "-", output.path] }
+    /// Lists every picture of the game and where its bytes are, for RenChan's gallery (S-042).
+    public static func picturesArguments(output: URL) -> [String] { ["renchan_saves", "pictures", "-", output.path] }
     /// Marks every label of the game as seen, which unlocks Ren'Py replays (S-040).
     public static func unlockReplaysArguments(output: URL) -> [String] { ["renchan_saves", "replays", "-", output.path] }
 
@@ -80,6 +82,8 @@ public enum SaveTool {
         /// The game's own labels (scenes), and how many were played, for replays.
         public var labels: Int?
         public var seenLabels: Int?
+        /// Every picture of the game, for pictures.
+        public var pictures: [GamePicture]?
         public var error: String?
     }
 
@@ -218,7 +222,52 @@ public enum SaveTool {
                     # The game's labels; Ren'Py's own start with _.
                     return [l for l in renpy.get_all_labels() if isinstance(l, text_types) and not l.startswith("_")]
 
-                if args.action in ("pdump", "pset", "unlock", "replays"):
+                if args.action == "pictures":
+                    # Every picture of the game for RenChan's gallery: loose files by path (Ren'Py prefers them),
+                    # then archived ones by where their bytes sit, so RenChan reads them without Ren'Py.
+                    import base64
+                    exts = (".png", ".jpg", ".jpeg", ".webp", ".avif", ".bmp", ".gif")
+
+                    def b64(data):
+                        return base64.b64encode(data).decode("ascii")
+
+                    pictures, seen = [], set()
+                    archived = set()
+                    for _afn, index in renpy.loader.archives:
+                        archived.update(index.keys())
+                    for name in renpy.list_files():
+                        if name in seen or not name.lower().endswith(exts):
+                            continue
+                        try:
+                            fn = renpy.loader.transfn(name)
+                        except Exception:
+                            continue
+                        if fn and os.path.isfile(fn):
+                            seen.add(name)
+                            pictures.append({"path": name, "file": fn})
+                    for afn, index in renpy.loader.archives:
+                        try:
+                            path = afn if os.path.isabs(afn) else renpy.loader.transfn(afn)
+                        except Exception:
+                            continue
+                        for name, entries in index.items():
+                            if name in seen or not name.lower().endswith(exts):
+                                continue
+                            parts = []
+                            for t in entries:
+                                if len(t) == 1:
+                                    parts.append({"bytes": b64(t[0])})
+                                    continue
+                                # 7.x keeps a few leading bytes beside the offset (RPA-3.0 "start").
+                                if len(t) == 3 and t[2]:
+                                    parts.append({"bytes": b64(t[2])})
+                                parts.append({"offset": int(t[0]), "length": int(t[1])})
+                            seen.add(name)
+                            pictures.append({"path": name, "archive": path, "parts": parts})
+                    report["pictures"] = sorted(pictures, key=lambda p: p["path"])
+                    raise _RenChanDone()
+
+                elif args.action in ("pdump", "pset", "unlock", "replays"):
                     # Persistent data: Ren'Py loaded it before running this command, and saving it the
                     # usual way signs it with this Mac's key, so the game reads it without asking.
                     p = renpy.game.persistent

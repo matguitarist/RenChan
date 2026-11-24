@@ -521,6 +521,26 @@
         }
       }
     },
+    "All Pictures": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toutes les images"
+          }
+        }
+      }
+    },
+    "Also show the game’s interface pictures: buttons, frames and menus": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher aussi les images de l’interface du jeu : boutons, cadres et menus"
+          }
+        }
+      }
+    },
     "Any Rating": {
       "localizations": {
         "fr": {
@@ -607,6 +627,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copier les sauvegardes"
+          }
+        }
+      }
+    },
+    "Back to All": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retour à toutes"
+          }
+        }
+      }
+    },
+    "Back to the grid (Escape)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retour à la grille (Échap)"
           }
         }
       }
@@ -1231,6 +1271,16 @@
         }
       }
     },
+    "Export…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporter…"
+          }
+        }
+      }
+    },
     "F95Checker's games that are on this Mac. Each one watches its F95zone thread for new versions.": {
       "localizations": {
         "fr": {
@@ -1391,6 +1441,16 @@
         }
       }
     },
+    "Finding the pictures with Ren'Py…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recherche des images avec Ren’Py…"
+          }
+        }
+      }
+    },
     "Finished": {
       "localizations": {
         "fr": {
@@ -1427,6 +1487,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dossier"
+          }
+        }
+      }
+    },
+    "Folders": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dossiers"
           }
         }
       }
@@ -1481,6 +1551,16 @@
         }
       }
     },
+    "Gallery": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Galerie"
+          }
+        }
+      }
+    },
     "Gallery Images": {
       "localizations": {
         "fr": {
@@ -1491,12 +1571,32 @@
         }
       }
     },
+    "Gallery of %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Galerie de %@"
+          }
+        }
+      }
+    },
     "Gallery, endings and more, shared by every save": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Galerie, fins et plus, communs à toutes les sauvegardes"
+          }
+        }
+      }
+    },
+    "Gallery…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Galerie…"
           }
         }
       }
@@ -1641,6 +1741,16 @@
         }
       }
     },
+    "Interface Pictures": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Images de l’interface"
+          }
+        }
+      }
+    },
     "Its playtime, status, rating, labels, notes, cover and save backups stay. RenChan makes a fresh working copy; the old version's files stay where they are.": {
       "localizations": {
         "fr": {
@@ -1757,6 +1867,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Liste"
+          }
+        }
+      }
+    },
+    "List the pictures again, for a new version of the game": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lister les images à nouveau, pour une nouvelle version du jeu"
           }
         }
       }
@@ -2161,6 +2281,16 @@
         }
       }
     },
+    "Next": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivante"
+          }
+        }
+      }
+    },
     "Night Warmth": {
       "localizations": {
         "fr": {
@@ -2217,6 +2347,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun nouveau jeu trouvé"
+          }
+        }
+      }
+    },
+    "No Pictures": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune image"
           }
         }
       }
@@ -2571,6 +2711,16 @@
         }
       }
     },
+    "Pictures": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Images"
+          }
+        }
+      }
+    },
     "Pin to Top": {
       "localizations": {
         "fr": {
@@ -2721,6 +2871,16 @@
         }
       }
     },
+    "Previous": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Précédente"
+          }
+        }
+      }
+    },
     "Protanopia (red)": {
       "localizations": {
         "fr": {
@@ -2857,6 +3017,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lecture de la sauvegarde avec Ren’Py…"
+          }
+        }
+      }
+    },
+    "Refresh": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiser"
           }
         }
       }
@@ -3581,6 +3751,16 @@
         }
       }
     },
+    "Search Pictures": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher des images"
+          }
+        }
+      }
+    },
     "Search VNDB": {
       "localizations": {
         "fr": {
@@ -3617,6 +3797,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Voir chaque sauvegarde et modifier ses variables (Maj-Commande-B)"
+          }
+        }
+      }
+    },
+    "See every picture of the game, without playing it (Option-Command-G)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voir toutes les images du jeu, sans y jouer (Option-Commande-G)"
           }
         }
       }
@@ -4007,6 +4197,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le fichier de ce filtre n’est plus dans le dossier Filtres de RenChan : le jeu se lance sans lui."
+          }
+        }
+      }
+    },
+    "This folder has no pictures.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce dossier n’a aucune image."
           }
         }
       }

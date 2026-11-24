@@ -415,6 +415,60 @@ struct Live {
         #expect(text == "None Hello", "\(text) \(log.suffix(1500))")
     }
 
+    /// S-042: the gallery finds a loose picture and one inside a real RPA-3.0 archive, and reads both without Ren'Py.
+    @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
+    func picturesAreFoundInFilesAndArchives(version: String) async throws {
+        for needed in [version, RuntimeCatalog.python3] where Self.store.runtime(needed) == nil {
+            try await RuntimeDownload.install(needed, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        let copy = Fixture.game(at: root.appending(path: "Game"), files: ["game/script.rpy": """
+            define config.save_directory = "renchan-pictures-test"
+            label start:
+                $ renpy.quit()
+            """])
+        // A 1x1 PNG, loose and archived; the archived one keeps its first bytes in the index, like Ren'Py 7's archiver can.
+        let png = try #require(Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="))
+        let images = copy.appending(path: "game/images")
+        try FileManager.default.createDirectory(at: images, withIntermediateDirectories: true)
+        try png.write(to: images.appending(path: "loose.png"))
+        let raw = root.appending(path: "raw.png")
+        try png.write(to: raw)
+        let maker = """
+            import sys, pickle, zlib
+            data = open(sys.argv[1], "rb").read()
+            key = 0x42424242
+            out = open(sys.argv[2], "wb")
+            out.write(b"RPA-3.0 %016x %08x\\n" % (0, key))
+            offset = out.tell()
+            out.write(data[3:])
+            index = {u"images/cg/archived.png": [(offset ^ key, (len(data) - 3) ^ key, data[:3])]}
+            at = out.tell()
+            out.write(zlib.compress(pickle.dumps(index, 2)))
+            out.seek(0)
+            out.write(b"RPA-3.0 %016x %08x\\n" % (at, key))
+            out.close()
+            """
+        let python = try #require(Self.store.runtime(RuntimeCatalog.python3)?.python)
+        let make = Process()
+        make.executableURL = python
+        make.arguments = ["-I", "-c", maker, raw.path, copy.appending(path: "game/archive.rpa").path]
+        try make.run()
+        make.waitUntilExit()
+        #expect(make.terminationStatus == 0)
+        let home = root.appending(path: "home")
+        try SaveTool.install(copy: copy)
+        let out = root.appending(path: "out.json")
+        let log = try await Self.runGame(runtime, copy: copy, home: home, arguments: SaveTool.picturesArguments(output: out))
+        let pictures = try SaveTool.readReport(out).pictures ?? []
+        #expect(pictures.map(\.path) == ["images/cg/archived.png", "images/loose.png"], "\(log.suffix(2000))")
+        for picture in pictures {
+            #expect(try picture.data() == png, "\(picture)")
+            #expect(picture.thumbnail(maxPixels: 64) != nil)
+        }
+    }
+
     /// S-040: persistent values are read and changed, every image is marked as seen, and the game reads them without asking.
     @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
     func persistentDataIsReadChangedAndUnlocked(version: String) async throws {

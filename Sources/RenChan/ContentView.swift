@@ -30,12 +30,7 @@ struct ContentView: View {
         .sheet(item: Binding(get: { model.showBackups.map(BackupsSheetItem.init) }, set: { if $0 == nil { model.showBackups = nil } })) { item in
             SaveBackupsSheet(gameID: item.id).environment(model).themed()
         }
-        .onChange(of: model.walkthroughToOpen) { _, ref in
-            if let ref { openWindow(id: "walkthrough", value: ref); model.walkthroughToOpen = nil }
-        }
-        .onChange(of: model.savesToOpen) { _, ref in
-            if let ref { openWindow(id: "saves", value: ref); model.savesToOpen = nil }
-        }
+        .modifier(OpensWindows())
         .sheet(item: Binding(get: { model.findGames.map(FindGamesSheetItem.init) }, set: { if $0 == nil { model.findGames = nil } })) { item in
             FindGamesSheet(initial: item.state).environment(model).themed()
         }
@@ -146,4 +141,23 @@ private struct VNDBSheetItem: Identifiable {
 private struct DownloadSheetItem: Identifiable {
     let state: DownloadState
     var id: String { state.version }
+}
+
+/// Opens the walkthrough, gallery and saves windows the model asks for.
+private struct OpensWindows: ViewModifier {
+    @Environment(AppModel.self) private var model
+    @Environment(\.openWindow) private var openWindow
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: model.walkthroughToOpen) { _, ref in
+                if let ref { openWindow(id: "walkthrough", value: ref); model.walkthroughToOpen = nil }
+            }
+            .onChange(of: model.galleryToOpen) { _, ref in
+                if let ref { openWindow(id: "gallery", value: ref); model.galleryToOpen = nil }
+            }
+            .onChange(of: model.savesToOpen) { _, ref in
+                if let ref { openWindow(id: "saves", value: ref); model.savesToOpen = nil }
+            }
+    }
 }

@@ -34,7 +34,7 @@ extension AppModel {
     }
 
     /// Runs RenChan's save tool with the game's own Ren'Py, without a window.
-    private func runSaveTool(_ game: Game, modded: Bool, _ arguments: (URL) -> [String]) async throws -> SaveTool.Report {
+    func runSaveTool(_ game: Game, modded: Bool, _ arguments: (URL) -> [String]) async throws -> SaveTool.Report {
         guard !playing.contains(game.id) else { throw SaveToolError(String(localized: "Quit \(game.title) first: it would write over the save.")) }
         guard let runtime = installedRuntime(for: game) else {
             throw SaveToolError(String(localized: "Play \(game.title) once first, so RenChan has its Ren'Py \(runtimeVersion(for: game))."))

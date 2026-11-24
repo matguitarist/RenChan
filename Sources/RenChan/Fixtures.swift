@@ -37,6 +37,16 @@ enum Fixtures {
             printf '%s' '{"variables":[{"name":"affection_mei","kind":"int","value":"12"},{"name":"bag","kind":"other","value":"list (3)"},{"name":"chapter","kind":"float","value":"2.5"},{"name":"hero","kind":"string","value":"Ana"},{"name":"met_aoi","kind":"bool","value":"true"}]}' > "$last"
           elif [ "$5" = "pdump" ]; then
             printf '%s' '{"variables":[{"name":"endings_seen","kind":"int","value":"1"},{"name":"gallery_lucy1","kind":"bool","value":"false"},{"name":"lucy_img_201_unlocked","kind":"bool","value":"true"},{"name":"renders[0].unlocked","kind":"bool","value":"false","note":"Hawaiian Dream"},{"name":"true_ending","kind":"bool","value":"false"}],"images":42,"labels":120,"seenLabels":30}' > "$last"
+          elif [ "$5" = "pictures" ]; then
+            printf '{"pictures":[' > "$last"
+            find "$base/game" -name '*.png' | sort | {
+              sep=""
+              while read -r f; do
+                printf '%s{"path":"%s","file":"%s"}' "$sep" "${f#"$base/game/"}" "$f" >> "$last"
+                sep=","
+              done
+            }
+            printf ']}' >> "$last"
           elif [ "$5" = "replays" ]; then
             printf '%s' '{"unlocked":90,"labels":120}' > "$last"
           elif [ "$5" = "unlock" ]; then
@@ -66,6 +76,18 @@ enum Fixtures {
 }
 
 extension Fixtures {
+    /// A gradient picture for the gallery's seed data (S-042).
+    static func picture(_ color: NSColor, to file: URL, size: NSSize = NSSize(width: 640, height: 360)) {
+        try? FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let image = NSImage(size: size, flipped: false) { rect in
+            NSGradient(starting: color, ending: color.blended(withFraction: 0.7, of: .black) ?? color)?.draw(in: rect, angle: -35)
+            return true
+        }
+        if let tiff = image.tiffRepresentation, let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+            try? png.write(to: file)
+        }
+    }
+
     /// A save file laid out as Ren'Py writes one: a zip with a screenshot, its name, json and log (S-035).
     static func save(_ slot: String, name: String, minutesAgo: Double, color: NSColor, in folder: URL) {
         let work = FileManager.default.temporaryDirectory.appending(path: "renchan-save-\(UUID().uuidString)", directoryHint: .isDirectory)
@@ -197,6 +219,12 @@ enum SeedData {
                 try? "".write(to: folder.appending(path: "strings.rpy"), atomically: true, encoding: .utf8)
             }
             model.update(first.id) { $0.language = "french"; $0.pinnedVariables = ["affection_mei"] }
+            // S-042: story pictures in two folders, and an interface picture the gallery hides at first.
+            let pictures: [(String, NSColor)] = [("images/cg/bridge_dusk.png", .systemOrange), ("images/cg/bridge_night.png", .systemIndigo),
+                                                 ("images/cg/confession.png", .systemPink), ("images/cg/epilogue.png", .systemTeal),
+                                                 ("images/bg/cafe.png", .systemBrown), ("images/bg/park.png", .systemGreen),
+                                                 ("images/bg/station.png", .systemBlue), ("gui/button/idle.png", .systemGray)]
+            for (path, color) in pictures { Fixtures.picture(color, to: first.baseURL.appending(path: "game/\(path)")) }
             let saves = Store.saveRoot.appending(path: "The_Question-7.0-pc", directoryHint: .isDirectory)
             try? FileManager.default.createDirectory(at: saves, withIntermediateDirectories: true)
             // Saves laid out as Ren'Py writes them, to browse (S-035) and back up (S-012).

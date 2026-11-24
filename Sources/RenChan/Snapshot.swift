@@ -95,6 +95,17 @@ enum Snapshot {
                 }
                 window?.close()
             }
+            if only == nil || only?.contains("gallery") == true, let game = model.games.first(where: { $0.title == "The Question" }) {
+                model.galleryToOpen = GalleryRef(game: game.id)
+                try? await Task.sleep(for: .seconds(4))
+                let window = NSApp.windows.first { $0.isVisible && $0.title.contains(game.title) }
+                for mode in ["light", "dark"] {
+                    NSApp.appearance = NSAppearance(named: mode == "light" ? .aqua : .darkAqua)
+                    try? await Task.sleep(for: .seconds(1))
+                    if let window { capture(to: "\(dir)/gallery-\(mode).png", window: window) }
+                }
+                window?.close()
+            }
             if only == nil || only?.contains("saves-persistent") == true, let game = model.games.first(where: { $0.title == "The Question" }) {
                 model.savesToOpen = SavesRef(game: game.id, persistent: true)
                 try? await Task.sleep(for: .seconds(3))

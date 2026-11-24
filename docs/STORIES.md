@@ -497,6 +497,22 @@ Acceptance:
 - Snapshots: saves (pinned row, Save to All Saves…), game-language (inspector scrolled to Language), light and dark, English and French.
 Status: done
 
+### S-042 A gallery of the game's pictures
+As the user, I see every picture of a game (its CGs and renders) in RenChan, without playing it or unlocking anything.
+Screens: gallery
+Depends: S-036
+UX:
+- Flow: inspector › Files › Pictures › "Gallery…" (or Game › Gallery…, ⌥⌘G) → "Gallery of Eden": All Pictures and each folder on the left with counts, a grid of thumbnails, Search Pictures. Click a picture → large view with Previous/Next (← →), Copy (⌘C), Export… (⌘E, the game's own bytes), Back to All (Esc).
+- Interface pictures (gui/, ui/, buttons, icons) are hidden; the toolbar's Interface Pictures shows them. Refresh lists them again after an update.
+- How: Ren'Py lists each picture once (loose files first, as Ren'Py does, then archives: the file, offset and length, with the leading bytes Ren'Py 7 keeps in the index). RenChan keeps that list and reads the bytes itself, so the gallery opens at once next time, even while the game plays. Nothing is written to the game.
+- Words: "Gallery" / « Galerie », "All Pictures" / « Toutes les images ».
+Acceptance:
+- [live] On real 7.8.7 and 8.6.1: a loose picture and one in a real RPA-3.0 archive (leading bytes in the index) are listed, read byte for byte, and decoded.
+- [unit] Bytes come from a file, or from an archive's parts in order; folders, names and interface pictures are told apart.
+- [self] The gallery lists 8 pictures, hides the interface one, keeps its list, and decodes a picture.
+- Eden (8.5.3, a temp clone): 13,127 pictures in 176 folders listed in 2.4 s, 13,125 of them inside cache.rpa; sampled ones read as WebP (2026-11-23).
+Status: done
+
 ## Later
 - Download Windows-only Steam games with SteamCMD.
 - `renchan` CLI and MCP server.

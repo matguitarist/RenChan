@@ -89,6 +89,10 @@ struct GameDetails: View {
                 LabeledContent("Location") {
                     Button("Show in Finder") { model.showInFinder(game.id) }
                 }
+                LabeledContent("Pictures") {
+                    Button("Gallery…") { model.showGallery(game.id) }
+                        .help("See every picture of the game, without playing it (Option-Command-G)")
+                }
                 WatchRows(game: game)
                 LabeledContent("New version") {
                     HStack(spacing: Space.sm) {

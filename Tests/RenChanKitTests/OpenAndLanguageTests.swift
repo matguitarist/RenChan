@@ -128,3 +128,20 @@ import Testing
     #expect(GameLanguages.title("spanish", locale: Locale(identifier: "fr")) == "Espagnol")
     #expect(GameLanguages.title("klingon_mod", locale: Locale(identifier: "fr")) == "Klingon mod")
 }
+
+@Test func picturesAreReadFromFilesAndArchives() throws {
+    let folder = FileManager.default.temporaryDirectory.appending(path: "renchan-pictures-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let loose = folder.appending(path: "a.png")
+    try Data("loose".utf8).write(to: loose)
+    let archive = folder.appending(path: "archive.rpa")
+    try Data("HEADERxxworldyy".utf8).write(to: archive)
+    #expect(try GamePicture(path: "a.png", file: loose.path).data() == Data("loose".utf8))
+    // 7.x: leading bytes from the index, then the rest from the archive.
+    let archived = GamePicture(path: "images/cg/b.webp", archive: archive.path,
+                               parts: [.init(bytes: Data("hello ".utf8).base64EncodedString()), .init(offset: 8, length: 5)])
+    #expect(try archived.data() == Data("hello world".utf8))
+    #expect(archived.folder == "images/cg" && archived.name == "b.webp" && !archived.isInterface)
+    #expect(GamePicture(path: "gui/frame.png").isInterface && SaveTool.source.contains("\"pictures\""))
+}

@@ -79,6 +79,7 @@ final class AppModel {
     var addModsTo: ModTarget?
     /// A Saves window to open (S-035).
     var savesToOpen: SavesRef?
+    var galleryToOpen: GalleryRef?
     /// Games whose watched page is being read now (S-033).
     var checkingVersions: Set<Game.ID> = []
     @ObservationIgnored var watchTask: Task<Void, Never>?
