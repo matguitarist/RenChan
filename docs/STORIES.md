@@ -26,7 +26,8 @@ Acceptance:
 - [unit] Reads `vc_version.py` + `__init__.py`, then `log.txt`, `script_version.txt`, `lib/` names, then the `.rpyc` header, in that order, and says which one it used.
 - [unit] Every fixture version line (6.99, 7.4, 7.8, 8.0, 8.3, 8.6) is detected with the right Python line.
 - [live] 20 real games detected; none with the wrong Python line.
-Waiting: the [live] line needs 20 real games (Plan › "Pick 20 real test games").
+- 2026-11-23, 3 of 20: Eden (8.5.3), Eternum (8.3.2) and Cosy Cafe (8.3.2), all read from vc_version.py as Python 3.
+Waiting: the [live] line needs 17 more real games (Plan › "Pick 20 real test games"), with 7.x and 6.99 among them.
 Status: doing
 
 ### S-003 Get a runtime
@@ -49,7 +50,8 @@ Acceptance:
 - [unit] The working copy is an APFS clone; on another volume, RenChan asks before a full copy.
 - [self] A fixture game launches, writes its `.rpyc` files only into the copy, and the original's checksum is unchanged.
 - [live] A Windows-only Ren'Py 8 game and a 7.x game play on Apple Silicon.
-Waiting: the [live] line needs a real Windows-only Ren'Py 8 game and a 7.x game.
+- 2026-11-23: Eden (8.5.3), Eternum (8.3.2) and Cosy Cafe (8.3.2), Mac builds, each played 6 s on 8.6.1 from an APFS clone with HOME in a temp folder; the originals were not touched.
+Waiting: the [live] line still needs a Windows-only Ren'Py 8 game and a 7.x game.
 Status: doing
 
 ### S-005 See why a game didn't start
