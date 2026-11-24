@@ -467,6 +467,7 @@ Depends: S-036
 UX:
 - Flow: Saves window › "Persistent Data" (the first row) → its values, edited like a save's (toggles, numbers, text; Save Changes ⌘S) → "Gallery Images: 42 images" with "Unlock All…" → "Mark all 42 images as seen?" → Unlock All Images. Every change backs up the saves first ("Before editing a save").
 - Games with their own gallery (Cosy Cafe keeps `lucy_img_main8_201_unlocked`, `gallery_lucy1`…) ignore seen images: "Unlock Values: 238 of 240 off" with "Turn All On" turns on every on/off value whose name has "unlock" or "gallery", and with a search, "Turn On 12 Shown" turns on the matching ones. Both wait for Save Changes.
+- A save's page has the same "Unlock Values" row: Eden opens each character's renders and scenes from cards gated by `ravenaUnlocked`, `yukiUnlocked`… kept in the save, not in persistent data.
 - Turn All On reaches every on/off value whose name has unlock, gallery, seen, ending, achiev(ement), replay, complete or cleared.
 - "Scenes Seen: 30 of 120" with "Mark All Seen…" marks every label of the game as played, which unlocks replays made with Ren'Py's Replay (it checks seen labels). Seen labels are kept apart from seen dialogue, so Skip still stops at unread text.
 - Lists and dictionaries open up (three levels, 5,000 values at most): Eden's `persistent.renders` shows as `renders[0].unlocked` with the item's name ("Hawaiian Dream") under it, so Turn All On and search reach them. Tuples, sets and objects stay read-only.

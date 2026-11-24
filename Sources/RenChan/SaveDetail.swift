@@ -99,6 +99,8 @@ struct SaveDetail: View {
                 LabeledContent("Played", value: Duration.seconds(playtime).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated)))
             }
             if let version = save.renpyVersion { LabeledContent("Ren'Py", value: version.split(separator: ".").prefix(3).joined(separator: ".")) }
+            // A save keeps the story's own unlocks, such as which characters' galleries open.
+            unlockRow
         }
     }
 
@@ -107,17 +109,7 @@ struct SaveDetail: View {
             Text("What the game remembers across every save: unlocked galleries, endings seen, and its own settings.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            if !unlockFlags.isEmpty {
-                let off = unlockFlags.filter { (edits[$0.name] ?? $0.value) == "false" }
-                LabeledContent("Unlock Values") {
-                    HStack(spacing: Space.sm) {
-                        Text("\(off.count) of \(unlockFlags.count) off").foregroundStyle(.secondary).monospacedDigit()
-                        Button("Turn All On") { for variable in off { edits[variable.name] = "true" } }
-                            .disabled(loading || off.isEmpty)
-                            .help("Turn on the game’s own on/off values for galleries, unlocks, endings, achievements and replays, then Save Changes to write them")
-                    }
-                }
-            }
+            unlockRow
             LabeledContent("Gallery Images") {
                 HStack(spacing: Space.sm) {
                     Text(images == 1 ? String(localized: "1 image") : String(localized: "\(images) images")).foregroundStyle(.secondary).monospacedDigit()
@@ -136,6 +128,22 @@ struct SaveDetail: View {
             }
         } header: {
             Text("Persistent Data")
+        }
+    }
+
+    /// "Unlock Values: 4 of 5 off" with Turn All On; the changes wait for Save Changes.
+    @ViewBuilder
+    private var unlockRow: some View {
+        if !unlockFlags.isEmpty {
+            let off = unlockFlags.filter { (edits[$0.name] ?? $0.value) == "false" }
+            LabeledContent("Unlock Values") {
+                HStack(spacing: Space.sm) {
+                    Text("\(off.count) of \(unlockFlags.count) off").foregroundStyle(.secondary).monospacedDigit()
+                    Button("Turn All On") { for variable in off { edits[variable.name] = "true" } }
+                        .disabled(loading || off.isEmpty)
+                        .help("Turn on the game’s own on/off values for galleries, unlocks, endings, achievements and replays, then Save Changes to write them")
+                }
+            }
         }
     }
 
