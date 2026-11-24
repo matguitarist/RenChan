@@ -97,6 +97,15 @@ import Testing
 
 // S-040 Change persistent data
 
+@Test func aGamesOwnUnlockFlagsAreFound() {
+    let flags = [SaveVariable(name: "lucy_img_main8_201_unlocked", kind: .bool, value: "false"),
+                 SaveVariable(name: "gallery_lucy1", kind: .bool, value: "true"),
+                 SaveVariable(name: "GalleryUnlocked", kind: .bool, value: "false"),
+                 SaveVariable(name: "characters_lucy", kind: .bool, value: "false"),
+                 SaveVariable(name: "gallery_page", kind: .int, value: "2")]
+    #expect(flags.filter(\.isUnlockFlag).map(\.name) == ["lucy_img_main8_201_unlocked", "gallery_lucy1", "GalleryUnlocked"])
+}
+
 @Test func theSaveToolHasPersistentCommands() {
     let out = URL(fileURLWithPath: "/tmp/out.json")
     #expect(SaveTool.persistentDumpArguments(output: out) == ["renchan_saves", "pdump", "-", "/tmp/out.json"])

@@ -17,6 +17,14 @@ public struct SaveVariable: Codable, Hashable, Sendable, Identifiable {
 
     public var editable: Bool { [.bool, .int, .float, .string].contains(kind) }
 
+    /// On/off values a game keeps for its own gallery or unlocks, such as "lucy_img_main8_201_unlocked" or
+    /// "gallery_lucy1": games with their own gallery check these, not Ren'Py's list of seen images (S-040).
+    public var isUnlockFlag: Bool {
+        guard kind == .bool else { return false }
+        let name = name.lowercased()
+        return name.contains("unlock") || name.contains("gallery")
+    }
+
     /// The JSON value to send back for the text typed, or nil when it doesn't fit the kind.
     public func encode(_ text: String) -> Any? {
         let trimmed = text.trimmingCharacters(in: .whitespaces)

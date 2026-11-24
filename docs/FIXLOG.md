@@ -1,5 +1,11 @@
 # RenChan — Fix log
 
+## 2026-11-23 Unlock All did nothing in Cosy Cafe's gallery
+
+Unlock All worked for Eternum, but Cosy Cafe's gallery stayed locked even though RenChan marked 20,262 images as seen. Cosy Cafe doesn't use Ren'Py's Gallery: it checks its own persistent values, such as `akari_img_main32_50_unlocked` and `gallery_lucy1`, which is why turning one on by hand worked. The persistent page now finds a game's own unlock values (on/off values named with "unlock" or "gallery") and turns them all on with one button; a search can turn on any other set.
+Test: `aGamesOwnUnlockFlagsAreFound`; the self-test reads the fixture's unlock values.
+Rule: an "unlock everything" feature has to meet games where they keep their state; check a few real games before assuming they all use the engine's built-in mechanism.
+
 ## 2026-11-23 Switching to CRT, Sharpen or FSR while playing said the filter didn't compile
 
 In Eternum, a change of filter during play worked for Grayscale but CRT, Sharpen and FSR Upscale showed "The game kept the last filter: this one didn't compile. Input of fragment shader 'v_tex_coord' not written by vertex shader". The loader checked a new filter by compiling its shader alone, but Ren'Py always draws it together with `renpy.texture`, whose vertex shader writes `v_tex_coord`. Every filter that reads nearby pixels failed that check, even though it would have drawn fine. The loader now compiles `(name, "renpy.texture")`, the same set Ren'Py draws.

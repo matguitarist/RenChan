@@ -36,7 +36,7 @@ enum Fixtures {
           if [ "$5" = "dump" ]; then
             printf '%s' '{"variables":[{"name":"affection_mei","kind":"int","value":"12"},{"name":"bag","kind":"other","value":"list (3)"},{"name":"chapter","kind":"float","value":"2.5"},{"name":"hero","kind":"string","value":"Ana"},{"name":"met_aoi","kind":"bool","value":"true"}]}' > "$last"
           elif [ "$5" = "pdump" ]; then
-            printf '%s' '{"variables":[{"name":"endings_seen","kind":"int","value":"1"},{"name":"true_ending","kind":"bool","value":"false"}],"images":42}' > "$last"
+            printf '%s' '{"variables":[{"name":"endings_seen","kind":"int","value":"1"},{"name":"gallery_lucy1","kind":"bool","value":"false"},{"name":"lucy_img_201_unlocked","kind":"bool","value":"true"},{"name":"true_ending","kind":"bool","value":"false"}],"images":42}' > "$last"
           elif [ "$5" = "unlock" ]; then
             touch "$base/renchan_unlocked"
             printf '%s' '{"unlocked":40,"images":42}' > "$last"

@@ -32,6 +32,11 @@ struct SaveDetail: View {
                 } else if variables.isEmpty {
                     Text(save == nil ? "The game keeps no persistent values of its own." : "This save has no variables RenChan can show.").foregroundStyle(.secondary)
                 } else {
+                    let offShown = shown.filter { $0.kind == .bool && (edits[$0.name] ?? $0.value) == "false" }
+                    if !search.isEmpty && !offShown.isEmpty {
+                        Button("Turn On \(offShown.count) Shown") { for variable in offShown { edits[variable.name] = "true" } }
+                            .help("Turn on every on/off value that matches the search. Nothing is written until Save Changes.")
+                    }
                     ForEach(shown) { variable in row(variable) }
                     if shown.isEmpty { Text("No variable matches “\(search)”.").foregroundStyle(.secondary) }
                 }
@@ -94,18 +99,32 @@ struct SaveDetail: View {
             Text("What the game remembers across every save: unlocked galleries, endings seen, and its own settings.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if !unlockFlags.isEmpty {
+                let off = unlockFlags.filter { (edits[$0.name] ?? $0.value) == "false" }
+                LabeledContent("Unlock Values") {
+                    HStack(spacing: Space.sm) {
+                        Text("\(off.count) of \(unlockFlags.count) off").foregroundStyle(.secondary).monospacedDigit()
+                        Button("Turn All On") { for variable in off { edits[variable.name] = "true" } }
+                            .disabled(loading || off.isEmpty)
+                            .help("Turn on the game’s own gallery and unlock values below, then Save Changes to write them")
+                    }
+                }
+            }
             LabeledContent("Gallery Images") {
                 HStack(spacing: Space.sm) {
                     Text(images == 1 ? String(localized: "1 image") : String(localized: "\(images) images")).foregroundStyle(.secondary).monospacedDigit()
                     Button("Unlock All…") { confirmUnlock = true }
                         .disabled(loading || images == 0 || model.playing.contains(game.id))
-                        .help("Mark every image the game defines as seen, which unlocks Ren'Py galleries")
+                        .help("Mark every image the game defines as seen. This unlocks galleries made with Ren'Py’s own Gallery; games with their own gallery use the unlock values above.")
                 }
             }
         } header: {
             Text("Persistent Data")
         }
     }
+
+    /// The game's own gallery and unlock switches, which games with their own gallery check.
+    private var unlockFlags: [SaveVariable] { variables.filter(\.isUnlockFlag) }
 
     private func unlock() {
         loading = true
