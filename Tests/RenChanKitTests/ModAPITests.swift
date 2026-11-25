@@ -2,14 +2,14 @@ import Foundation
 import Testing
 @testable import RenChanKit
 
-@Test func aManifestNamesTheModAndStaysOutOfTheGame() throws {
+@Test func aManifestNamesTheModAndStaysOutOfTheGame() async throws {
     let root = Fixture.folder()
     let source = root.appending(path: "download/Cheat-Menu-1.2")
     try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
     try #"{"name": "Cheat Menu", "version": "1.2", "author": "Ana"}"#.write(to: source.appending(path: "renchan-mod.json"), atomically: true, encoding: .utf8)
     try "init python: pass".write(to: source.appending(path: "cheat.rpy"), atomically: true, encoding: .utf8)
     let library = root.appending(path: "Mods")
-    let mod = try ModLibrary.importMod(root.appending(path: "download"), into: library)
+    let mod = try await ModLibrary.importMod(root.appending(path: "download"), into: library)
     #expect(mod.name == "Cheat Menu" && mod.files == ["cheat.rpy"])
     #expect(ModLibrary.manifest(mod, root: library)?.version == "1.2")
 }

@@ -38,28 +38,33 @@ import Testing
 }
 
 /// An expired itch.io link saves a 118-byte XML error page under the zip's name.
-@Test func aDownloadThatIsntAZipIsRefusedPlainly() throws {
+@Test func aDownloadThatIsntAZipIsRefusedPlainly() async throws {
     let file = Fixture.folder().appending(path: "cosy-cafe-mac.zip")
     try #"<?xml version="1.0" encoding="UTF-8"?><Error><Code>ExpiredRequest</Code><Message>Request has expired</Message></Error>"#
         .write(to: file, atomically: true, encoding: .utf8)
     #expect(throws: LocateError.notAZip(size: 118)) { try ZipImport.check(file) }
-    #expect(throws: LocateError.notAZip(size: 118)) { try ZipImport.unpack(file, into: file.deletingLastPathComponent().appending(path: "out")) }
+    await #expect(throws: LocateError.notAZip(size: 118)) { try await ZipImport.unpack(file, into: file.deletingLastPathComponent().appending(path: "out")) }
 }
 
-@Test func zipSlipIsRefused() {
-    #expect(ZipImport.unsafeEntry(["Game/game/script.rpy", "Game/./lib/"]) == nil)
-    #expect(ZipImport.unsafeEntry(["Game/../../evil.sh"]) == "Game/../../evil.sh")
-    #expect(ZipImport.unsafeEntry(["/etc/passwd"]) == "/etc/passwd")
-    #expect(ZipImport.unsafeEntry(["a/b/../../../c"]) == "a/b/../../../c")
+/// Zip Slip: a link that points outside the folder refuses the whole zip, and nothing is unpacked.
+@Test func aZipThatWritesOutsideItsFolderIsRefused() async throws {
+    let root = Fixture.folder()
+    let game = Fixture.game(at: root.appending(path: "src/Evil-1.0-pc"))
+    try FileManager.default.createSymbolicLink(atPath: game.appending(path: "game/escape").path, withDestinationPath: "/etc")
+    let zip = root.appending(path: "evil.zip")
+    try Shell.runSync("/usr/bin/zip", ["-qry", zip.path, "Evil-1.0-pc"], in: root.appending(path: "src")).check()
+    let target = root.appending(path: "unpacked")
+    await #expect(throws: LocateError.unsafeZip("Evil-1.0-pc/game/escape")) { try await ZipImport.unpack(zip, into: target) }
+    #expect(!FileManager.default.fileExists(atPath: target.path))
 }
 
-@Test func unpacksAZipAndFindsTheGame() throws {
+@Test func unpacksAZipAndFindsTheGame() async throws {
     let root = Fixture.folder()
     Fixture.game(at: root.appending(path: "src/Zipped-1.0-pc"))
     let zip = root.appending(path: "game.zip")
     try Shell.runSync("/usr/bin/zip", ["-qr", zip.path, "Zipped-1.0-pc"], in: root.appending(path: "src")).check()
     let target = root.appending(path: "unpacked")
-    try ZipImport.unpack(zip, into: target)
+    try await ZipImport.unpack(zip, into: target)
     let found = try GameLocator.locate(target)
     #expect(found.base.lastPathComponent == "Zipped-1.0-pc")
     #expect((ZipImport.size(of: zip) ?? 0) > 0)

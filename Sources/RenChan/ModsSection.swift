@@ -46,7 +46,7 @@ struct ModsSection: View {
             }
         }
         .dropDestination(for: URL.self) { urls, _ in
-            for url in urls { model.addMod(url, to: game.id) }
+            Task { for url in urls { await model.addMod(url, to: game.id) } }
             return !urls.isEmpty
         }
         .alert("New Mod", isPresented: $naming) {

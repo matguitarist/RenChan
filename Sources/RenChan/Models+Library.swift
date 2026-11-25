@@ -67,7 +67,7 @@ extension AppModel {
         unpacking = request
         defer { unpacking = nil }
         do {
-            try await ZipImport.unpackInBackground(zip, into: target)
+            try await ZipImport.unpack(zip, into: target)
         } catch {
             notice = error.message
             log.post(.warning, "Refused \(zip.path): \(error)", source: "Library")

@@ -38,11 +38,11 @@ extension AppModel {
         panel.message = String(localized: "Choose a mod: a zip, a folder, or .rpy, .rpyc or .rpa files. RenChan keeps its own copy.")
         panel.prompt = String(localized: "Add Mod")
         guard panel.runModal() == .OK else { return }
-        for url in panel.urls { addMod(url, to: id) }
+        Task { for url in panel.urls { await addMod(url, to: id) } }
     }
 
     /// Copies a mod into the library and turns it on for the game, last in the load order.
-    func addMod(_ url: URL, to id: Game.ID) {
+    func addMod(_ url: URL, to id: Game.ID) async {
         guard let game = game(id) else { return }
         // A walkthrough PDF dropped on Mods is a walkthrough, not a mod.
         if Walkthroughs.isWalkthrough(url) {
@@ -50,7 +50,7 @@ extension AppModel {
             return
         }
         do {
-            let mod = try ModLibrary.importMod(url, into: Store.modsFolder)
+            let mod = try await ModLibrary.importMod(url, into: Store.modsFolder)
             mods.append(mod)
             modsRevision += 1
             try ModLibrary.save(mods, to: Store.modsFolder)

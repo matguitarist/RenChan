@@ -61,7 +61,7 @@ public enum ModLibrary {
     public static func folder(_ mod: Mod, root: URL) -> URL { root.appending(path: mod.id.uuidString, directoryHint: .isDirectory) }
 
     /// Copies a zip, folder or single Ren'Py file into the library. Doesn't save mods.json.
-    public static func importMod(_ source: URL, into root: URL) throws(ModError) -> Mod {
+    public static func importMod(_ source: URL, into root: URL) async throws(ModError) -> Mod {
         let id = UUID()
         let target = root.appending(path: id.uuidString, directoryHint: .isDirectory)
         let incoming = root.appending(path: ".incoming-\(id.uuidString)", directoryHint: .isDirectory)
@@ -79,7 +79,7 @@ public enum ModLibrary {
             }
             guard ext == "zip" else { throw ModError.notAMod }
             do {
-                try ZipImport.unpack(source, into: incoming)
+                try await ZipImport.unpack(source, into: incoming)
             } catch .unsafeZip(let entry) {
                 throw ModError.unsafeZip(entry)
             } catch {

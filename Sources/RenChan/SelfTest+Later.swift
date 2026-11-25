@@ -136,7 +136,7 @@ extension SelfTest {
         model.selection = first.id
         model.open([script])
         check("S-037 a mod opened from the Finder asks for its game, the selected one first", model.addModsTo?.game == first.id && model.addModsTo?.files == [script])
-        model.addOpenedMods()
+        await model.addOpenedMods()
         let added = model.game(first.id)?.mods.last.flatMap { model.mod($0.mod) }
         check("S-037 Add puts the mod on that game", model.addModsTo == nil && added?.files == ["extra_scene.rpy"], "\(String(describing: added))")
         if let use = model.game(first.id)?.mods.last { model.removeMod(use.mod, from: first.id) }

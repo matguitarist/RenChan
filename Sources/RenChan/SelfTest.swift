@@ -175,8 +175,8 @@ enum SelfTest {
             }
             return folder
         }
-        model.addMod(modFolder("Question_Walkthrough", ["Question-7.0/game/walkthrough.rpy": "screen choice(items): pass"]), to: first.id)
-        model.addMod(modFolder("URM", ["0x52_URM.rpy": "screen choice(items): pass"]), to: first.id)
+        await model.addMod(modFolder("Question_Walkthrough", ["Question-7.0/game/walkthrough.rpy": "screen choice(items): pass"]), to: first.id)
+        await model.addMod(modFolder("URM", ["0x52_URM.rpy": "screen choice(items): pass"]), to: first.id)
         check("S-017 a mod is added to the game and kept by RenChan",
               model.mods.count == 2 && model.game(first.id)?.mods.count == 2
               && FileManager.default.fileExists(atPath: Store.modsFolder.appending(path: "mods.json").path))

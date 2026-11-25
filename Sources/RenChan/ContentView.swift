@@ -75,7 +75,7 @@ struct ContentView: View {
             Text(model.notice ?? "")
         }
         .task {
-            SeedData.addIfRequested(model: model)
+            await SeedData.addIfRequested(model: model)
             SelfTest.runIfRequested(model: model)
             Snapshot.runIfRequested(model: model, openSettings: openSettings)
         }

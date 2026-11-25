@@ -64,7 +64,7 @@ extension AppModel {
                 let target = folder.appending(path: "source-\(UUID().uuidString.prefix(8))", directoryHint: .isDirectory)
                 unpacking = ZipRequest(url: request.url, size: request.size)
                 defer { unpacking = nil }
-                try await ZipImport.unpackInBackground(request.url, into: target)
+                try await ZipImport.unpack(request.url, into: target)
                 unpacked = target
                 found = (try GameLocator.locate(target).base, .zip)
             } else {

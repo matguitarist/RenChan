@@ -35,10 +35,10 @@ extension AppModel {
         log.post(.info, "Opened \(extras.map(\.lastPathComponent).joined(separator: ", ")); asking which game it's for", source: "Mods")
     }
 
-    func addOpenedMods() {
+    func addOpenedMods() async {
         guard let target = addModsTo, let id = target.game else { return }
         addModsTo = nil
-        for url in target.files { addMod(url, to: id) }
+        for url in target.files { await addMod(url, to: id) }
         selection = id
     }
 }
@@ -68,7 +68,7 @@ struct AddModSheet: View {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.addModsTo = nil }
                     .keyboardShortcut(.cancelAction)
-                Button("Add") { model.addOpenedMods() }
+                Button("Add") { Task { await model.addOpenedMods() } }
                     .keyboardShortcut(.defaultAction)
                     .disabled(model.addModsTo?.game == nil)
             }

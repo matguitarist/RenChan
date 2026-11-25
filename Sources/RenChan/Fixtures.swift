@@ -131,7 +131,7 @@ extension Fixtures {
 
 /// Seed data for snapshots (APP_SEED=1 with APP_STORE): a few games, two runtimes, a morning of log.
 enum SeedData {
-    static func addIfRequested(model: AppModel) {
+    static func addIfRequested(model: AppModel) async {
         guard ProcessInfo.processInfo.environment["APP_SEED"] == "1", Store.isOverridden, model.games.isEmpty else { return }
         let root = Store.dataFolder.appending(path: "SeedGames", directoryHint: .isDirectory)
         Fixtures.runtime(RuntimeCatalog.python3, folder: "py3-mac-universal", in: Store.runtimesFolder)
@@ -174,7 +174,7 @@ enum SeedData {
                         try? FileManager.default.createDirectory(at: folder.appending(path: path).deletingLastPathComponent(), withIntermediateDirectories: true)
                         try? text.write(to: folder.appending(path: path), atomically: true, encoding: .utf8)
                     }
-                    model.addMod(folder, to: model.games[1].id)
+                    await model.addMod(folder, to: model.games[1].id)
                 }
                 if let urm = model.mods.last { model.setMod(urm.id, enabled: false, in: model.games[1].id) }
                 let pdf = modsRoot.appending(path: "Moonlit_Letters_Walkthrough_v1.2.pdf")

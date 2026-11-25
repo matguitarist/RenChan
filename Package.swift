@@ -12,12 +12,15 @@ let package = Package(
         .package(url: "https://github.com/matguitarist/PictureKit", from: "0.2.0"),
         // Runs ditto, tar, zip and the like without blocking or hanging, shared by my Mac apps.
         .package(url: "https://github.com/matguitarist/ProcessKit", from: "0.1.1"),
+        // Zips with Zip Slip checks, unpacked beside the target and moved in whole, shared by my Mac apps.
+        .package(url: "https://github.com/matguitarist/ArchiveKit", from: "0.1.1"),
     ],
     targets: [
         // Ren'Py detection, runtimes, launching and mods, with no SwiftUI, so tests run without the app.
         .target(name: "RenChanKit", dependencies: [.product(name: "LogKit", package: "LogKit"),
                                                   .product(name: "PictureKit", package: "PictureKit"),
-                                                  .product(name: "ProcessKit", package: "ProcessKit")]),
+                                                  .product(name: "ProcessKit", package: "ProcessKit"),
+                                                  .product(name: "ArchiveKit", package: "ArchiveKit")]),
         .executableTarget(
             name: "RenChan",
             dependencies: ["RenChanKit", .product(name: "Sparkle", package: "Sparkle"),
