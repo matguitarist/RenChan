@@ -226,7 +226,10 @@ enum Store {
     /// Save backups, one folder per game. Kept when a game is removed (S-012).
     static func backupsFolder(_ id: UUID) -> URL { dataFolder.appending(path: "Backups/\(id.uuidString)", directoryHint: .isDirectory) }
     /// The cover from VNDB or one the person chose (S-010).
-    static func coverFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "cover") }
+    /// The game's cover without its extension (Covers).
+    static func coverBase(_ id: UUID) -> URL { gameFolder(id).appending(path: "cover") }
+    /// The game's cover file, whatever its format; nil when it has none.
+    static func coverFile(_ id: UUID) -> URL? { Covers.find(base: coverBase(id)) }
     /// Written while a game plays, for its playtime (S-009).
     static func sessionFile(_ id: UUID) -> URL { gameFolder(id).appending(path: "session.json") }
 

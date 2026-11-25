@@ -22,6 +22,7 @@ Shared rules for how every project is laid out and named:
 
 - `Sources/RenChan/` the app. `App.swift` has the window, menus, and the library location.
 - `Sources/RenChanKit/` rules and data logic with no SwiftUI. Tests in `Tests/RenChanKitTests/`.
+- Pictures go through PictureKit (the `picture-kit` skill): covers are stored by `Covers` as HEIC at most 1200 px, and every cover, save screenshot and gallery picture is shown with `AsyncPicture`.
 - `Package.swift` a Swift package. There is no Xcode project.
 - `build.sh` builds, signs, and installs `~/Applications/RenChan.app`.
 - Release: `tools/release.sh <version>` (settings in `release.conf`, version in `Info.plist.in`). Use the mac-release skill.

@@ -1,4 +1,5 @@
 import AppKit
+import PictureKitUI
 import RenChanKit
 import SwiftUI
 import UniformTypeIdentifiers
@@ -56,24 +57,11 @@ extension GamePicture.Part: Encodable {
     private enum Keys: String, CodingKey { case offset, length, bytes }
 }
 
-/// Thumbnails decoded once, off the main thread, kept up to a memory limit (a 4096 px picture is about 37 MB).
-@MainActor
-final class ThumbnailCache {
-    static let shared = ThumbnailCache()
-    private let cache: NSCache<NSString, NSImage> = {
-        let cache = NSCache<NSString, NSImage>()
-        cache.totalCostLimit = 256 << 20
-        return cache
-    }()
-
-    func image(_ picture: GamePicture, pixels: Int) async -> NSImage? {
-        let key = "\(picture.archive ?? picture.file ?? "")#\(picture.path)#\(pixels)" as NSString
-        if let hit = cache.object(forKey: key) { return hit }
-        let image = await Task.detached(priority: .utility) { () -> NSImage? in
-            picture.thumbnail(maxPixels: pixels).map { NSImage(cgImage: $0, size: NSSize(width: $0.width, height: $0.height)) }
-        }.value
-        if let image { cache.setObject(image, forKey: key, cost: Int(image.size.width * image.size.height) * 4) }
-        return image
+extension GamePicture {
+    /// Read from its file or archive only when shown, off the main thread.
+    var source: PictureSource {
+        let picture = self
+        return .data(id: "\(archive ?? file ?? "")#\(path)") { try picture.data() }
     }
 }
 
@@ -200,15 +188,12 @@ struct GalleryWindow: View {
 
 private struct Thumbnail: View {
     let picture: GamePicture
-    @State private var image: NSImage?
 
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xs) {
             ZStack {
                 RoundedRectangle(cornerRadius: Radius.control, style: .continuous).fill(.quaternary)
-                if let image {
-                    Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
-                } else {
+                AsyncPicture(picture.source, contentMode: .fill, maxPixels: 400) {
                     Image(systemName: "photo").foregroundStyle(.tertiary)
                 }
             }
@@ -218,7 +203,6 @@ private struct Thumbnail: View {
             Text(verbatim: picture.name).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
         }
         .contentShape(Rectangle())
-        .task(id: picture) { image = await ThumbnailCache.shared.image(picture, pixels: 400) }
     }
 }
 
@@ -261,7 +245,8 @@ private struct PictureViewer: View {
         }
         .task(id: picture) {
             image = nil
-            image = await ThumbnailCache.shared.image(picture, pixels: 4096)
+            image = await PictureCache.shared.image(picture.source, maxPixels: 4096)
+                .map { NSImage(cgImage: $0, size: NSSize(width: $0.width, height: $0.height)) }
         }
     }
 

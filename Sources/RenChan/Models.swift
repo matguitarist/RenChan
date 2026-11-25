@@ -56,8 +56,6 @@ final class AppModel {
     var unpacking: ZipRequest?
     var confirmRemoveRuntime: String?
     var vndbSearch: VNDBSearch?
-    /// Bumped when a cover file changes, so covers redraw.
-    var coverRevision = 0
     /// The game whose Save Backups sheet is open, and the backup waiting for Restore's confirmation.
     var showBackups: Game.ID?
     var confirmRestore: SaveBackup?
@@ -160,6 +158,20 @@ final class AppModel {
         }
         runtimes = runtimeStore.installed()
         detectMissingVersions()
+        upgradeCovers()
+    }
+
+    /// Covers from before 0.9 were kept as downloaded; they become HEIC at most 1200 px, once, off the main thread.
+    private func upgradeCovers() {
+        let bases = games.map { Store.coverBase($0.id) }
+        Task {
+            let (count, saved) = await Task.detached(priority: .utility) {
+                bases.reduce((0, Int64(0))) { total, base in Covers.upgrade(base: base).map { (total.0 + 1, total.1 + $0) } ?? total }
+            }.value
+            if count > 0 {
+                log.post(.info, "Stored \(count) covers as HEIC, \(ByteCountFormatter.string(fromByteCount: saved, countStyle: .file)) smaller", source: "Library")
+            }
+        }
     }
 
     /// S-033: games added before 0.6.0 get their own version read, off the main thread: it reads up to 60

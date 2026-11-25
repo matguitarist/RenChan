@@ -1,5 +1,6 @@
 import PDFKit
 import AppKit
+import PictureKitUI
 import RenChanKit
 
 /// Self-test for agents: drives the app model on a library in /tmp,
@@ -267,22 +268,23 @@ enum SelfTest {
         }
 
         // S-010 Details from VNDB: a cover the person chose stays when VNDB details change
+        // A big PNG, as a person might pick: it's kept as a HEIC at most 1200 px.
         let picture = root.appending(path: "cover.png")
-        if let tiff = NSImage(size: NSSize(width: 8, height: 8), flipped: false, drawingHandler: { rect in NSColor.systemPink.setFill(); rect.fill(); return true }).tiffRepresentation,
-           let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
-            try? png.write(to: picture)
-        }
-        model.setCover(first.id, from: picture)
-        check("S-010 a chosen cover is stored by RenChan, not in the game",
-              model.game(first.id)?.customCover == true && FileManager.default.fileExists(atPath: Store.coverFile(first.id).path)
-              && CoverCache.shared.image(for: model.game(first.id)!) != nil)
+        Fixtures.picture(.systemPink, to: picture, size: NSSize(width: 1600, height: 2400))
+        await model.setCover(first.id, from: picture)
+        let shown = await PictureCache.shared.image(Cover.source(model.game(first.id)!), maxPixels: 720)
+        let storedCover = Store.coverFile(first.id)
+        check("S-010 a chosen cover is stored by RenChan as HEIC at most 1200 px, not in the game, and shown",
+              model.game(first.id)?.customCover == true && storedCover?.pathExtension == "heic"
+              && (storedCover.flatMap { Pictures.info(at: $0)?.longSide } ?? 0) <= 1200 && shown != nil && FileManager.default.fileExists(atPath: picture.path),
+              "\(storedCover?.lastPathComponent ?? "none")")
         model.update(first.id) { _ = VNDB.apply(VNDBInfo(id: "v3625", title: "The Question", imageURL: "https://t.vndb.org/x.jpg"), to: &$0) }
         model.unlinkVNDB(first.id)
         check("S-010 linking and unlinking VNDB keeps the chosen cover",
-              model.game(first.id)?.vndb == nil && FileManager.default.fileExists(atPath: Store.coverFile(first.id).path))
+              model.game(first.id)?.vndb == nil && Store.coverFile(first.id) != nil)
         model.resetCover(first.id)
         check("S-010 Reset Cover goes back to the game's own art", model.game(first.id)?.customCover == false
-              && !FileManager.default.fileExists(atPath: Store.coverFile(first.id).path))
+              && Store.coverFile(first.id) == nil)
 
         // S-012 Back up saves
         if let saves = model.saveFolder(first) {

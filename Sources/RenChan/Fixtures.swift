@@ -204,8 +204,7 @@ enum SeedData {
                 return true
             }
             if let tiff = portrait.tiffRepresentation, let jpeg = NSBitmapImageRep(data: tiff)?.representation(using: .jpeg, properties: [:]) {
-                try? FileManager.default.createDirectory(at: Store.gameFolder(first.id), withIntermediateDirectories: true)
-                try? jpeg.write(to: Store.coverFile(first.id))
+                _ = try? Covers.store(jpeg, at: Store.coverBase(first.id))
             }
             // S-039: two translations, one picked.
             for language in ["french", "spanish"] {

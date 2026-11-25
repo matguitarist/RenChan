@@ -8,19 +8,24 @@ let package = Package(
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0"),
         // The Log page's viewer, shared by my Mac apps.
         .package(url: "https://github.com/matguitarist/LogKit", from: "0.6.0"),
+        // Covers as small HEIC, thumbnails and their cache, shared by my apps.
+        .package(url: "https://github.com/matguitarist/PictureKit", from: "0.1.0"),
     ],
     targets: [
         // Ren'Py detection, runtimes, launching and mods, with no SwiftUI, so tests run without the app.
-        .target(name: "RenChanKit", dependencies: [.product(name: "LogKit", package: "LogKit")]),
+        .target(name: "RenChanKit", dependencies: [.product(name: "LogKit", package: "LogKit"),
+                                                  .product(name: "PictureKit", package: "PictureKit")]),
         .executableTarget(
             name: "RenChan",
             dependencies: ["RenChanKit", .product(name: "Sparkle", package: "Sparkle"),
-                           .product(name: "LogKitUI", package: "LogKit")],
+                           .product(name: "LogKitUI", package: "LogKit"),
+                           .product(name: "PictureKitUI", package: "PictureKit")],
             // App code runs on the main thread unless you say otherwise.
             swiftSettings: [.defaultIsolation(MainActor.self)],
             // Sparkle.framework sits in Contents/Frameworks (build.sh copies it).
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),
-        .testTarget(name: "RenChanKitTests", dependencies: ["RenChanKit", .product(name: "LogKit", package: "LogKit")]),
+        .testTarget(name: "RenChanKitTests", dependencies: ["RenChanKit", .product(name: "LogKit", package: "LogKit"),
+                                                           .product(name: "PictureKit", package: "PictureKit")]),
     ]
 )

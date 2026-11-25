@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import PictureKitUI
 import RenChanKit
 import UniformTypeIdentifiers
 
@@ -71,7 +72,7 @@ extension AppModel {
         guard wantsCover, let url = info.imageURL.flatMap(URL.init(string:)) else { return }
         Task {
             do {
-                try await VNDB.downloadCover(url, to: Store.coverFile(id))
+                try await VNDB.downloadCover(url, to: Store.coverBase(id))
                 coverChanged(id)
             } catch {
                 log.post(.warning, "Couldn't download the cover for \(info.title): \(error.localizedDescription)", source: "VNDB")
@@ -82,7 +83,7 @@ extension AppModel {
     func unlinkVNDB(_ id: Game.ID) {
         let custom = game(id)?.customCover ?? false
         update(id) { $0.vndb = nil }
-        if !custom { try? FileManager.default.removeItem(at: Store.coverFile(id)) }
+        if !custom { Covers.remove(base: Store.coverBase(id)) }
         coverChanged(id)
     }
 
@@ -92,15 +93,16 @@ extension AppModel {
         panel.message = String(localized: "Choose a picture for the game's cover.")
         panel.prompt = String(localized: "Choose")
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        setCover(id, from: url)
+        Task { await setCover(id, from: url) }
     }
 
-    func setCover(_ id: Game.ID, from url: URL) {
+    /// Stores a copy of the picture as the cover, as HEIC at most 1200 px, off the main thread. The picture stays.
+    func setCover(_ id: Game.ID, from url: URL) async {
+        let base = Store.coverBase(id)
         do {
-            let file = Store.coverFile(id)
-            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try? FileManager.default.removeItem(at: file)
-            try FileManager.default.copyItem(at: url, to: file)
+            _ = try await Task.detached(priority: .userInitiated) {
+                try Covers.store(Data(contentsOf: url, options: .mappedIfSafe), at: base)
+            }.value
             update(id) { $0.customCover = true }
             coverChanged(id)
         } catch {
@@ -110,14 +112,14 @@ extension AppModel {
 
     /// Back to the game's own art, or VNDB's cover when it is linked.
     func resetCover(_ id: Game.ID) {
-        try? FileManager.default.removeItem(at: Store.coverFile(id))
+        Covers.remove(base: Store.coverBase(id))
         update(id) { $0.customCover = false }
         coverChanged(id)
         if let info = game(id)?.vndb { link(id, to: info) }
     }
 
-    private func coverChanged(_ id: Game.ID) {
-        CoverCache.shared.forget(id)
-        coverRevision += 1
+    func coverChanged(_ id: Game.ID) {
+        guard let game = game(id) else { return }
+        PictureCache.shared.forget(Cover.source(game))
     }
 }

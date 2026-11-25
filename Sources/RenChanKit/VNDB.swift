@@ -204,12 +204,11 @@ public enum VNDB {
         return data
     }
 
-    /// Downloads a cover image to `file`, replacing what was there.
-    public static func downloadCover(_ url: URL, to file: URL) async throws {
+    /// Downloads a cover and stores it as the game's cover (`Covers.store`), replacing what was there.
+    public static func downloadCover(_ url: URL, to base: URL) async throws {
         let (data, response) = try await URLSession.shared.data(from: url)
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) { throw Failure.http(http.statusCode) }
-        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try data.write(to: file, options: .atomic)
+        _ = try await Task.detached(priority: .utility) { try Covers.store(data, at: base) }.value
     }
 
     /// Links a game to VNDB, or refreshes it. True when RenChan should download VNDB's cover:

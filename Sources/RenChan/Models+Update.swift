@@ -90,8 +90,7 @@ extension AppModel {
         if old.kind == .zip, let oldFolder = Self.topFolder(of: old.basePath, in: folder), oldFolder != unpacked?.lastPathComponent {
             try? FileManager.default.removeItem(at: folder.appending(path: oldFolder, directoryHint: .isDirectory))
         }
-        CoverCache.shared.forget(old.id)
-        coverRevision += 1
+        coverChanged(old.id)
         let version = detected.version.map { "Ren'Py \($0)" } ?? "an unknown Ren'Py"
         log.post(.info, "Updated \(old.title) to \(request.url.lastPathComponent) (\(version)); kept its playtime, labels, notes and backups", source: "Library")
         return true

@@ -1,5 +1,5 @@
 import AppKit
-import ImageIO
+import PictureKitUI
 import RenChanKit
 import SwiftUI
 
@@ -164,85 +164,25 @@ struct Cover: View {
     /// VNDB's covers are 2:3 portraits; the game's own landscape art is cropped to the middle.
     static let ratio: CGFloat = 2 / 3
 
-    @Environment(AppModel.self) private var model
     let game: Game
 
-    /// The cover read off the main thread, shown until the cache has it.
-    @State private var loaded: NSImage?
-
     var body: some View {
-        let revision = model.coverRevision
-        Group {
-            if let image = CoverCache.shared.cached(game.id) ?? loaded {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                    .clipped()
-            } else {
-                ZStack {
-                    Rectangle().fill(Palette.accent.gradient.opacity(0.35))
-                    Text(verbatim: String(game.title.prefix(1)).uppercased())
-                        .font(.system(size: 44, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Palette.accentText)
-                }
+        AsyncPicture(Self.source(game), contentMode: .fill, maxPixels: 720) {
+            ZStack {
+                Rectangle().fill(Palette.accent.gradient.opacity(0.35))
+                Text(verbatim: String(game.title.prefix(1)).uppercased())
+                    .font(.system(size: 44, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Palette.accentText)
             }
         }
-        .task(id: CoverKey(game: game.id, revision: revision)) { loaded = await CoverCache.shared.load(for: game) }
-    }
-}
-
-private struct CoverKey: Hashable {
-    var game: Game.ID
-    var revision: Int
-}
-
-/// Covers read from disk and decoded off the main thread, kept up to a memory limit; the grid redraws often.
-final class CoverCache {
-    static let shared = CoverCache()
-    /// NSCache can't hold nil, and "no cover" is worth remembering too.
-    private final class Entry {
-        let image: NSImage?
-        init(_ image: NSImage?) { self.image = image }
-    }
-    /// About 1 MB a cover at 720 px: room for a couple of hundred, the rest read again when scrolled back to.
-    private let images: NSCache<NSUUID, Entry> = {
-        let cache = NSCache<NSUUID, Entry>()
-        cache.totalCostLimit = 256 << 20
-        return cache
-    }()
-
-    /// The cover when it was read already; .none when it wasn't, .some(nil) when the game has none.
-    func cached(_ id: Game.ID) -> NSImage?? { images.object(forKey: id as NSUUID).map(\.image) }
-
-    /// Reads the cover on the spot; for the self-test.
-    func image(for game: Game) -> NSImage? {
-        if let hit = cached(game.id) { return hit }
-        let image = Self.read(own: Store.coverFile(game.id), base: game.baseURL)
-        keep(image, for: game.id)
-        return image
     }
 
-    /// Reads the cover off the main thread.
-    func load(for game: Game) async -> NSImage? {
-        if let hit = cached(game.id) { return hit }
-        let own = Store.coverFile(game.id), base = game.baseURL
-        let image = await Task.detached(priority: .userInitiated) { Self.read(own: own, base: base) }.value
-        keep(image, for: game.id)
-        return image
-    }
-
-    func forget(_ id: Game.ID) { images.removeObject(forKey: id as NSUUID) }
-
-    private func keep(_ image: NSImage?, for id: Game.ID) {
-        let cost = image.map { Int($0.size.width * $0.size.height) * 4 } ?? 1
-        images.setObject(Entry(image), forKey: id as NSUUID, cost: cost)
-    }
-
-    /// The person's or VNDB's cover, else the game's own menu art.
-    nonisolated private static func read(own: URL, base: URL) -> NSImage? {
-        let file = FileManager.default.fileExists(atPath: own.path) ? own : GameLocator.cover(base: base)
-        return file.flatMap { Thumbnails.decode(url: $0, maxPixels: 720) }.map { NSImage(cgImage: $0, size: NSSize(width: $0.width, height: $0.height)) }
+    /// RenChan's cover, else the game's own menu art, looked for and decoded off the main thread.
+    static func source(_ game: Game) -> PictureSource {
+        let own = Store.coverBase(game.id), base = game.baseURL
+        return PictureSource(id: "cover-\(game.id.uuidString)") { pixels in
+            (Covers.find(base: own) ?? GameLocator.cover(base: base)).flatMap { Pictures.thumbnail(at: $0, maxPixels: pixels) }
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 import AppKit
+import PictureKitUI
 import RenChanKit
 import SwiftUI
 
@@ -271,14 +272,11 @@ private struct PersistentRow: View {
 
 private struct SaveRow: View {
     let save: SaveFile
-    @State private var thumbnail: NSImage?
 
     var body: some View {
         HStack(spacing: Space.md) {
-            Group {
-                if let thumbnail { Image(nsImage: thumbnail).resizable().aspectRatio(contentMode: .fill) } else { Color.secondary.opacity(0.15) }
-            }
-            .frame(width: 64, height: 36)
+            AsyncPicture(screenshot, contentMode: .fill, maxPixels: 128)
+                .frame(width: 64, height: 36)
             .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
                 Text(save.name.isEmpty ? save.place : save.name).lineLimit(1)
@@ -288,10 +286,14 @@ private struct SaveRow: View {
             }
         }
         .padding(.vertical, 2)
-        .task(id: save.id) {
-            let save = save
-            let data = await Task.detached(priority: .utility) { save.screenshot() }.value
-            thumbnail = data.flatMap(NSImage.init(data:))
+    }
+
+    /// The screenshot inside the save, read when the row shows; a save written again is a new picture.
+    private var screenshot: PictureSource {
+        let save = save
+        return .data(id: "\(save.id)@\(save.date.timeIntervalSince1970)") {
+            guard let data = save.screenshot() else { throw CocoaError(.fileReadCorruptFile) }
+            return data
         }
     }
 }
