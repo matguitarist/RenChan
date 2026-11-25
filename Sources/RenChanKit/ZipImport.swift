@@ -1,10 +1,11 @@
 import Foundation
+import ProcessKit
 
 /// Unpacks a game's zip into a folder RenChan owns, refusing entries that escape it (Zip Slip).
 public enum ZipImport {
     /// Total uncompressed size, to show before unpacking.
     public static func size(of zip: URL) -> Int64? {
-        guard let out = try? Command.run("/usr/bin/zipinfo", ["-t", zip.path]) else { return nil }
+        guard let out = try? Shell.runSync("/usr/bin/zipinfo", ["-t", zip.path]).check().text else { return nil }
         // "123 files, 4567890 bytes uncompressed, ..."
         let words = out.split(separator: " ")
         guard let index = words.firstIndex(where: { $0.hasPrefix("bytes") }), index > 0 else { return nil }
@@ -27,7 +28,7 @@ public enum ZipImport {
     public static func entries(of zip: URL) throws(LocateError) -> [String] {
         try check(zip)
         do {
-            return try Command.run("/usr/bin/zipinfo", ["-1", zip.path]).split(separator: "\n").map(String.init)
+            return try Shell.runSync("/usr/bin/zipinfo", ["-1", zip.path]).check().lines
         } catch {
             throw .unzipFailed(error.localizedDescription)
         }
@@ -61,36 +62,10 @@ public enum ZipImport {
         if let bad = unsafeEntry(names) { throw .unsafeZip(bad) }
         do {
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try Command.run("/usr/bin/ditto", ["-x", "-k", "--noqtn", zip.path, folder.path])
+            try Shell.runSync("/usr/bin/ditto", ["-x", "-k", "--noqtn", zip.path, folder.path]).check()
         } catch {
             try? FileManager.default.removeItem(at: folder)
             throw .unzipFailed(error.localizedDescription)
         }
-    }
-}
-
-struct CommandError: LocalizedError {
-    let output: String
-    var errorDescription: String? { output.trimmingCharacters(in: .whitespacesAndNewlines) }
-}
-
-public enum Command {
-    /// Runs a command, waits for it, and returns its output; throws with the output when it fails.
-    /// It blocks: call it off the main thread for anything slow.
-    @discardableResult
-    public static func run(_ tool: String, _ arguments: [String], in directory: URL? = nil) throws -> String {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: tool)
-        process.arguments = arguments
-        process.currentDirectoryURL = directory
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-        try process.run()
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        let text = String(decoding: data, as: UTF8.self)
-        guard process.terminationStatus == 0 else { throw CommandError(output: text.isEmpty ? "\(tool) exited \(process.terminationStatus)" : text) }
-        return text
     }
 }

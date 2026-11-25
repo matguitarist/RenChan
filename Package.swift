@@ -10,22 +10,27 @@ let package = Package(
         .package(url: "https://github.com/matguitarist/LogKit", from: "0.6.0"),
         // Covers as small HEIC, thumbnails and their cache, shared by my apps.
         .package(url: "https://github.com/matguitarist/PictureKit", from: "0.2.0"),
+        // Runs ditto, tar, zip and the like without blocking or hanging, shared by my Mac apps.
+        .package(url: "https://github.com/matguitarist/ProcessKit", from: "0.1.1"),
     ],
     targets: [
         // Ren'Py detection, runtimes, launching and mods, with no SwiftUI, so tests run without the app.
         .target(name: "RenChanKit", dependencies: [.product(name: "LogKit", package: "LogKit"),
-                                                  .product(name: "PictureKit", package: "PictureKit")]),
+                                                  .product(name: "PictureKit", package: "PictureKit"),
+                                                  .product(name: "ProcessKit", package: "ProcessKit")]),
         .executableTarget(
             name: "RenChan",
             dependencies: ["RenChanKit", .product(name: "Sparkle", package: "Sparkle"),
                            .product(name: "LogKitUI", package: "LogKit"),
-                           .product(name: "PictureKitUI", package: "PictureKit")],
+                           .product(name: "PictureKitUI", package: "PictureKit"),
+                           .product(name: "ProcessKit", package: "ProcessKit")],
             // App code runs on the main thread unless you say otherwise.
             swiftSettings: [.defaultIsolation(MainActor.self)],
             // Sparkle.framework sits in Contents/Frameworks (build.sh copies it).
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),
         .testTarget(name: "RenChanKitTests", dependencies: ["RenChanKit", .product(name: "LogKit", package: "LogKit"),
-                                                           .product(name: "PictureKit", package: "PictureKit")]),
+                                                           .product(name: "PictureKit", package: "PictureKit"),
+                                                           .product(name: "ProcessKit", package: "ProcessKit")]),
     ]
 )

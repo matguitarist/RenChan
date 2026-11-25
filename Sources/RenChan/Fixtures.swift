@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import ProcessKit
 import RenChanKit
 
 /// Tiny Ren'Py games and pretend runtimes in a test folder, for seed data and the self-test. Never used on a real library.
@@ -106,7 +107,7 @@ extension Fixtures {
             .write(to: work.appending(path: "json"), atomically: true, encoding: .utf8)
         try? "8.6.1".write(to: work.appending(path: "renpy_version"), atomically: true, encoding: .utf8)
         try? "pretend".write(to: work.appending(path: "log"), atomically: true, encoding: .utf8)
-        _ = try? Command.run("/usr/bin/zip", ["-q", folder.appending(path: "\(slot)-LT1.save").path, "screenshot.png", "extra_info", "json", "renpy_version", "log"], in: work)
+        _ = try? Shell.runSync("/usr/bin/zip", ["-q", folder.appending(path: "\(slot)-LT1.save").path, "screenshot.png", "extra_info", "json", "renpy_version", "log"], in: work)
         try? FileManager.default.removeItem(at: work)
     }
 

@@ -1,4 +1,5 @@
 import Foundation
+import ProcessKit
 
 /// An official Ren'Py SDK, used to play games. Downloaded from renpy.org into the runtimes folder.
 public struct Runtime: Identifiable, Hashable, Sendable {
@@ -92,6 +93,17 @@ public enum RuntimeCatalog {
 public struct RuntimeStore: Sendable {
     public let folder: URL
 
+    public enum Failure: Error, LocalizedError, Equatable, Sendable {
+        /// The SDK archive unpacked, but none of its lib folders runs on a Mac.
+        case noMacRuntime(version: String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .noMacRuntime(let version): "The Ren'Py \(version) download has no Mac runtime in it."
+            }
+        }
+    }
+
     public init(folder: URL) {
         self.folder = folder
     }
@@ -114,11 +126,11 @@ public struct RuntimeStore: Sendable {
         try? FileManager.default.removeItem(at: staging)
         try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: staging) }
-        try Command.run("/usr/bin/tar", ["-xjf", archive.path, "-C", staging.path])
+        try Shell.runSync("/usr/bin/tar", ["-xjf", archive.path, "-C", staging.path]).check()
         let inside = try FileManager.default.contentsOfDirectory(at: staging, includingPropertiesForKeys: nil)
             .first { !$0.lastPathComponent.hasPrefix(".") }
         guard let inside, RuntimeCatalog.python(in: inside) != nil else {
-            throw CommandError(output: "The Ren'Py \(version) download has no Mac runtime in it.")
+            throw Failure.noMacRuntime(version: version)
         }
         let target = folder.appending(path: version, directoryHint: .isDirectory)
         try? FileManager.default.removeItem(at: target)

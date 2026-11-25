@@ -1,4 +1,5 @@
 import Foundation
+import ProcessKit
 import Testing
 @testable import RenChanKit
 
@@ -56,12 +57,7 @@ import Testing
     let root = Fixture.folder()
     Fixture.game(at: root.appending(path: "src/Zipped-1.0-pc"))
     let zip = root.appending(path: "game.zip")
-    let zipper = Process()
-    zipper.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
-    zipper.arguments = ["-qr", zip.path, "Zipped-1.0-pc"]
-    zipper.currentDirectoryURL = root.appending(path: "src")
-    try zipper.run()
-    zipper.waitUntilExit()
+    try Shell.runSync("/usr/bin/zip", ["-qr", zip.path, "Zipped-1.0-pc"], in: root.appending(path: "src")).check()
     let target = root.appending(path: "unpacked")
     try ZipImport.unpack(zip, into: target)
     let found = try GameLocator.locate(target)

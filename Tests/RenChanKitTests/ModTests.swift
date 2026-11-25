@@ -1,13 +1,10 @@
 import Foundation
+import ProcessKit
 import Testing
 @testable import RenChanKit
 
 private func zip(_ folder: URL, to zip: URL) throws {
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
-    process.arguments = ["-c", "-k", "--keepParent", folder.path, zip.path]
-    try process.run()
-    process.waitUntilExit()
+    try Shell.runSync("/usr/bin/ditto", ["-c", "-k", "--keepParent", folder.path, zip.path]).check()
 }
 
 @Test func aZipsGameFolderIsFoundAtAnyDepth() throws {

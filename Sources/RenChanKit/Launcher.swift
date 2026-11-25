@@ -7,6 +7,17 @@ public enum WorkingCopy {
         case reused, cloned, copied
     }
 
+    public enum Failure: Error, LocalizedError, Equatable, Sendable {
+        /// The base folder can't be cloned there, and a full copy wasn't allowed or can't help.
+        case cannotClone(path: String, reason: String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .cannotClone(let path, let reason): "Couldn't clone \(path): \(reason)"
+            }
+        }
+    }
+
     /// True when both folders are on one volume, where a clone costs no space.
     public static func sameVolume(_ a: URL, _ b: URL) -> Bool {
         func volume(_ url: URL) -> NSObject? {
@@ -27,7 +38,7 @@ public enum WorkingCopy {
         if clonefile(base.path, copy.path, 0) == 0 { return .cloned }
         let reason = errno
         guard allowFullCopy, reason == EXDEV || reason == ENOTSUP else {
-            throw CommandError(output: "Couldn't clone \(base.path): \(String(cString: strerror(reason)))")
+            throw Failure.cannotClone(path: base.path, reason: String(cString: strerror(reason)))
         }
         try FileManager.default.copyItem(at: base, to: copy)
         return .copied
@@ -39,6 +50,17 @@ public enum WorkingCopy {
 
 /// One run of a game on a runtime: the process, its output file, and what it left when it quit.
 public struct LaunchPlan: Sendable {
+    public enum Failure: Error, LocalizedError, Equatable, Sendable {
+        /// The runtime has no Python this Mac runs.
+        case noMacRuntime(version: String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .noMacRuntime(let version): "Ren'Py \(version) has no Mac runtime."
+            }
+        }
+    }
+
     public let runtime: Runtime
     public let copy: URL
     public let outputFile: URL
@@ -58,7 +80,7 @@ public struct LaunchPlan: Sendable {
     /// `lib/<folder>/python -EO renpy.py <copy>`, as renutil does. Its output goes to outputFile.
     public func makeProcess() throws -> Process {
         guard let python = runtime.python else {
-            throw CommandError(output: "Ren'Py \(runtime.version) has no Mac runtime.")
+            throw Failure.noMacRuntime(version: runtime.version)
         }
         let process = Process()
         process.executableURL = python

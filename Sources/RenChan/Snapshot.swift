@@ -1,5 +1,6 @@
 import AppKit
 import IOKit.pwr_mgt
+import ProcessKit
 import RenChanKit
 import SwiftUI
 
@@ -190,7 +191,7 @@ enum Snapshot {
         try? FileManager.default.removeItem(atPath: path)
         // The first capture of a run sometimes misses the window. Try three times.
         for _ in 1...3 {
-            _ = try? Command.run("/usr/sbin/screencapture", ["-x", "-o", "-l", String(window.windowNumber), path])
+            _ = try? Shell.runSync("/usr/sbin/screencapture", ["-x", "-o", "-l", String(window.windowNumber), path])
             if FileManager.default.fileExists(atPath: path) {
                 print("SNAPSHOT \(path)")
                 return

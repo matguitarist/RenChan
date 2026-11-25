@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import ProcessKit
 import RenChanKit
 
 /// The self-test's checks from M3 on, split out of SelfTest.swift. Each takes what the earlier checks made.
@@ -106,7 +107,7 @@ extension SelfTest {
         // S-034 Import from F95Checker: games on this Mac are listed with their thread; the database isn't changed
         Fixtures.game("Night_Ferry-0.3-pc", in: shelf, files: ["renpy/__init__.py": ""])
         let db = shelf.appending(path: "db.sqlite3")
-        _ = try? Command.run("/usr/bin/sqlite3", [db.path, """
+        _ = try? Shell.runSync("/usr/bin/sqlite3", [db.path, """
             CREATE TABLE games (id INTEGER PRIMARY KEY, name TEXT, version TEXT, executables TEXT);
             INSERT INTO games VALUES (4242, 'Night Ferry', 'v0.3', '["\(shelf.path)/Night_Ferry-0.3-pc/NightFerry.exe"]');
             INSERT INTO games VALUES (77, 'Far Away', '1.0', '["/Volumes/Nowhere/FarAway/FarAway.exe"]');

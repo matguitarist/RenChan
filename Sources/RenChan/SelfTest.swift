@@ -1,6 +1,7 @@
-import PDFKit
 import AppKit
+import PDFKit
 import PictureKitUI
+import ProcessKit
 import RenChanKit
 
 /// Self-test for agents: drives the app model on a library in /tmp,
@@ -82,7 +83,7 @@ enum SelfTest {
         let zipSource = root.appending(path: "zipsrc", directoryHint: .isDirectory)
         Fixtures.game("Zipped-1.0-pc", in: zipSource, files: ["game/options.rpy": Fixtures.options(name: "Zipped", saves: "zipped-1")])
         let zip = root.appending(path: "Zipped-1.0-pc.zip")
-        _ = try? Command.run("/usr/bin/zip", ["-qr", zip.path, "Zipped-1.0-pc"], in: zipSource)
+        _ = try? Shell.runSync("/usr/bin/zip", ["-qr", zip.path, "Zipped-1.0-pc"], in: zipSource)
         model.add([zip])
         check("a zip asks before unpacking, with its size", model.confirmZip?.url == zip && (model.confirmZip?.size ?? 0) > 0)
         let fromZip = await model.addZip(zip)
@@ -322,7 +323,7 @@ enum SelfTest {
             let oldBase = URL(fileURLWithPath: zipped.basePath)
             Fixtures.game("Zipped-2.0-pc", in: zipSource, files: ["game/options.rpy": Fixtures.options(name: "Zipped", saves: "zipped-1")])
             let zip2 = root.appending(path: "Zipped-2.0-pc.zip")
-            _ = try? Command.run("/usr/bin/zip", ["-qr", zip2.path, "Zipped-2.0-pc"], in: zipSource)
+            _ = try? Shell.runSync("/usr/bin/zip", ["-qr", zip2.path, "Zipped-2.0-pc"], in: zipSource)
             model.prepareUpdate(zipped.id, from: zip2)
             if let request = model.confirmUpdate { await model.applyUpdate(request) }
             let now = model.game(zipped.id)

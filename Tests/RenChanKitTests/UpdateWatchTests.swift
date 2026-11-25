@@ -1,4 +1,5 @@
 import Foundation
+import ProcessKit
 import Testing
 @testable import RenChanKit
 
@@ -68,11 +69,7 @@ import Testing
     INSERT INTO games VALUES (777, 'Starlit Harbor', '1.2', '["/Applications/Starlit Harbor.app/Contents/MacOS/Starlit Harbor"]', 0);
     INSERT INTO games VALUES (9, 'Not Here', '', '[]', 0);
     """
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: "/usr/bin/sqlite3")
-    process.arguments = [db.path, sql]
-    try process.run()
-    process.waitUntilExit()
+    try Shell.runSync("/usr/bin/sqlite3", [db.path, sql]).check()
     let before = try Data(contentsOf: db)
     let entries = try F95Checker.read(db).sorted { $0.threadID < $1.threadID }
     #expect(entries.map(\.name) == ["Not Here", "Starlit Harbor", "Eternum"])

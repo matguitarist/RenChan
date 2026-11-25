@@ -1,5 +1,6 @@
 import Foundation
 import ImageIO
+import ProcessKit
 import Testing
 @testable import RenChanKit
 
@@ -20,12 +21,8 @@ struct Live {
         }
         let runtime = try #require(Self.store.runtime(version))
         #expect(runtime.isUniversal)
-        let python = Process()
-        python.executableURL = runtime.python
-        python.arguments = ["-EO", "-c", "import sys; print(sys.version)"]
-        try python.run()
-        python.waitUntilExit()
-        #expect(python.terminationStatus == 0)
+        let python = try #require(runtime.python)
+        #expect(try await Shell.run(python.path, ["-EO", "-c", "import sys; print(sys.version)"]).succeeded)
     }
 
     /// S-010: three known Ren'Py games are found by title, first.
@@ -451,12 +448,7 @@ struct Live {
             out.close()
             """
         let python = try #require(Self.store.runtime(RuntimeCatalog.python3)?.python)
-        let make = Process()
-        make.executableURL = python
-        make.arguments = ["-I", "-c", maker, raw.path, copy.appending(path: "game/archive.rpa").path]
-        try make.run()
-        make.waitUntilExit()
-        #expect(make.terminationStatus == 0)
+        #expect(try await Shell.run(python.path, ["-I", "-c", maker, raw.path, copy.appending(path: "game/archive.rpa").path]).succeeded)
         let home = root.appending(path: "home")
         try SaveTool.install(copy: copy)
         let out = root.appending(path: "out.json")

@@ -1,4 +1,5 @@
 import Foundation
+import ProcessKit
 import Testing
 @testable import RenChanKit
 
@@ -8,12 +9,7 @@ private func makeSave(_ url: URL, json: String, name: String) throws {
     try name.write(to: work.appending(path: "extra_info"), atomically: true, encoding: .utf8)
     try json.write(to: work.appending(path: "json"), atomically: true, encoding: .utf8)
     try String(repeating: "pickled log ", count: 400).write(to: work.appending(path: "log"), atomically: true, encoding: .utf8)
-    let zip = Process()
-    zip.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
-    zip.currentDirectoryURL = work
-    zip.arguments = ["-q", url.path, "screenshot.png", "extra_info", "json", "log"]
-    try zip.run()
-    zip.waitUntilExit()
+    try Shell.runSync("/usr/bin/zip", ["-q", url.path, "screenshot.png", "extra_info", "json", "log"], in: work).check()
 }
 
 @Test func savesAreListedWithTheirDetails() throws {
