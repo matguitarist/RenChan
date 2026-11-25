@@ -52,3 +52,17 @@ private func makeSave(_ url: URL, json: String, name: String) throws {
     #expect(SaveTool.setArguments(slot: "1-1", changes: URL(fileURLWithPath: "/c.json"), output: URL(fileURLWithPath: "/o.json"))
             == ["renchan_saves", "set", "1-1", "/c.json", "/o.json"])
 }
+
+
+@Test func damagedSavesAreRejectedNotCrashed() {
+    // A central directory entry whose name runs past the end of the file.
+    var cut = Data(count: 46)
+    cut.replaceSubrange(0..<4, with: [0x50, 0x4b, 0x01, 0x02])
+    cut[28] = 200
+    var end = Data(count: 22)
+    end.replaceSubrange(0..<4, with: [0x50, 0x4b, 0x05, 0x06])
+    end[10] = 1
+    #expect(throws: (any Error).self) { try ZipReader(data: cut + end) }
+    // A deflated entry with no bytes left.
+    #expect(ZipReader.inflate(Data(), size: 10) == nil)
+}

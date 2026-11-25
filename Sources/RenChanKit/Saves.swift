@@ -31,6 +31,8 @@ public struct ZipReader {
             let method = data.u16(p + 10)
             let compressed = Int(data.u32(p + 20)), size = Int(data.u32(p + 24))
             let nameLength = Int(data.u16(p + 28)), extra = Int(data.u16(p + 30)), comment = Int(data.u16(p + 32))
+            // A save cut short while Ren'Py writes it can claim a name past the end of the file.
+            guard p + 46 + nameLength <= data.count else { throw CocoaError(.fileReadCorruptFile) }
             let offset = Int(data.u32(p + 42))
             let name = String(decoding: data[data.startIndex + p + 46 ..< data.startIndex + p + 46 + nameLength], as: UTF8.self)
             found.append(Entry(name: name, method: method, compressedSize: compressed, size: size, offset: offset))
@@ -56,9 +58,10 @@ public struct ZipReader {
         guard size > 0 else { return Data() }
         var output = Data(count: size)
         let written = output.withUnsafeMutableBytes { out in
-            input.withUnsafeBytes { inp in
-                compression_decode_buffer(out.bindMemory(to: UInt8.self).baseAddress!, size,
-                                          inp.bindMemory(to: UInt8.self).baseAddress!, input.count, nil, COMPRESSION_ZLIB)
+            input.withUnsafeBytes { inp -> Int in
+                guard let dst = out.bindMemory(to: UInt8.self).baseAddress,
+                      let src = inp.bindMemory(to: UInt8.self).baseAddress else { return 0 }
+                return compression_decode_buffer(dst, size, src, input.count, nil, COMPRESSION_ZLIB)
             }
         }
         return written == size ? output : nil

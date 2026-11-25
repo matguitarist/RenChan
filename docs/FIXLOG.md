@@ -1,5 +1,11 @@
 # RenChan — Fix log
 
+## 2026-11-24 A damaged save could close RenChan
+
+The save reader cut each file name out of a save's zip directory without checking that the name ended inside the file, and it force-unwrapped the input of an empty deflated entry. A save cut short (Ren'Py still writing it, a full disk) could end the app as soon as the Saves window opened, since the window reads every save. The reader now rejects a name past the end of the file and returns nothing for an empty entry.
+Test: `damagedSavesAreRejectedNotCrashed`.
+Rule: a parser of files on disk checks every length it reads before it uses it; a file can always be cut short.
+
 ## 2026-11-23 Eden's gallery lists couldn't be changed
 
 Eden keeps its gallery in persistent lists, `renders` (45) and `scenes` (15), of dictionaries such as `{'id': 'PizzaBoxRender', 'unlocked': False, 'name': 'Hawaiian Dream'}`. The editor showed each list as one read-only value ("RevertableList (45)"), so nothing could be unlocked. The save tool now opens lists and dictionaries of plain values into paths like `renders[0].unlocked`, notes the item's name, and writes a change into the same object.
