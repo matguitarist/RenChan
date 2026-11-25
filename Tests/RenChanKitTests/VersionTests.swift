@@ -53,6 +53,7 @@ func detectsEachVersionLine(files: [String: String], version: String, python: Py
 @Test func downloadFailuresKeepRenChansOwnWords() {
     let url = RuntimeCatalog.archiveURL("9.9.9")
     #expect(RuntimeDownload.failure(.http(status: 404, url: url)) as? RuntimeDownload.Failure == .http(404))
+    #expect(RuntimeDownload.failure(.rateLimited(until: nil, status: 403)) as? RuntimeDownload.Failure == .http(403))
     #expect(RuntimeDownload.failure(.checksumMismatch(expected: "aa", actual: "bb")) as? RuntimeDownload.Failure
             == .checksumMismatch(expected: "aa", actual: "bb"))
 }

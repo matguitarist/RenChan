@@ -1,5 +1,6 @@
 import AppKit
 import PictureKitUI
+import ProcessKit
 import RenChanKit
 import SwiftUI
 
@@ -51,13 +52,10 @@ extension AppModel {
         try? FileManager.default.removeItem(at: report)
         let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: Store.gameFolder(game.id).appending(path: "save-tool.log"),
                               environment: environment, arguments: arguments(report))
-        let process = try plan.makeProcess()
-        try await withCheckedThrowingContinuation { (done: CheckedContinuation<Void, Error>) in
-            process.terminationHandler = { _ in done.resume() }
-            do { try process.run() } catch { process.terminationHandler = nil; done.resume(throwing: error) }
-        }
+        // Awaited, not run: closing the window mustn't stop Ren'Py halfway through writing a save.
+        let output = try await plan.start().wait()
         guard let result = try? SaveTool.readReport(report) else {
-            let tail = LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: process.terminationStatus, started: .distantPast).outputTail
+            let tail = LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: LaunchPlan.exitCode(of: output), started: .distantPast).outputTail
             log.post(.error, "The save tool failed for \(game.title): \(tail.suffix(400))", source: "Saves")
             throw SaveToolError(String(localized: "Ren'Py couldn't read this save. The Log has what it said."))
         }

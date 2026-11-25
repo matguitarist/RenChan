@@ -1,6 +1,7 @@
 import AppKit
 import FileKit
 import Foundation
+import ProcessKit
 import RenChanKit
 
 /// Getting a runtime and playing a game (S-003, S-004, S-005).
@@ -69,14 +70,12 @@ extension AppModel {
             if Store.isOverridden { environment["HOME"] = Store.renpyHome.path }
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: Store.gameFolder(game.id).appending(path: "run.log"),
                                   environment: environment)
-            let process = try plan.makeProcess()
             let started = Date()
             let id = game.id
-            process.terminationHandler = { @Sendable finished in
-                let status = finished.terminationStatus
+            let process = try plan.start { output in
+                let status = LaunchPlan.exitCode(of: output)
                 Task { @MainActor in self.finished(id, status: status, plan: plan, started: started) }
             }
-            try process.run()
             processes[game.id] = process
             runningCopies[game.id] = copy
             playing.insert(game.id)
@@ -149,7 +148,7 @@ extension AppModel {
     }
 
     func stop(_ id: Game.ID) {
-        processes[id]?.terminate()
+        processes[id]?.stop()
     }
 
     /// From the error sheet: play again on the game's exact Ren'Py version.

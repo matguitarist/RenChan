@@ -83,11 +83,10 @@ struct Live {
             #expect(try FilterLoader.install(setting, runtime: version, copy: copy, custom: [sepia]) == .layerTransforms)
             let home = root.appending(path: "home")
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"), environment: ["HOME": home.path])
-            let process = try plan.makeProcess()
-            try process.run()
+            let process = try plan.start()
             let deadline = Date().addingTimeInterval(60)
             while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.2) }
-            if process.isRunning { process.terminate() }
+            if process.isRunning { process.stop() }
             let log = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
             let source = try #require(CGImageSourceCreateWithURL(shot as CFURL, nil), "no screenshot; log: \(log.suffix(1500))")
             let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
@@ -171,8 +170,7 @@ struct Live {
             #expect(CGImageDestinationFinalize(destination))
             try FilterLoader.install(setting, runtime: version, copy: copy)
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "\(name).log"), environment: ["HOME": root.appending(path: "home").path])
-            let process = try plan.makeProcess()
-            try process.run()
+            let process = try plan.start()
             let deadline = Date().addingTimeInterval(60)
             while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.2) }
             let source = try #require(CGImageSourceCreateWithURL(shot as CFURL, nil))
@@ -226,8 +224,7 @@ struct Live {
         let home = root.appending(path: "home")
         let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"),
                               environment: ModInstaller.environment(modded: true, saves: saves).merging(["HOME": home.path]) { a, _ in a })
-        let process = try plan.makeProcess()
-        try process.run()
+        let process = try plan.start()
         let deadline = Date().addingTimeInterval(60)
         while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
         let log = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
@@ -270,8 +267,7 @@ struct Live {
         try DevToolsLoader.install(DevTools(console: true, fastSkip: true), copy: copy)
         let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"),
                               environment: ["HOME": root.appending(path: "home").path])
-        let process = try plan.makeProcess()
-        try process.run()
+        let process = try plan.start()
         let deadline = Date().addingTimeInterval(60)
         while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
         let log = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
@@ -327,11 +323,10 @@ struct Live {
         func run(_ arguments: [String] = []) async throws -> String {
             let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run-\(UUID()).log"),
                                   environment: ["HOME": home.path], arguments: arguments)
-            let process = try plan.makeProcess()
-            try process.run()
+            let process = try plan.start()
             let deadline = Date().addingTimeInterval(90)
             while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
-            if process.isRunning { process.terminate() }
+            if process.isRunning { process.stop() }
             return (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
         }
         // Play once: the game saves in slot 1-1 and quits.
@@ -371,11 +366,10 @@ struct Live {
     static func runGame(_ runtime: Runtime, copy: URL, home: URL, arguments: [String] = []) async throws -> String {
         let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: copy.deletingLastPathComponent().appending(path: "run-\(UUID()).log"),
                               environment: ["HOME": home.path], arguments: arguments)
-        let process = try plan.makeProcess()
-        try process.run()
+        let process = try plan.start()
         let deadline = Date().addingTimeInterval(90)
         while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
-        if process.isRunning { process.terminate() }
+        if process.isRunning { process.stop() }
         return (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
     }
 
@@ -538,12 +532,11 @@ struct Live {
         let home = root.appending(path: "home")
         try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
         let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"), environment: ["HOME": home.path])
-        let process = try plan.makeProcess()
-        try process.run()
+        let process = try plan.start()
         try await Task.sleep(for: .seconds(6))
         let alive = process.isRunning
-        process.terminate()
-        process.waitUntilExit()
+        process.stop()
+        _ = await process.wait()
         let output = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
         #expect(alive, "Ren'Py quit early: \(output.suffix(2000))")
         #expect(FileManager.default.fileExists(atPath: home.appending(path: "Library/RenPy").path))

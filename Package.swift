@@ -9,17 +9,17 @@ let package = Package(
         // The Log page's viewer, shared by my Mac apps.
         .package(url: "https://github.com/matguitarist/LogKit", from: "0.6.0"),
         // Covers as small HEIC, thumbnails and their cache, shared by my apps.
-        .package(url: "https://github.com/matguitarist/PictureKit", from: "0.2.0"),
+        .package(url: "https://github.com/matguitarist/PictureKit", from: "0.2.1"),
         // Runs ditto, tar, zip and the like without blocking or hanging, shared by my Mac apps.
-        .package(url: "https://github.com/matguitarist/ProcessKit", from: "0.1.1"),
+        .package(url: "https://github.com/matguitarist/ProcessKit", from: "0.2.1"),
         // Zips with Zip Slip checks, unpacked beside the target and moved in whole, shared by my Mac apps.
-        .package(url: "https://github.com/matguitarist/ArchiveKit", from: "0.1.1"),
+        .package(url: "https://github.com/matguitarist/ArchiveKit", from: "0.2.0"),
         // Downloads with progress, retries, resume and a SHA-256 check, shared by my apps.
-        .package(url: "https://github.com/matguitarist/DownloadKit", from: "0.1.0"),
+        .package(url: "https://github.com/matguitarist/DownloadKit", from: "0.2.0"),
         // Clones, folder sizes and a JSON file saved once changes settle, shared by my apps.
-        .package(url: "https://github.com/matguitarist/FileKit", from: "0.1.0"),
+        .package(url: "https://github.com/matguitarist/FileKit", from: "0.2.0"),
         // The self-test's and snapshots' plumbing (the /tmp guard, PASS and FAIL lines, captures), shared by my Mac apps.
-        .package(url: "https://github.com/matguitarist/AppTestKit", from: "0.1.0"),
+        .package(url: "https://github.com/matguitarist/AppTestKit", from: "0.2.0"),
     ],
     targets: [
         // Ren'Py detection, runtimes, launching and mods, with no SwiftUI, so tests run without the app.

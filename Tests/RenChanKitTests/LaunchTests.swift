@@ -1,4 +1,5 @@
 import Foundation
+import ProcessKit
 import Testing
 @testable import RenChanKit
 
@@ -16,6 +17,9 @@ func fakeRuntime(in root: URL, version: String = "8.6.1", folder: String = "py3-
     if grep -q crash "$base/game/script.rpy"; then
       printf 'Traceback:\\n  File "game/script.rpy", line 2\\nException: crash\\n' > "$base/traceback.txt"
       exit 1
+    fi
+    if grep -q hang "$base/game/script.rpy"; then
+      sleep 30
     fi
     echo "Ren'Py ran $base"
     """
@@ -46,10 +50,8 @@ func digest(_ folder: URL) -> [String: Date] {
     #expect(runtime.isUniversal)
     let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"))
     let started = Date()
-    let process = try plan.makeProcess()
-    try process.run()
-    process.waitUntilExit()
-    let result = LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: process.terminationStatus, started: started)
+    let output = try plan.start().waitSync()
+    let result = LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: LaunchPlan.exitCode(of: output), started: started)
     #expect(!result.failed)
     #expect(result.outputTail.contains("Ren'Py ran"))
     #expect(FileManager.default.fileExists(atPath: copy.appending(path: "game/script.rpyc").path))
@@ -64,12 +66,26 @@ func digest(_ folder: URL) -> [String: Date] {
     try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: false)
     let plan = LaunchPlan(runtime: fakeRuntime(in: root), copy: copy, outputFile: root.appending(path: "run.log"))
     let started = Date()
-    let process = try plan.makeProcess()
-    try process.run()
-    process.waitUntilExit()
-    let result = LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: process.terminationStatus, started: started)
+    let output = try plan.start().waitSync()
+    let result = LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: LaunchPlan.exitCode(of: output), started: started)
     #expect(result.failed)
+    #expect(result.exitCode == 1)
     #expect(result.traceback?.contains("game/script.rpy\", line 2") == true)
+}
+
+@Test func aStoppedGameRecordsTheSignalAsBefore() throws {
+    // Process gave 15 for a game ended by SIGTERM; the compatibility report keeps that code.
+    let root = Fixture.folder()
+    let original = Fixture.game(at: root.appending(path: "Slow"), files: ["game/script.rpy": "label start:\n    $ hang()\n"])
+    let copy = root.appending(path: "play")
+    try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: false)
+    let plan = LaunchPlan(runtime: fakeRuntime(in: root), copy: copy, outputFile: root.appending(path: "run.log"))
+    let game = try plan.start()
+    Thread.sleep(forTimeInterval: 0.3)
+    #expect(game.isRunning)
+    game.stop()
+    let output = game.waitSync()
+    #expect(LaunchPlan.exitCode(of: output) == SIGTERM)
 }
 
 @Test func runtimesAreListedWithTheirPython() {

@@ -1,6 +1,7 @@
 import Darwin
 import FileKit
 import Foundation
+import ProcessKit
 
 /// The copy of a game RenChan plays: an APFS clone of the game's base folder, so the original is never written to.
 public enum WorkingCopy {
@@ -30,8 +31,8 @@ public enum WorkingCopy {
             case .cloned: return .cloned
             case .copied: return .copied
             }
-        } catch FileClone.Failure.cannotClone(let code) {
-            throw Failure.cannotClone(path: base.path, reason: String(cString: strerror(code.rawValue)))
+        } catch let failure as FileClone.Failure {
+            throw Failure.cannotClone(path: base.path, reason: failure.reason)
         } catch let error as POSIXError {
             throw Failure.cannotClone(path: base.path, reason: String(cString: strerror(error.code.rawValue)))
         }
@@ -67,24 +68,21 @@ public struct LaunchPlan: Sendable {
         self.arguments = arguments
     }
 
-    /// `lib/<folder>/python -EO renpy.py <copy>`, as renutil does. Its output goes to outputFile.
-    public func makeProcess() throws -> Process {
+    /// Starts `lib/<folder>/python -EO renpy.py <copy>`, as renutil does, in its own process group, so `stop()`
+    /// reaches what Ren'Py started. Its output and errors go to outputFile. `onEnd` gets the output when it quits.
+    public func start(onEnd: (@Sendable (Shell.Output) -> Void)? = nil) throws -> Shell.RunningCommand {
         guard let python = runtime.python else {
             throw Failure.noMacRuntime(version: runtime.version)
         }
-        let process = Process()
-        process.executableURL = python
-        process.arguments = ["-EO", runtime.renpyScript.path, copy.path] + arguments
-        process.currentDirectoryURL = copy
-        var env = ProcessInfo.processInfo.environment
-        env["RENPY_LOG_TO_STDOUT"] = "1"
-        for (key, value) in environment { env[key] = value }
-        process.environment = env
-        FileManager.default.createFile(atPath: outputFile.path, contents: nil)
-        let handle = try FileHandle(forWritingTo: outputFile)
-        process.standardOutput = handle
-        process.standardError = handle
-        return process
+        let options = Shell.Options(directory: copy, environment: ["RENPY_LOG_TO_STDOUT": "1"].merging(environment) { $1 },
+                                    stdout: .file(outputFile), stderr: .merged)
+        return try Shell.start(python.path, ["-EO", runtime.renpyScript.path, copy.path] + arguments, options: options, onEnd: onEnd)
+    }
+
+    /// The exit code the compatibility report records: the code Ren'Py exited with, or the signal that ended it
+    /// (15 for a stop), as Process's terminationStatus gave it.
+    public static func exitCode(of output: Shell.Output) -> Int32 {
+        output.signal ?? output.status
     }
 }
 

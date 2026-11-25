@@ -4,6 +4,7 @@ import Foundation
 import LogKit
 import LogKitUI
 import Observation
+import ProcessKit
 import RenChanKit
 
 /// The app's state: the library, runtimes, what is selected and playing, and the open sheets.
@@ -37,7 +38,7 @@ final class AppModel {
     // MARK: Playing and sheets
 
     /// Games running now, with their process.
-    @ObservationIgnored var processes: [Game.ID: Process] = [:]
+    @ObservationIgnored var processes: [Game.ID: Shell.RunningCommand] = [:]
     @ObservationIgnored var downloadTask: Task<Void, Never>?
     var playing: Set<Game.ID> = [] { didSet { syncMenu() } }
     var download: DownloadState?
@@ -198,9 +199,9 @@ final class AppModel {
     }
 
     /// Writes now, on this thread: before quitting, and before reading the file again.
+    /// A save already running finishes first, so no older save can land after this one.
     func flushLibrary() {
-        guard librarySaver?.takePending() != nil else { return }
-        do { try Self.libraryFile.save(games) } catch { reportSaveError(error) }
+        do { try librarySaver?.finish() } catch { reportSaveError(error) }
     }
 
     private func reportSaveError(_ error: any Error) {

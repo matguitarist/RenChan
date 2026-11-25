@@ -1,5 +1,6 @@
 import FileKit
 import Foundation
+import ProcessKit
 import Testing
 @testable import RenChanKit
 
@@ -22,10 +23,8 @@ import Testing
     let session = root.appending(path: "session.json")
     let started = Date()
     PlaySession.begin(at: started, file: session)
-    let process = try plan.makeProcess()
-    try process.run()
-    process.waitUntilExit()
-    #expect(process.terminationStatus != 0)
+    let output = try plan.start().waitSync()
+    #expect(LaunchPlan.exitCode(of: output) != 0)
     let seconds = PlaySession.end(at: started.addingTimeInterval(42), file: session)
     #expect(abs(seconds - 42) < 0.01)
 }
