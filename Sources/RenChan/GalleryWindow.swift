@@ -193,7 +193,7 @@ private struct Thumbnail: View {
         VStack(alignment: .leading, spacing: Space.xs) {
             ZStack {
                 RoundedRectangle(cornerRadius: Radius.control, style: .continuous).fill(.quaternary)
-                AsyncPicture(picture.source, contentMode: .fill, maxPixels: 400) {
+                AsyncPicture(picture.source, contentMode: .fill) {
                     Image(systemName: "photo").foregroundStyle(.tertiary)
                 }
             }

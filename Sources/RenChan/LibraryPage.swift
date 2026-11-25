@@ -167,7 +167,7 @@ struct Cover: View {
     let game: Game
 
     var body: some View {
-        AsyncPicture(Self.source(game), contentMode: .fill, maxPixels: 720) {
+        AsyncPicture(Self.source(game), contentMode: .fill) {
             ZStack {
                 Rectangle().fill(Palette.accent.gradient.opacity(0.35))
                 Text(verbatim: String(game.title.prefix(1)).uppercased())
@@ -180,9 +180,13 @@ struct Cover: View {
     /// RenChan's cover, else the game's own menu art, looked for and decoded off the main thread.
     static func source(_ game: Game) -> PictureSource {
         let own = Store.coverBase(game.id), base = game.baseURL
-        return PictureSource(id: "cover-\(game.id.uuidString)") { pixels in
-            (Covers.find(base: own) ?? GameLocator.cover(base: base)).flatMap { Pictures.thumbnail(at: $0, maxPixels: pixels) }
-        }
+        return PictureSource(id: "cover-\(game.id.uuidString)", decodeTarget: { target in
+            guard let file = Covers.find(base: own) ?? GameLocator.cover(base: base) else { return nil }
+            switch target {
+            case .longSide(let side): return Pictures.thumbnail(at: file, maxPixels: side)
+            case .filling(let width, let height): return Pictures.thumbnail(at: file, filling: width, height)
+            }
+        })
     }
 }
 
