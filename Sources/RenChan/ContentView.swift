@@ -1,3 +1,4 @@
+import AppTestKit
 import LogKitUI
 import RenChanKit
 import SwiftUI

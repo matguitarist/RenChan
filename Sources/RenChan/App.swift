@@ -1,4 +1,5 @@
 import AppKit
+import AppTestKit
 import LogKit
 import SwiftUI
 import RenChanKit
@@ -169,17 +170,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         MainActor.assumeIsolated { AppModel.current?.flushLibrary() }
         Store.log.flushFile()
-        if SelfTest.requested { exit(SelfTest.exitCode) }
+        SelfTest.exitIfRequested()
     }
 }
 
 /// Where the library lives: ~/Library/Application Support/RenChan/library.json.
 /// With APP_STORE set (tests, snapshots, self-test), a library at that path in /tmp instead.
 enum Store {
-    /// True when APP_STORE points somewhere else (tests, snapshots, self-test).
-    static var isOverridden: Bool {
-        !(ProcessInfo.processInfo.environment["APP_STORE"] ?? "").isEmpty
-    }
+    /// True when APP_STORE points somewhere else (tests, snapshots, self-test). The shared Updater and
+    /// AppLanguage read it.
+    static var isOverridden: Bool { TestRun.isTestRun() }
 
     static var folder: URL {
         let dir = URL.applicationSupportDirectory.appending(path: "RenChan", directoryHint: .isDirectory)
@@ -187,12 +187,8 @@ enum Store {
         return dir
     }
 
-    static var url: URL {
-        if let path = ProcessInfo.processInfo.environment["APP_STORE"], !path.isEmpty {
-            return URL(fileURLWithPath: path)
-        }
-        return folder.appending(path: "library.json")
-    }
+    /// An APP_STORE outside /tmp quits at once, before anything is read or written.
+    static let url: URL = TestRun.store() ?? folder.appending(path: "library.json")
 
     /// ~/Library/Logs/RenChan/RenChan.log, or next to APP_STORE in a test run.
     static var logURL: URL {

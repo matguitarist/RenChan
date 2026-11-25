@@ -1,4 +1,5 @@
 import AppKit
+import AppTestKit
 import Foundation
 import ProcessKit
 import RenChanKit
@@ -132,7 +133,7 @@ extension Fixtures {
 /// Seed data for snapshots (APP_SEED=1 with APP_STORE): a few games, two runtimes, a morning of log.
 enum SeedData {
     static func addIfRequested(model: AppModel) async {
-        guard ProcessInfo.processInfo.environment["APP_SEED"] == "1", Store.isOverridden, model.games.isEmpty else { return }
+        guard TestRun.isSeeded(), model.games.isEmpty else { return }
         let root = Store.dataFolder.appending(path: "SeedGames", directoryHint: .isDirectory)
         Fixtures.runtime(RuntimeCatalog.python3, folder: "py3-mac-universal", in: Store.runtimesFolder)
         Fixtures.runtime("7.4.11", folder: "mac-x86_64", in: Store.runtimesFolder)

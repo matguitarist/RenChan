@@ -18,6 +18,8 @@ let package = Package(
         .package(url: "https://github.com/matguitarist/DownloadKit", from: "0.1.0"),
         // Clones, folder sizes and a JSON file saved once changes settle, shared by my apps.
         .package(url: "https://github.com/matguitarist/FileKit", from: "0.1.0"),
+        // The self-test's and snapshots' plumbing (the /tmp guard, PASS and FAIL lines, captures), shared by my Mac apps.
+        .package(url: "https://github.com/matguitarist/AppTestKit", from: "0.1.0"),
     ],
     targets: [
         // Ren'Py detection, runtimes, launching and mods, with no SwiftUI, so tests run without the app.
@@ -33,7 +35,8 @@ let package = Package(
                            .product(name: "LogKitUI", package: "LogKit"),
                            .product(name: "PictureKitUI", package: "PictureKit"),
                            .product(name: "ProcessKit", package: "ProcessKit"),
-                           .product(name: "FileKit", package: "FileKit")],
+                           .product(name: "FileKit", package: "FileKit"),
+                           .product(name: "AppTestKit", package: "AppTestKit")],
             // App code runs on the main thread unless you say otherwise.
             swiftSettings: [.defaultIsolation(MainActor.self)],
             // Sparkle.framework sits in Contents/Frameworks (build.sh copies it).

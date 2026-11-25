@@ -1,4 +1,5 @@
 import AppKit
+import AppTestKit
 import Foundation
 import ProcessKit
 import RenChanKit
