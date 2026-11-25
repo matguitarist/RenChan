@@ -43,11 +43,13 @@ struct RenChanApp: App {
                 Button("Export Compatibility Report…") { model.exportCompatibilityReport() }
                 Button("Copy Compatibility Report") { model.copyCompatibilityReport() }
             }
+            PageCommands(pages: SidebarItem.allCases, title: \.title) { model.sidebar = $0 }
+            // ⌃⌘: ⌘1… are the sidebar's pages.
             CommandGroup(after: .sidebar) {
                 Button("as Grid") { model.sidebar = .library; model.layout = .grid }
-                    .keyboardShortcut("1")
+                    .keyboardShortcut("1", modifiers: [.command, .control])
                 Button("as List") { model.sidebar = .library; model.layout = .list }
-                    .keyboardShortcut("2")
+                    .keyboardShortcut("2", modifiers: [.command, .control])
                 Divider()
             }
             CommandMenu("Game") {
@@ -89,13 +91,9 @@ struct RenChanApp: App {
                 Button("Remove from Library…") { model.confirmRemove = menu.selection }
                     .disabled(menu.selection == nil)
             }
-            CommandGroup(after: .appInfo) {
-                Button("Check for Updates…") { Updater.shared.checkForUpdates() }
-                    .disabled(!Updater.shared.isAvailable)
-            }
-            CommandGroup(replacing: .help) {
-                Link("RenChan on GitHub", destination: URL(string: "https://github.com/matguitarist/RenChan")!)
-            }
+            StandardCommands(app: "RenChan", repository: "matguitarist/RenChan",
+                             updates: AppUpdates(isAvailable: Updater.shared.isAvailable) { Updater.shared.checkForUpdates() },
+                             log: .page { model.sidebar = .log })
         }
 
         WindowGroup("Walkthrough", id: "walkthrough", for: WalkthroughRef.self) { $ref in

@@ -19,6 +19,9 @@ extension SelfTest {
             model.log.flushFile()
             let written = (try? String(contentsOf: Store.logURL, encoding: .utf8)) ?? ""
             check("log lines reach the log file next to the store", written.contains("Self-test line"))
+            let issue = RepositoryLinks(repository: "matguitarist/RenChan").newIssue(app: "RenChan").absoluteString
+            check("Help › Report a Problem opens a new GitHub issue with the version and macOS filled in",
+                  issue.hasPrefix("https://github.com/matguitarist/RenChan/issues/new?body=") && issue.contains("macOS"), issue)
 
             await damagedLibraryCheck(model)
 

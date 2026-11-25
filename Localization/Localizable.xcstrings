@@ -11,6 +11,16 @@
         }
       }
     },
+    "%@ Help": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aide %@"
+          }
+        }
+      }
+    },
     "%@ all change the screen “%@”; Ren'Py uses the one it loads last.": {
       "localizations": {
         "fr": {
@@ -87,6 +97,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ sur %2$@"
+          }
+        }
+      }
+    },
+    "%@ on GitHub": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ sur GitHub"
           }
         }
       }
@@ -267,6 +287,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un dossier de jeu, une app Mac (.app) ou un zip. RenChan le lance sur ce Mac sans le modifier."
+          }
+        }
+      }
+    },
+    "About %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos de %@"
           }
         }
       }
@@ -3451,16 +3481,6 @@
         }
       }
     },
-    "RenChan on GitHub": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RenChan sur GitHub"
-          }
-        }
-      }
-    },
     "RenChan reads the itch.io page or F95zone thread you set on a game and tells you when a newer version is out. Nothing is downloaded.": {
       "localizations": {
         "fr": {
@@ -3527,6 +3547,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan rassemblera vos romans visuels Ren’Py au même endroit et lancera n’importe lequel sur ce Mac, même les jeux conçus uniquement pour Windows ou Linux, avec des filtres d’écran et des mods qui ne modifient jamais le jeu."
+          }
+        }
+      }
+    },
+    "Report a Problem…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signaler un problème…"
           }
         }
       }
@@ -3877,6 +3907,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher le dossier des filtres"
+          }
+        }
+      }
+    },
+    "Show Log": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher le journal"
           }
         }
       }
@@ -4807,6 +4847,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce que le jeu retient d’une sauvegarde à l’autre : galeries débloquées, fins vues et ses propres réglages."
+          }
+        }
+      }
+    },
+    "What’s New in %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveautés de %@"
           }
         }
       }
