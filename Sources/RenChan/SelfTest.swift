@@ -33,6 +33,8 @@ enum SelfTest {
             let written = (try? String(contentsOf: Store.logURL, encoding: .utf8)) ?? ""
             check("log lines reach the log file next to the store", written.contains("Self-test line"))
 
+            await damagedLibraryCheck(model)
+
             await libraryChecks(model)
 
             for tab in SettingsTab.allCases {
@@ -353,6 +355,24 @@ enum SelfTest {
               && model.game(first.id) == nil)
         check("S-012 removing a game keeps its save backups", FileManager.default.fileExists(atPath: Store.backupsFolder(first.id).path))
         model.notice = nil
+    }
+
+    /// A library.json that can't be read is kept aside, never saved over, and the person is told where it went.
+    private static func damagedLibraryCheck(_ model: AppModel) async {
+        model.flushLibrary()
+        let good = try? Data(contentsOf: Store.url)
+        try? Data("[{\"title\": ".utf8).write(to: Store.url)
+        model.loadLibrary()
+        let folder = Store.url.deletingLastPathComponent()
+        let prefix = Store.url.deletingPathExtension().lastPathComponent + " (damaged "
+        let aside = ((try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
+            .filter { $0.lastPathComponent.hasPrefix(prefix) }
+        check("a damaged library is kept aside and the person is told", aside.count == 1 && !FileManager.default.fileExists(atPath: Store.url.path)
+              && model.notice?.contains(aside.first?.lastPathComponent ?? "-") == true, model.notice ?? "no notice")
+        for file in aside { try? FileManager.default.removeItem(at: file) }
+        if let good { try? good.write(to: Store.url) }
+        model.notice = nil
+        model.loadLibrary()
     }
 
     static func waitUntilStopped(_ model: AppModel, _ id: UUID) async {

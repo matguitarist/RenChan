@@ -1,3 +1,4 @@
+import FileKit
 import Foundation
 import ProcessKit
 import Testing
@@ -95,5 +96,5 @@ private func zip(_ folder: URL, to zip: URL) throws {
     let json = #"[{"id":"\#(UUID().uuidString)","title":"T","sourcePath":"/x","kind":"folder","basePath":"/x","added":"2026-11-01T00:00:00Z"}]"#
     let file = Fixture.folder().appending(path: "library.json")
     try json.write(to: file, atomically: true, encoding: .utf8)
-    #expect(try LibraryFile.load(file).first?.mods == [])
+    #expect(try JSONFile<[Game]>(file).load()?.first?.mods == [])
 }

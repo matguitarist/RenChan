@@ -3331,6 +3331,26 @@
         }
       }
     },
+    "RenChan couldn't read its library, so it kept it aside as “%@” and started a new one.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu lire sa bibliothèque : il l’a mise de côté sous le nom « %@ » et en a commencé une nouvelle."
+          }
+        }
+      }
+    },
+    "RenChan couldn't read its library: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu lire sa bibliothèque : %@"
+          }
+        }
+      }
+    },
     "RenChan couldn't restore the saves: %@": {
       "localizations": {
         "fr": {

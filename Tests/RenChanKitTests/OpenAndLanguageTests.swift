@@ -1,3 +1,4 @@
+import FileKit
 import Foundation
 import Testing
 @testable import RenChanKit
@@ -64,7 +65,7 @@ import Testing
     let json = #"[{"id":"7C9D7C2B-4B1F-4C1E-9A8E-1A2B3C4D5E6F","title":"A","sourcePath":"/a","kind":"folder","basePath":"/a","added":"2026-11-01T10:00:00Z"}]"#
     let url = Fixture.folder().appending(path: "library.json")
     try json.write(to: url, atomically: true, encoding: .utf8)
-    #expect(try LibraryFile.load(url).first?.language == nil)
+    #expect(try JSONFile<[Game]>(url).load()?.first?.language == nil)
 }
 
 // S-038 Back up saves before each play

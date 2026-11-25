@@ -1,4 +1,5 @@
 import AppKit
+import FileKit
 import Foundation
 import RenChanKit
 
@@ -27,8 +28,8 @@ extension AppModel {
         }
         let copy = playCopy(game)
         let hasCopy = FileManager.default.fileExists(atPath: copy.appending(path: "game").path)
-        if !hasCopy, !WorkingCopy.sameVolume(game.baseURL, copy), confirmFullCopy?.id != id {
-            confirmFullCopy = FullCopyRequest(id: id, size: WorkingCopy.size(of: game.baseURL))
+        if !hasCopy, !FileClone.sameVolume(game.baseURL, copy), confirmFullCopy?.id != id {
+            confirmFullCopy = FullCopyRequest(id: id, size: (try? FolderSize.summary(of: game.baseURL))?.allocated ?? 0)
             return
         }
         launch(game, on: runtime, allowFullCopy: confirmFullCopy?.id == id)

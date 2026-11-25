@@ -1,3 +1,4 @@
+import FileKit
 import Foundation
 import Testing
 @testable import RenChanKit
@@ -47,6 +48,6 @@ import Testing
     """
     let url = Fixture.folder().appending(path: "library.json")
     try json.write(to: url, atomically: true, encoding: .utf8)
-    let games = try LibraryFile.load(url)
+    let games = try JSONFile<[Game]>(url).load() ?? []
     #expect(games.first?.playtime == 0)
 }

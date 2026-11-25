@@ -1,3 +1,4 @@
+import FileKit
 import RenChanKit
 import SwiftUI
 
@@ -38,8 +39,7 @@ struct RuntimeRow: View {
         }
         .padding(.vertical, Space.xs)
         .task(id: runtime.version) {
-            let folder = runtime.folder
-            size = await Task.detached { RuntimeStore.size(of: folder) }.value
+            size = await FolderSize.allocated(of: runtime.folder)
         }
     }
 

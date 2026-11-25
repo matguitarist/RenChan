@@ -1,3 +1,4 @@
+import FileKit
 import Foundation
 
 /// One dated copy of a game's saves, kept by RenChan (S-012).
@@ -109,6 +110,6 @@ public enum SaveBackups {
         let info = try decoder.decode(Info.self, from: Data(contentsOf: folder.appending(path: "backup.json")))
         let saves = folder.appending(path: "saves", directoryHint: .isDirectory)
         return SaveBackup(folder: folder, date: info.date, reason: info.reason,
-                          saveCount: measured ? SaveFolder.count(saves) : 0, size: measured ? RuntimeStore.size(of: saves) : 0)
+                          saveCount: measured ? SaveFolder.count(saves) : 0, size: measured ? ((try? FolderSize.summary(of: saves))?.allocated ?? 0) : 0)
     }
 }

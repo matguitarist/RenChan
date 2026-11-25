@@ -118,21 +118,3 @@ public struct Game: Codable, Identifiable, Hashable, Sendable {
     public var baseURL: URL { URL(fileURLWithPath: basePath, isDirectory: true) }
     public var sourceURL: URL { URL(fileURLWithPath: sourcePath) }
 }
-
-/// library.json: every game, in the order they were added.
-public enum LibraryFile {
-    public static func load(_ url: URL) throws -> [Game] {
-        guard FileManager.default.fileExists(atPath: url.path) else { return [] }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode([Game].self, from: Data(contentsOf: url))
-    }
-
-    public static func save(_ games: [Game], to url: URL) throws {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try encoder.encode(games).write(to: url, options: .atomic)
-    }
-}

@@ -1,4 +1,5 @@
 import Darwin
+import FileKit
 import Foundation
 
 /// The copy of a game RenChan plays: an APFS clone of the game's base folder, so the original is never written to.
@@ -18,34 +19,23 @@ public enum WorkingCopy {
         }
     }
 
-    /// True when both folders are on one volume, where a clone costs no space.
-    public static func sameVolume(_ a: URL, _ b: URL) -> Bool {
-        func volume(_ url: URL) -> NSObject? {
-            var probe = url
-            while !FileManager.default.fileExists(atPath: probe.path), probe.pathComponents.count > 1 { probe.deleteLastPathComponent() }
-            return (try? probe.resourceValues(forKeys: [.volumeIdentifierKey]))?.volumeIdentifier as? NSObject
-        }
-        guard let left = volume(a), let right = volume(b) else { return false }
-        return left.isEqual(right)
-    }
-
     /// Makes `copy` from `base` unless it exists. A clone needs one volume; `allowFullCopy` permits a real copy.
     @discardableResult
     public static func prepare(base: URL, copy: URL, allowFullCopy: Bool) throws -> Outcome {
         if FileManager.default.fileExists(atPath: copy.appending(path: "game").path) { return .reused }
-        try FileManager.default.createDirectory(at: copy.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // A copy without game/ is what's left of a stopped one: it goes, and a new one is made.
         try? FileManager.default.removeItem(at: copy)
-        if clonefile(base.path, copy.path, 0) == 0 { return .cloned }
-        let reason = errno
-        guard allowFullCopy, reason == EXDEV || reason == ENOTSUP else {
-            throw Failure.cannotClone(path: base.path, reason: String(cString: strerror(reason)))
+        do {
+            switch try FileClone.clone(base, to: copy, fallback: allowFullCopy ? .copy : .none) {
+            case .cloned: return .cloned
+            case .copied: return .copied
+            }
+        } catch FileClone.Failure.cannotClone(let code) {
+            throw Failure.cannotClone(path: base.path, reason: String(cString: strerror(code.rawValue)))
+        } catch let error as POSIXError {
+            throw Failure.cannotClone(path: base.path, reason: String(cString: strerror(error.code.rawValue)))
         }
-        try FileManager.default.copyItem(at: base, to: copy)
-        return .copied
     }
-
-    /// The folder's size, to ask before a full copy.
-    public static func size(of folder: URL) -> Int64 { RuntimeStore.size(of: folder) }
 }
 
 /// One run of a game on a runtime: the process, its output file, and what it left when it quit.

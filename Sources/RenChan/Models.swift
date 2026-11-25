@@ -1,17 +1,10 @@
 import AppKit
+import FileKit
 import Foundation
 import LogKit
 import LogKitUI
 import Observation
 import RenChanKit
-
-/// Serializes library writes, newest last.
-actor LibraryWriter {
-    static let shared = LibraryWriter()
-    func write(_ games: [Game], to url: URL) -> (any Error)? {
-        do { try LibraryFile.save(games, to: url); return nil } catch { return error }
-    }
-}
 
 /// The app's state: the library, runtimes, what is selected and playing, and the open sheets.
 /// Actions live in Models+Library.swift and Models+Play.swift.
@@ -83,7 +76,9 @@ final class AppModel {
     /// Games whose watched page is being read now (S-033).
     var checkingVersions: Set<Game.ID> = []
     @ObservationIgnored var watchTask: Task<Void, Never>?
-    @ObservationIgnored var pendingSave: Task<Void, Never>?
+    /// Writes library.json a moment after the last change, off the main thread: a big library takes tens of
+    /// milliseconds to encode, and a play session or a check of watched pages changes it several times in a row.
+    @ObservationIgnored private var librarySaver: DebouncedSaver<[Game]>?
     /// Disk reads the inspector shows, kept until what they depend on changes.
     @ObservationIgnored var memo: [String: (key: Int, value: Any)] = [:]
     /// Bumped when a mod's files may have changed, so the Mods section reads them again.
@@ -113,6 +108,7 @@ final class AppModel {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
         log.post(.info, "RenChan \(version) started", source: "App")
         AppModel.current = self
+        librarySaver = DebouncedSaver(Self.libraryFile, delay: .milliseconds(400)) { [weak self] error in self?.reportSaveError(error) }
         loadLibrary()
         recoverSessions()
         startWatchChecks()
@@ -149,10 +145,19 @@ final class AppModel {
         }
     }
 
+    /// library.json, in the test store during a test run.
+    static var libraryFile: JSONFile<[Game]> { JSONFile(Store.url, dates: .iso8601) }
+
     func loadLibrary() {
         flushLibrary()
         do {
-            games = try LibraryFile.load(Store.url)
+            games = try Self.libraryFile.load(setAsideDamaged: true) ?? []
+        } catch let damaged as JSONFile<[Game]>.Damaged {
+            // Kept aside, so the next save can't write over the person's games.
+            let kept = damaged.keptAt?.lastPathComponent
+            log.post(.error, "Couldn't read the library at \(Store.url.path): \(damaged.reason)\(kept.map { "; kept it as \($0)" } ?? "")", source: "Library")
+            notice = kept.map { String(localized: "RenChan couldn't read its library, so it kept it aside as “\($0)” and started a new one.") }
+                ?? String(localized: "RenChan couldn't read its library: \(damaged.reason)")
         } catch {
             log.post(.error, "Couldn't read the library at \(Store.url.path): \(error.localizedDescription)", source: "Library")
         }
@@ -187,26 +192,15 @@ final class AppModel {
         }
     }
 
-    /// Writes the library a moment after the last change, off the main thread: a big library takes tens of
-    /// milliseconds to encode, and a play session or a check of watched pages changes it several times in a row.
+    /// Writes the library a moment after the last change (librarySaver).
     func saveLibrary() {
-        pendingSave?.cancel()
-        pendingSave = Task {
-            try? await Task.sleep(for: .milliseconds(400))
-            guard !Task.isCancelled else { return }
-            pendingSave = nil
-            let snapshot = games
-            let url = Store.url
-            if let error = await LibraryWriter.shared.write(snapshot, to: url) { reportSaveError(error) }
-        }
+        librarySaver?.schedule(games)
     }
 
-    /// Writes now: before quitting, and before reading the file again.
+    /// Writes now, on this thread: before quitting, and before reading the file again.
     func flushLibrary() {
-        guard let pending = pendingSave else { return }
-        pending.cancel()
-        pendingSave = nil
-        do { try LibraryFile.save(games, to: Store.url) } catch { reportSaveError(error) }
+        guard librarySaver?.takePending() != nil else { return }
+        do { try Self.libraryFile.save(games) } catch { reportSaveError(error) }
     }
 
     private func reportSaveError(_ error: any Error) {

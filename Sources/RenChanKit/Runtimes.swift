@@ -130,14 +130,4 @@ public struct RuntimeStore: Sendable {
     public func remove(_ runtime: Runtime) throws {
         try FileManager.default.removeItem(at: runtime.folder)
     }
-
-    /// Size on disk, for the Runtimes page.
-    public static func size(of folder: URL) -> Int64 {
-        guard let walker = FileManager.default.enumerator(at: folder, includingPropertiesForKeys: [.totalFileAllocatedSizeKey]) else { return 0 }
-        var total: Int64 = 0
-        for case let file as URL in walker {
-            total += Int64((try? file.resourceValues(forKeys: [.totalFileAllocatedSizeKey]).totalFileAllocatedSize) ?? 0)
-        }
-        return total
-    }
 }

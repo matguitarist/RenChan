@@ -39,7 +39,6 @@ func digest(_ folder: URL) -> [String: Date] {
     let original = Fixture.game(at: root.appending(path: "Original"))
     let before = digest(original)
     let copy = root.appending(path: "Games/one/play")
-    #expect(WorkingCopy.sameVolume(original, copy))
     #expect(try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: false) == .cloned)
     #expect(try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: false) == .reused)
 
