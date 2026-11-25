@@ -41,10 +41,12 @@ public enum VersionOrder {
 
 /// The game's own version (not its Ren'Py's): config.version, else the version in its folder or file name.
 public enum GameVersion {
+    private static let configVersion = try! NSRegularExpression(pattern: #"^\s*(?:define\s+)?config\.version\s*=\s*u?["']([^"']+)["']"#, options: .anchorsMatchLines)
+
     public static func detect(base: URL, source: URL) -> String? {
         let game = base.appending(path: "game")
         let files = (try? FileManager.default.contentsOfDirectory(at: game, includingPropertiesForKeys: [.fileSizeKey])) ?? []
-        let regex = try! NSRegularExpression(pattern: #"^\s*(?:define\s+)?config\.version\s*=\s*u?["']([^"']+)["']"#, options: .anchorsMatchLines)
+        let regex = configVersion
         for file in files.filter({ $0.pathExtension == "rpy" }).sorted(by: { $0.lastPathComponent == "options.rpy" && $1.lastPathComponent != "options.rpy" }).prefix(60) {
             guard ((try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) < 2_000_000,
                   let text = try? String(contentsOf: file, encoding: .utf8),

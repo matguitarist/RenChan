@@ -4511,6 +4511,16 @@
         }
       }
     },
+    "Unpacking %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Décompression de %@"
+          }
+        }
+      }
+    },
     "Unpin": {
       "localizations": {
         "fr": {

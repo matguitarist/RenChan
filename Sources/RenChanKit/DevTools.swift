@@ -17,13 +17,8 @@ public enum DevToolsLoader {
     public static let fileName = "zz_renchan_devtools.rpy"
 
     public static func install(_ tools: DevTools, copy: URL) throws {
-        let file = copy.appending(path: "game/\(fileName)")
-        guard tools.isOn else {
-            for url in [file, file.deletingPathExtension().appendingPathExtension("rpyc")] { try? FileManager.default.removeItem(at: url) }
-            return
-        }
-        let text = source(tools)
-        if (try? String(contentsOf: file, encoding: .utf8)) != text { try text.write(to: file, atomically: true, encoding: .utf8) }
+        guard tools.isOn else { return CopyScript.remove(named: fileName, from: copy) }
+        try CopyScript.place(source(tools), named: fileName, in: copy)
     }
 
     /// Python 2 and 3. Runs after the game's own init, so the game can't turn them back off.

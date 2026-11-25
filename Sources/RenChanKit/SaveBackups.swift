@@ -64,19 +64,20 @@ public enum SaveBackups {
         let changed = files.filter { !$0.lastPathComponent.hasPrefix(".") }
             .compactMap { (try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate }.max()
         guard let changed else { return nil }
-        let existing = list(root)
+        let existing = list(root, measured: false)
         if let newest = existing.first, changed <= newest.date { return nil }
         let backup = try backUp(saves: saves, into: root, reason: .beforePlay, at: date)
-        for old in list(root).filter({ $0.reason == .beforePlay }).dropFirst(max(keep, 1)) {
+        for old in list(root, measured: false).filter({ $0.reason == .beforePlay }).dropFirst(max(keep, 1)) {
             try? FileManager.default.removeItem(at: old.folder)
         }
         return backup
     }
 
-    /// Every backup, newest first.
-    public static func list(_ root: URL) -> [SaveBackup] {
+    /// Every backup, newest first. Not measured, saveCount and size are 0: a backup is only its date and
+    /// reason then, one small file read instead of a walk through every save.
+    public static func list(_ root: URL, measured: Bool = true) -> [SaveBackup] {
         let folders = (try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)) ?? []
-        return folders.compactMap { try? read($0) }.sorted { $0.date > $1.date }
+        return folders.compactMap { try? read($0, measured: measured) }.sorted { $0.date > $1.date }
     }
 
     /// Puts a backup's saves in place of the current ones, after backing those up (the returned backup).
@@ -102,12 +103,12 @@ public enum SaveBackups {
         try FileManager.default.trashItem(at: backup.folder, resultingItemURL: nil)
     }
 
-    static func read(_ folder: URL) throws -> SaveBackup {
+    static func read(_ folder: URL, measured: Bool = true) throws -> SaveBackup {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         let info = try decoder.decode(Info.self, from: Data(contentsOf: folder.appending(path: "backup.json")))
         let saves = folder.appending(path: "saves", directoryHint: .isDirectory)
         return SaveBackup(folder: folder, date: info.date, reason: info.reason,
-                          saveCount: SaveFolder.count(saves), size: RuntimeStore.size(of: saves))
+                          saveCount: measured ? SaveFolder.count(saves) : 0, size: measured ? RuntimeStore.size(of: saves) : 0)
     }
 }

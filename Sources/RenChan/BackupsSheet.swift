@@ -93,9 +93,9 @@ struct BackupRow: View {
     let game: Game
 
     var body: some View {
-        let last = model.backups(game.id).first { $0.reason == .manual }
+        let last = model.lastManualBackup(game.id)
         LabeledContent("Backups") {
-            Text(last.map { $0.date.formatted(.relative(presentation: .named)) } ?? String(localized: "None yet"))
+            Text(last.map { $0.formatted(.relative(presentation: .named)) } ?? String(localized: "None yet"))
         }
         HStack(spacing: Space.sm) {
             Button("Back Up Saves") { model.backUpSaves(game.id) }

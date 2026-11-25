@@ -6,6 +6,8 @@ struct MyGameSection: View {
     @Environment(AppModel.self) private var model
     let game: Game
     @State private var newLabel = ""
+    /// Notes being typed, not yet in the library.
+    @State private var notes: String?
 
     var body: some View {
         Section("My Game") {
@@ -43,14 +45,31 @@ struct MyGameSection: View {
             }
             VStack(alignment: .leading, spacing: Space.sm) {
                 Text("Notes")
-                TextField("Notes", text: Binding(get: { game.notes }, set: { value in model.update(game.id) { $0.notes = value } }),
+                TextField("Notes", text: Binding(get: { notes ?? game.notes }, set: { notes = $0 }),
                           prompt: Text("Routes done, choices to try…"), axis: .vertical)
                     .lineLimit(3...10)
                     .textFieldStyle(.roundedBorder)
                     .labelsHidden()
             }
         }
-        .onChange(of: game.id) { newLabel = "" }
+        .onChange(of: game.id) { old, _ in
+            newLabel = ""
+            saveNotes(to: old)
+        }
+        .onDisappear { saveNotes(to: game.id) }
+        // Typing changes only this view; the library takes the notes after half a second of quiet.
+        .task(id: notes) {
+            guard notes != nil else { return }
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            saveNotes(to: game.id)
+        }
+    }
+
+    private func saveNotes(to id: Game.ID) {
+        guard let text = notes else { return }
+        notes = nil
+        if model.game(id)?.notes != text { model.update(id) { $0.notes = text } }
     }
 }
 

@@ -114,7 +114,7 @@ public struct RuntimeStore: Sendable {
         try? FileManager.default.removeItem(at: staging)
         try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: staging) }
-        try run("/usr/bin/tar", ["-xjf", archive.path, "-C", staging.path])
+        try Command.run("/usr/bin/tar", ["-xjf", archive.path, "-C", staging.path])
         let inside = try FileManager.default.contentsOfDirectory(at: staging, includingPropertiesForKeys: nil)
             .first { !$0.lastPathComponent.hasPrefix(".") }
         guard let inside, RuntimeCatalog.python(in: inside) != nil else {

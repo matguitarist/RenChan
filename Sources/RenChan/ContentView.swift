@@ -24,6 +24,9 @@ struct ContentView: View {
         .sheet(item: Binding(get: { model.download.map(DownloadSheetItem.init) }, set: { _ in })) { item in
             DownloadSheet(initial: item.state).environment(model).themed()
         }
+        .sheet(item: Binding(get: { model.unpacking }, set: { _ in })) { request in
+            UnpackSheet(request: request).environment(model).themed()
+        }
         .sheet(item: Binding(get: { model.vndbSearch.map(VNDBSheetItem.init) }, set: { if $0 == nil { model.vndbSearch = nil } })) { item in
             VNDBSearchSheet(initial: item.search).environment(model).themed()
         }
@@ -51,13 +54,13 @@ struct ContentView: View {
             Text("The game is on another disk, so RenChan needs a full copy (\(model.confirmFullCopy?.size.bytesText ?? "")) in its own folder. The original stays as it is.")
         }
         .confirmationDialog(zipTitle, isPresented: Binding(get: { model.confirmZip != nil }, set: { if !$0 { model.confirmZip = nil } })) {
-            Button("Unpack") { if let zip = model.confirmZip?.url { model.addZip(zip) } }
+            Button("Unpack") { if let zip = model.confirmZip?.url { Task { await model.addZip(zip) } } }
         } message: {
             Text(model.confirmZip?.size.map { String(localized: "RenChan unpacks it into its own folder (\($0.bytesText)). The zip stays as it is.") }
                  ?? String(localized: "RenChan unpacks it into its own folder. The zip stays as it is."))
         }
         .confirmationDialog(updateTitle, isPresented: Binding(get: { model.confirmUpdate != nil }, set: { if !$0 { model.confirmUpdate = nil } })) {
-            Button("Update") { if let request = model.confirmUpdate { model.applyUpdate(request) } }
+            Button("Update") { if let request = model.confirmUpdate { Task { await model.applyUpdate(request) } } }
         } message: {
             Text(updateMessage)
         }

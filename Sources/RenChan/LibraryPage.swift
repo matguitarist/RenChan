@@ -9,16 +9,17 @@ struct LibraryPage: View {
 
     var body: some View {
         @Bindable var model = model
+        let nothingShown = model.shownGames.isEmpty
         Group {
             if model.games.isEmpty {
                 EmptyLibrary()
-            } else if model.shownGames.isEmpty && model.filter.isActive {
+            } else if nothingShown && model.filter.isActive {
                 ContentUnavailableView {
                     Label("No Games Match These Filters", systemImage: "line.3.horizontal.decrease.circle")
                 } actions: {
                     Button("Clear Filters") { model.filter = LibraryFilter() }
                 }
-            } else if model.shownGames.isEmpty {
+            } else if nothingShown {
                 ContentUnavailableView.search(text: model.search)
             } else if model.layout == .grid {
                 LibraryGrid()
@@ -166,51 +167,82 @@ struct Cover: View {
     @Environment(AppModel.self) private var model
     let game: Game
 
+    /// The cover read off the main thread, shown until the cache has it.
+    @State private var loaded: NSImage?
+
     var body: some View {
-        let _ = model.coverRevision
-        if let image = CoverCache.shared.image(for: game) {
-            Image(nsImage: image)
-                .resizable()
-                .scaledToFill()
-                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                .clipped()
-        } else {
-            ZStack {
-                Rectangle().fill(Palette.accent.gradient.opacity(0.35))
-                Text(verbatim: String(game.title.prefix(1)).uppercased())
-                    .font(.system(size: 44, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Palette.accentText)
+        let revision = model.coverRevision
+        Group {
+            if let image = CoverCache.shared.cached(game.id) ?? loaded {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    .clipped()
+            } else {
+                ZStack {
+                    Rectangle().fill(Palette.accent.gradient.opacity(0.35))
+                    Text(verbatim: String(game.title.prefix(1)).uppercased())
+                        .font(.system(size: 44, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Palette.accentText)
+                }
             }
         }
+        .task(id: CoverKey(game: game.id, revision: revision)) { loaded = await CoverCache.shared.load(for: game) }
     }
 }
 
-/// Covers read once from disk; the grid redraws often.
+private struct CoverKey: Hashable {
+    var game: Game.ID
+    var revision: Int
+}
+
+/// Covers read from disk and decoded off the main thread, kept up to a memory limit; the grid redraws often.
 final class CoverCache {
     static let shared = CoverCache()
-    private var images: [Game.ID: NSImage?] = [:]
+    /// NSCache can't hold nil, and "no cover" is worth remembering too.
+    private final class Entry {
+        let image: NSImage?
+        init(_ image: NSImage?) { self.image = image }
+    }
+    /// About 1 MB a cover at 720 px: room for a couple of hundred, the rest read again when scrolled back to.
+    private let images: NSCache<NSUUID, Entry> = {
+        let cache = NSCache<NSUUID, Entry>()
+        cache.totalCostLimit = 256 << 20
+        return cache
+    }()
 
+    /// The cover when it was read already; .none when it wasn't, .some(nil) when the game has none.
+    func cached(_ id: Game.ID) -> NSImage?? { images.object(forKey: id as NSUUID).map(\.image) }
+
+    /// Reads the cover on the spot; for the self-test.
     func image(for game: Game) -> NSImage? {
-        if let cached = images[game.id] { return cached }
-        let own = Store.coverFile(game.id)
-        let file = FileManager.default.fileExists(atPath: own.path) ? own : GameLocator.cover(base: game.baseURL)
-        let image = file.flatMap(Self.thumbnail)
-        images[game.id] = image
+        if let hit = cached(game.id) { return hit }
+        let image = Self.read(own: Store.coverFile(game.id), base: game.baseURL)
+        keep(image, for: game.id)
         return image
     }
 
-    func forget(_ id: Game.ID) { images[id] = nil }
+    /// Reads the cover off the main thread.
+    func load(for game: Game) async -> NSImage? {
+        if let hit = cached(game.id) { return hit }
+        let own = Store.coverFile(game.id), base = game.baseURL
+        let image = await Task.detached(priority: .userInitiated) { Self.read(own: own, base: base) }.value
+        keep(image, for: game.id)
+        return image
+    }
 
-    /// A cover decoded at the size the grid and inspector draw it: a 1920×2880 cover is 22 MB as a full
-    /// bitmap and about 1 MB at 720 px, and decodes in half the time.
-    static func thumbnail(_ url: URL) -> NSImage? {
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
-        let options: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,
-                                        kCGImageSourceThumbnailMaxPixelSize: 720,
-                                        kCGImageSourceCreateThumbnailWithTransform: true,
-                                        kCGImageSourceShouldCacheImmediately: true]
-        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
-        return NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height))
+    func forget(_ id: Game.ID) { images.removeObject(forKey: id as NSUUID) }
+
+    private func keep(_ image: NSImage?, for id: Game.ID) {
+        let cost = image.map { Int($0.size.width * $0.size.height) * 4 } ?? 1
+        images.setObject(Entry(image), forKey: id as NSUUID, cost: cost)
+    }
+
+    /// The person's or VNDB's cover, else the game's own menu art.
+    nonisolated private static func read(own: URL, base: URL) -> NSImage? {
+        let file = FileManager.default.fileExists(atPath: own.path) ? own : GameLocator.cover(base: base)
+        return file.flatMap { Thumbnails.decode(url: $0, maxPixels: 720) }.map { NSImage(cgImage: $0, size: NSSize(width: $0.width, height: $0.height)) }
     }
 }
 

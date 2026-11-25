@@ -106,12 +106,7 @@ extension Fixtures {
             .write(to: work.appending(path: "json"), atomically: true, encoding: .utf8)
         try? "8.6.1".write(to: work.appending(path: "renpy_version"), atomically: true, encoding: .utf8)
         try? "pretend".write(to: work.appending(path: "log"), atomically: true, encoding: .utf8)
-        let zip = Process()
-        zip.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
-        zip.currentDirectoryURL = work
-        zip.arguments = ["-q", folder.appending(path: "\(slot)-LT1.save").path, "screenshot.png", "extra_info", "json", "renpy_version", "log"]
-        try? zip.run()
-        zip.waitUntilExit()
+        _ = try? Command.run("/usr/bin/zip", ["-q", folder.appending(path: "\(slot)-LT1.save").path, "screenshot.png", "extra_info", "json", "renpy_version", "log"], in: work)
         try? FileManager.default.removeItem(at: work)
     }
 

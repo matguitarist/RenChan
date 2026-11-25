@@ -52,6 +52,8 @@ final class AppModel {
     var confirmRemove: Game.ID?
     var confirmFullCopy: FullCopyRequest?
     var confirmZip: ZipRequest?
+    /// The zip being unpacked now, for the sheet that shows it.
+    var unpacking: ZipRequest?
     var confirmRemoveRuntime: String?
     var vndbSearch: VNDBSearch?
     /// Bumped when a cover file changes, so covers redraw.
@@ -157,15 +159,20 @@ final class AppModel {
             log.post(.error, "Couldn't read the library at \(Store.url.path): \(error.localizedDescription)", source: "Library")
         }
         runtimes = runtimeStore.installed()
-        // S-033: games added before 0.6.0 get their own version read once.
-        var changed = false
-        for index in games.indices where games[index].gameVersion == nil {
-            if let found = GameVersion.detect(base: games[index].baseURL, source: games[index].sourceURL) {
-                games[index].gameVersion = found
-                changed = true
-            }
+        detectMissingVersions()
+    }
+
+    /// S-033: games added before 0.6.0 get their own version read, off the main thread: it reads up to 60
+    /// scripts a game, and a game with no version to find is read again at each launch.
+    private func detectMissingVersions() {
+        let missing = games.filter { $0.gameVersion == nil }.map { ($0.id, $0.baseURL, $0.sourceURL) }
+        guard !missing.isEmpty else { return }
+        Task {
+            let found = await Task.detached(priority: .utility) {
+                missing.compactMap { id, base, source in GameVersion.detect(base: base, source: source).map { (id, $0) } }
+            }.value
+            for (id, version) in found where game(id)?.gameVersion == nil { update(id) { $0.gameVersion = version } }
         }
-        if changed { saveLibrary() }
     }
 
     /// Writes the library a moment after the last change, off the main thread: a big library takes tens of

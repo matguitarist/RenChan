@@ -82,8 +82,8 @@ struct SaveDetail: View {
             .background(.bar)
         }
         .task {
-            if let url = save?.url {
-                screenshot = await Task.detached(priority: .utility) { SaveList.read(url)?.screenshot() }.value.flatMap(NSImage.init(data:))
+            if let save {
+                screenshot = await Task.detached(priority: .utility) { save.screenshot() }.value.flatMap(NSImage.init(data:))
             }
             load()
         }

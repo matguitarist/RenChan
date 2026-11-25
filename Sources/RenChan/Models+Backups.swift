@@ -7,6 +7,13 @@ extension AppModel {
         memoized("backups-\(id)", key: backupRevision) { SaveBackups.list(Store.backupsFolder(id)) }
     }
 
+    /// When the person last backed up, for the inspector: dates only, without measuring every backup.
+    func lastManualBackup(_ id: Game.ID) -> Date? {
+        memoized("last-backup-\(id)", key: backupRevision) {
+            SaveBackups.list(Store.backupsFolder(id), measured: false).first { $0.reason == .manual }?.date
+        }
+    }
+
     func canBackUp(_ game: Game) -> Bool {
         saveFolder(game).map { FileManager.default.fileExists(atPath: $0.path) } ?? false
     }

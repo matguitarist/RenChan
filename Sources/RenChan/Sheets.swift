@@ -35,6 +35,26 @@ struct DownloadSheet: View {
     }
 }
 
+/// Unpacking a game's zip: it can take minutes for a big game, so the window shows it's working.
+struct UnpackSheet: View {
+    let request: ZipRequest
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Space.lg) {
+            Text("Unpacking \(request.url.lastPathComponent)").font(.title3.weight(.semibold))
+            Text(request.size.map { String(localized: "RenChan unpacks it into its own folder (\($0.bytesText)). The zip stays as it is.") }
+                 ?? String(localized: "RenChan unpacks it into its own folder. The zip stays as it is."))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            ProgressView()
+                .progressViewStyle(.linear)
+        }
+        .padding(Space.xl)
+        .frame(width: 480)
+        .noInitialFocus()
+    }
+}
+
 /// A game that quit with an error (S-005): Ren'Py's traceback, Copy, Show in Finder, Try the exact version.
 struct LaunchErrorSheet: View {
     @Environment(AppModel.self) private var model

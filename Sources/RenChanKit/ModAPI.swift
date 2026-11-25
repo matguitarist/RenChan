@@ -35,9 +35,7 @@ public enum ModAPI {
 
     public static func install(copy: URL) throws {
         try FileManager.default.createDirectory(at: stateFolder(copy), withIntermediateDirectories: true)
-        let file = copy.appending(path: "game/\(fileName)")
-        let text = source(stateFolder: stateFolder(copy))
-        if (try? String(contentsOf: file, encoding: .utf8)) != text { try text.write(to: file, atomically: true, encoding: .utf8) }
+        try CopyScript.place(source(stateFolder: stateFolder(copy)), named: fileName, in: copy)
     }
 
     public static func source(stateFolder: URL) -> String {

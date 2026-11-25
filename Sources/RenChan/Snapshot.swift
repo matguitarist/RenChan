@@ -190,11 +190,7 @@ enum Snapshot {
         try? FileManager.default.removeItem(atPath: path)
         // The first capture of a run sometimes misses the window. Try three times.
         for _ in 1...3 {
-            let shot = Process()
-            shot.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-            shot.arguments = ["-x", "-o", "-l", String(window.windowNumber), path]
-            try? shot.run()
-            shot.waitUntilExit()
+            _ = try? Command.run("/usr/sbin/screencapture", ["-x", "-o", "-l", String(window.windowNumber), path])
             if FileManager.default.fileExists(atPath: path) {
                 print("SNAPSHOT \(path)")
                 return

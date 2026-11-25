@@ -62,9 +62,22 @@ public struct GamePicture: Decodable, Sendable, Hashable, Identifiable {
     /// A small picture for the grid, decoded at the size asked (longest side in pixels).
     public func thumbnail(maxPixels: Int) -> CGImage? {
         guard let data = try? data(), let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        return Thumbnails.decode(source, maxPixels: maxPixels)
+    }
+}
+
+/// Pictures decoded at the size they are drawn: a 1920×2880 cover is 22 MB as a full bitmap and about 1 MB
+/// at 720 px, and decodes in half the time.
+public enum Thumbnails {
+    public static func decode(url: URL, maxPixels: Int) -> CGImage? {
+        CGImageSourceCreateWithURL(url as CFURL, nil).flatMap { decode($0, maxPixels: maxPixels) }
+    }
+
+    public static func decode(_ source: CGImageSource, maxPixels: Int) -> CGImage? {
         let options: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,
                                         kCGImageSourceThumbnailMaxPixelSize: maxPixels,
-                                        kCGImageSourceCreateThumbnailWithTransform: true]
+                                        kCGImageSourceCreateThumbnailWithTransform: true,
+                                        kCGImageSourceShouldCacheImmediately: true]
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 }

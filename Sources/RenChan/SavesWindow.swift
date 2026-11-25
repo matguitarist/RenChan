@@ -18,8 +18,10 @@ extension AppModel {
         return root.appending(path: directory, directoryHint: .isDirectory)
     }
 
+    /// One folder listing, not a read of every save: the toolbar asks on every redraw.
     func hasModdedSaves(_ game: Game) -> Bool {
-        savesFolder(game, modded: true).map { !SaveList.list(in: $0).isEmpty } ?? false
+        guard let folder = savesFolder(game, modded: true), FileManager.default.fileExists(atPath: folder.path) else { return false }
+        return SaveFolder.count(folder) > 0
     }
 
     func showSaves(_ id: Game.ID) { savesToOpen = SavesRef(game: id) }
@@ -156,6 +158,10 @@ struct SavesWindow: View {
     @State private var selection: String?
     static let persistentTag = "persistent"
     @State private var confirmTrash: SaveFile?
+    /// Read in reload, not in the body.
+    @State private var hasModded = false
+    /// The latest reload; an older one that ends later is dropped.
+    @State private var reloads = 0
 
     var body: some View {
         if let game = model.game(ref.game) {
@@ -200,7 +206,7 @@ struct SavesWindow: View {
             }
             .navigationTitle(String(localized: "Saves of \(game.title)"))
             .toolbar {
-                if model.hasModdedSaves(game) || modded {
+                if hasModded || modded {
                     Picker("Saves", selection: $modded) {
                         Text("Saves").tag(false)
                         Text("Modded Saves").tag(true)
@@ -229,10 +235,19 @@ struct SavesWindow: View {
         }
     }
 
+    /// Reads every save off the main thread: a folder can hold hundreds.
     private func reload(_ game: Game) {
-        saves = model.savesFolder(game, modded: modded).map(SaveList.list) ?? []
-        if selection == Self.persistentTag && game.saveDirectory != nil { return }
-        if selection == nil || !saves.contains(where: { $0.id == selection }) { selection = saves.first?.id }
+        reloads += 1
+        let token = reloads
+        let folder = model.savesFolder(game, modded: modded)
+        hasModded = model.hasModdedSaves(game)
+        Task {
+            let list = await Task.detached(priority: .userInitiated) { folder.map(SaveList.list) ?? [] }.value
+            guard token == reloads else { return }
+            saves = list
+            if selection == Self.persistentTag && game.saveDirectory != nil { return }
+            if selection == nil || !saves.contains(where: { $0.id == selection }) { selection = saves.first?.id }
+        }
     }
 }
 
@@ -274,8 +289,8 @@ private struct SaveRow: View {
         }
         .padding(.vertical, 2)
         .task(id: save.id) {
-            let url = save.url
-            let data = await Task.detached(priority: .utility) { SaveList.read(url)?.screenshot() }.value
+            let save = save
+            let data = await Task.detached(priority: .utility) { save.screenshot() }.value
             thumbnail = data.flatMap(NSImage.init(data:))
         }
     }

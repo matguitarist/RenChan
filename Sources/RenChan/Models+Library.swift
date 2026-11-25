@@ -55,7 +55,8 @@ extension AppModel {
 
     /// Unpacks a zip into the game's own folder in RenChan's data, then adds it. The zip is left as it is.
     @discardableResult
-    func addZip(_ zip: URL) -> Game? {
+    func addZip(_ zip: URL) async -> Game? {
+        let request = confirmZip ?? ZipRequest(url: zip)
         confirmZip = nil
         if let existing = games.first(where: { $0.sourcePath == zip.path }) {
             selection = existing.id
@@ -63,8 +64,10 @@ extension AppModel {
         }
         let id = UUID()
         let target = Store.gameFolder(id).appending(path: "source", directoryHint: .isDirectory)
+        unpacking = request
+        defer { unpacking = nil }
         do {
-            try ZipImport.unpack(zip, into: target)
+            try await ZipImport.unpackInBackground(zip, into: target)
         } catch {
             notice = error.message
             log.post(.warning, "Refused \(zip.path): \(error)", source: "Library")

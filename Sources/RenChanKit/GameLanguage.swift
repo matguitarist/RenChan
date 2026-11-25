@@ -89,13 +89,8 @@ public enum LanguageLoader {
     public static let original = "None"
 
     public static func install(_ language: String?, copy: URL) throws {
-        let file = copy.appending(path: "game/\(fileName)")
-        guard let language, !language.isEmpty else {
-            for url in [file, file.deletingPathExtension().appendingPathExtension("rpyc")] { try? FileManager.default.removeItem(at: url) }
-            return
-        }
-        let text = source(language)
-        if (try? String(contentsOf: file, encoding: .utf8)) != text { try text.write(to: file, atomically: true, encoding: .utf8) }
+        guard let language, !language.isEmpty else { return CopyScript.remove(named: fileName, from: copy) }
+        try CopyScript.place(source(language), named: fileName, in: copy)
     }
 
     /// Python 2 and 3. Runs after the game's own init, so it wins over a language the game sets.

@@ -53,7 +53,7 @@ extension AppModel {
 
     /// Points the game at the new version and drops the old working copy; the next Play makes a fresh one.
     @discardableResult
-    func applyUpdate(_ request: UpdateRequest) -> Bool {
+    func applyUpdate(_ request: UpdateRequest) async -> Bool {
         confirmUpdate = nil
         guard let old = game(request.game) else { return false }
         let folder = Store.gameFolder(old.id)
@@ -62,7 +62,9 @@ extension AppModel {
         do {
             if request.isZip {
                 let target = folder.appending(path: "source-\(UUID().uuidString.prefix(8))", directoryHint: .isDirectory)
-                try ZipImport.unpack(request.url, into: target)
+                unpacking = ZipRequest(url: request.url, size: request.size)
+                defer { unpacking = nil }
+                try await ZipImport.unpackInBackground(request.url, into: target)
                 unpacked = target
                 found = (try GameLocator.locate(target).base, .zip)
             } else {

@@ -38,7 +38,14 @@ public enum Labels {
 
     /// Every label in the library, A to Z, once.
     public static func all(in games: [Game]) -> [String] {
-        games.flatMap(\.labels).reduce(into: [String]()) { result, label in result = add(label, to: result) }
+        var seen = Set<String>()
+        var result: [String] = []
+        for label in games.lazy.flatMap(\.labels) {
+            let clean = label.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !clean.isEmpty, seen.insert(clean.folding(options: .caseInsensitive, locale: nil)).inserted else { continue }
+            result.append(clean)
+        }
+        return result.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
     }
 }
 

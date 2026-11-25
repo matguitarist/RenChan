@@ -51,8 +51,7 @@ public enum SaveTool {
     public static let fileName = "zz_renchan_saves.rpy"
 
     public static func install(copy: URL) throws {
-        let file = copy.appending(path: "game/\(fileName)")
-        if (try? String(contentsOf: file, encoding: .utf8)) != source { try source.write(to: file, atomically: true, encoding: .utf8) }
+        try CopyScript.place(source, named: fileName, in: copy)
     }
 
     /// renchan_saves dump SLOT OUT.json, or renchan_saves set SLOT CHANGES.json OUT.json
