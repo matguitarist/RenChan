@@ -1,0 +1,35 @@
+{
+  "fill": {
+    "automatic-gradient": "srgb:0.90980,0.45490,0.60390,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "blossom.svg",
+          "name": "blossom"
+        },
+        {
+          "glass": true,
+          "image-name": "textbox.svg",
+          "name": "textbox",
+          "opacity": 0.7
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}
