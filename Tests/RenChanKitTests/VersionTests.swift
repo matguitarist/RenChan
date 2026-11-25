@@ -1,3 +1,4 @@
+import DownloadKit
 import Foundation
 import Testing
 @testable import RenChanKit
@@ -44,7 +45,14 @@ func detectsEachVersionLine(files: [String: String], version: String, python: Py
     f546f949b275b7b153345bee8fb8add059f42e5c renpy-8.6.1-sdk.tar.bz2
     4d76d88f690ff7d600218dad3941dfddb88e2104e107367a0600a17364335509 renpy-8.6.1-sdk.tar.bz2
     """
-    #expect(RuntimeCatalog.sha256(for: "renpy-8.6.1-sdk.tar.bz2", in: sums) == "4d76d88f690ff7d600218dad3941dfddb88e2104e107367a0600a17364335509")
-    #expect(RuntimeCatalog.sha256(for: "renpy-8.6.1-sdk.zip", in: sums) == nil)
-    #expect(throws: RuntimeDownload.Failure.self) { try RuntimeDownload.verify(actual: "aa", expected: "bb") }
+    #expect(SHA256Hex.find(for: "renpy-8.6.1-sdk.tar.bz2", in: sums) == "4d76d88f690ff7d600218dad3941dfddb88e2104e107367a0600a17364335509")
+    #expect(SHA256Hex.find(for: "renpy-8.6.1-sdk.zip", in: sums) == nil)
+}
+
+/// The Runtimes page words a missing version and a bad download from these.
+@Test func downloadFailuresKeepRenChansOwnWords() {
+    let url = RuntimeCatalog.archiveURL("9.9.9")
+    #expect(RuntimeDownload.failure(.http(status: 404, url: url)) as? RuntimeDownload.Failure == .http(404))
+    #expect(RuntimeDownload.failure(.checksumMismatch(expected: "aa", actual: "bb")) as? RuntimeDownload.Failure
+            == .checksumMismatch(expected: "aa", actual: "bb"))
 }

@@ -62,16 +62,6 @@ public enum RuntimeCatalog {
         URL(string: "https://www.renpy.org/dl/\(version)/checksums.txt")!
     }
 
-    /// The SHA-256 for `file` in a checksums.txt that mixes MD5, SHA-1 and SHA-256 lines.
-    public static func sha256(for file: String, in checksums: String) -> String? {
-        for line in checksums.split(whereSeparator: \.isNewline) {
-            let parts = line.split(separator: " ", omittingEmptySubsequences: true)
-            guard parts.count >= 2, parts.last == Substring(file), parts[0].count == 64 else { continue }
-            return parts[0].lowercased()
-        }
-        return nil
-    }
-
     /// Mac lib folders, best first (docs/research/runtime.md, "Runtimes").
     static let macFolders = ["py3-mac-universal", "py2-mac-universal", "py3-mac-x86_64", "py2-mac-x86_64", "mac-x86_64", "darwin-x86_64", "darwin-i686"]
 
