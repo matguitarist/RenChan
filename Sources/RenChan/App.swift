@@ -23,6 +23,7 @@ struct RenChanApp: App {
         Window("RenChan", id: "main") {
             ContentView()
                 .environment(model)
+                .whatsNew(app: "RenChan", repository: "matguitarist/RenChan")
                 .themed()
                 .overlay { if GridOverlay.enabled { GridOverlay() } }
                 .frame(minWidth: 820, minHeight: 520)

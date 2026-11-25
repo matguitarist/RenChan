@@ -561,6 +561,16 @@
         }
       }
     },
+    "All Releases": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toutes les versions"
+          }
+        }
+      }
+    },
     "Also show the game’s interface pictures: buttons, frames and menus": {
       "localizations": {
         "fr": {
@@ -1047,6 +1057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Console (Maj+O)"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuer"
           }
         }
       }
@@ -4857,6 +4877,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nouveautés de %@"
+          }
+        }
+      }
+    },
+    "What’s New in %@ %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveautés de %1$@ %2$@"
           }
         }
       }

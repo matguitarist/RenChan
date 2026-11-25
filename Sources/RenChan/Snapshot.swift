@@ -9,7 +9,7 @@ import SwiftUI
 /// settings-<tab>-light.png and settings-<tab>-dark.png for every Settings tab, then quits.
 /// Each PNG gets a <page>-<mode>-layout.json with the grid probes (tools/check-layout.swift).
 /// APP_SNAPSHOT_PAGES=library,runtimes,log limits the pages. Also: "library-list", "library-filtered", "library-empty", "game-details",
-/// "runtime-download", "launch-error", "vndb-search", "save-backups", "find-games", "settings".
+/// "runtime-download", "launch-error", "vndb-search", "save-backups", "find-games", "whats-new", "settings".
 /// Add APP_ACCENT=<id> to see the pages in another accent.
 /// Add APP_SNAPSHOT_MIN=1 to shrink the main window to its smallest size first.
 enum Snapshot {
@@ -85,6 +85,8 @@ enum Snapshot {
                     VNDBInfo(id: "v19376", title: "The Question: The Tease", originalTitle: "ザ・クエスチョン", developer: "Forestmaster Games", released: "2012-10-16"),
                 ], selection: "v3625", searched: true)
             }, hide: { model.vndbSearch = nil })
+            await run.shoot("whats-new", window: { WindowShot.mainWindow()?.attachedSheet },
+                            show: { WhatsNewState.shared.shown = .sample }, hide: { WhatsNewState.shared.shown = nil })
             await run.shootSettings(tabs: SettingsTab.allCases.map(\.rawValue), open: { openSettings() },
                                     select: { if let tab = SettingsTab(rawValue: $0) { model.settingsTab = tab } })
             run.finish()
