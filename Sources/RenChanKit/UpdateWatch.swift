@@ -3,7 +3,7 @@ import Foundation
 /// Versions as people write them ("0.9", "v1.2.3a", "Ch. 4"), compared part by part (S-033).
 public enum VersionOrder {
     public static func compare(_ a: String, _ b: String) -> ComparisonResult {
-        let x = parts(a), y = parts(b)
+        let x = meaningful(parts(a)), y = meaningful(parts(b))
         for i in 0..<max(x.count, y.count) {
             guard i < x.count else { return .orderedAscending }
             guard i < y.count else { return .orderedDescending }
@@ -18,6 +18,15 @@ public enum VersionOrder {
         return .orderedSame
     }
 
+    /// Words that name a build, not a version ("0.9 Final" is 0.9), and trailing zeros ("1.0.0" is 1.0 is 1).
+    static let buildWords: Set<String> = ["final", "full", "public", "release", "complete", "pc", "mac", "win", "windows", "linux", "android"]
+
+    static func meaningful(_ parts: [String]) -> [String] {
+        var kept = parts.filter { !buildWords.contains($0) }
+        while kept.count > 1, let last = kept.last, Int(last) == 0 { kept.removeLast() }
+        return kept
+    }
+
     static func parts(_ s: String) -> [String] {
         let regex = try! NSRegularExpression(pattern: #"\d+|[a-z]+"#)
         var lower = s.lowercased().trimmingCharacters(in: .whitespaces)
@@ -27,6 +36,9 @@ public enum VersionOrder {
 
     /// The version in a text: "[v0.9]" first, then a dotted number such as "1.2.3".
     public static func find(in text: String, anyBracket: Bool = false) -> String? {
+        // Download names: "Game_v0.9_pc.zip" reads as "Game v0.9 pc".
+        let text = text.replacingOccurrences(of: #"\.(zip|7z|rar|tar\.gz|tar\.bz2|tar|exe|apk|dmg)$"#, with: "", options: [.regularExpression, .caseInsensitive])
+            .replacingOccurrences(of: "_", with: " ")
         let patterns = [#"\[\s*[vV]?\s*(\d[^\]]*?)\s*\]"#, #"(?:^|[^\w.])[vV]?(\d+(?:\.\d+)+[a-z]?)(?![\w.])"#] + (anyBracket ? [#"\[\s*([^\]]+?)\s*\]"#] : [])
         for pattern in patterns {
             let regex = try! NSRegularExpression(pattern: pattern)

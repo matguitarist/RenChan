@@ -1,5 +1,13 @@
 # RenChan — Fix log
 
+## 2026-11-25 New Version Out for the version already installed, and itch.io file names not read
+
+Symptom: a game at 1.0 showed "New 1.0.0" (and posted a notification) when its page listed 1.0.0, and "v0.9 Final" counted as newer than 0.9. On itch.io, uploads named `Game_v0.9_pc.zip` or `Game-0.9.zip` gave no version at all.
+Cause: `VersionOrder.compare` counted any extra part as newer, so a trailing ".0" or a word like "Final" made a version "newer". `VersionOrder.find` needed a non-word character before the number (an underscore is a word character) and nothing like ".zip" after it.
+Fix: `compare` ignores build words (Final, Public, PC…) and trailing zeros; `find` drops an archive extension and reads underscores as spaces first, as `GameVersion.detect` already did.
+Test: `theSameVersionWrittenTwoWaysIsNotNews`, `versionsInDownloadFileNamesAreRead` (both fail on the old code).
+Rule: compare versions people type only after reducing both sides to what they mean (no build words, no trailing zeros), and clean a file name the same way everywhere it's read for a version.
+
 ## 2026-11-25 Play started while an update was put in or the save tool wrote
 
 Symptom: pressing Play while a zipped update unpacked started the game on its old files, which the update then deleted under it. Pressing Play while Unlock All or a save change was being written let the game save over those changes.

@@ -80,3 +80,22 @@ import Testing
     #expect(try Data(contentsOf: db) == before)
     #expect(throws: F95Checker.Failure.self) { try F95Checker.read(root.appending(path: "missing.sqlite3")) }
 }
+
+@Test func theSameVersionWrittenTwoWaysIsNotNews() {
+    #expect(VersionOrder.compare("1.0", "1.0.0") == .orderedSame)
+    #expect(VersionOrder.compare("v0.9 Final", "0.9") == .orderedSame)
+    #expect(VersionOrder.compare("0.9 Public", "0.9") == .orderedSame)
+    #expect(VersionOrder.compare("1.0.1", "1.0") == .orderedDescending)
+    #expect(VersionOrder.compare("0.9a", "0.9") == .orderedDescending)
+    var watch = UpdateWatch(page: "https://dev.itch.io/game")
+    watch.record(version: "1.0.0", error: nil)
+    #expect(watch.news(installed: "1.0") == nil)
+}
+
+@Test func versionsInDownloadFileNamesAreRead() {
+    #expect(VersionOrder.find(in: "Game_v0.9_pc.zip") == "0.9")
+    #expect(VersionOrder.find(in: "Game-0.9.zip") == "0.9")
+    #expect(VersionOrder.find(in: "Game-1.2.3-mac.tar.bz2") == "1.2.3")
+    let html = #"<div class="upload_name"><strong class="name" title="x">Game_v0.10_pc.zip</strong></div><div class="upload_name"><strong class="name">Game-0.9.zip</strong></div>"#
+    #expect(PageVersion.parse(html) == "0.10")
+}
