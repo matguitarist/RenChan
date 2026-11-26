@@ -57,6 +57,7 @@ enum Fixtures {
             printf '%s' '{"unlocked":40,"images":42}' > "$last"
           else
             cp "$7" "$base/renchan_last_changes.json"
+            printf '%s %s\n' "$6" "$(cat "$7")" >> "$base/renchan_runs.log"
             printf '%s' "$6" > "$base/renchan_last_slots"
             printf '%s' '{"changed":["affection_mei"],"refused":[]}' > "$last"
           fi

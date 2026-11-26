@@ -1,5 +1,21 @@
 # RenChan — Fix log
 
+## 2026-11-25 Two save edits at once sent one's changes to both saves
+
+Symptom: starting a second change in the Saves window (another save, or Persistent data) while the first was still being written could write the second change into both saves, and the first change into neither. Reports could show the other run's variables.
+Cause: every save-tool run used the same files in the game's folder, `save-changes.json` and `save-tool.json`. The second write replaced the changes file before the first Ren'Py read it, and both runs wrote into the same copy of the game at the same time.
+Fix: `runSaveTool` runs for one game take turns (`saveToolTurns`), and each run gets its own changes and report file (`changesFile`, `save-tool-<id>.json`), deleted once read.
+Test: self-test "S-036 two edits at once each change their own save" (fails on the old code: both saves got `{"met_aoi":true}`) and "the save tool leaves no change or report files behind".
+Rule: a file that hands work to another process gets a name of its own per request, and work on one shared resource (here a game's copy) runs one at a time; a fixed file name is a global variable shared by every caller.
+
+## 2026-11-25 A save moved to the Trash came back in the game
+
+Symptom: after Move to Trash in the Saves window, the save showed up again in the game's Load screen, and back in the Saves window after the next play.
+Cause: Ren'Py keeps each save twice, in ~/Library/RenPy and in the game's own `game/saves` (here RenChan's copy of the game), and syncs the newest back. RenChan only trashed the first one. It also used `FileManager.trashItem` directly, so test runs reached the real Trash.
+Fix: `trashSave(_:of:modded:)` trashes the save through `Store.trash` and deletes its twin in the matching copy (plain or modded).
+Test: self-test "a save moved to the Trash doesn't come back from the game's own copy" (fails on the old code).
+Rule: before deleting something, find every place the program that owns it keeps a copy; restore already wrote to both of Ren'Py's homes, so delete must too.
+
 ## 2026-11-25 Picking a filter while the game ran did nothing on Ren'Py 7.4.6 to 8.1
 
 Symptom: on games that run on Ren'Py 7.4.6–7.6 or 8.0–8.1, choosing a filter in the inspector during play changed nothing, while the inspector said "Changes show in the game within a second". A game started with a filter couldn't switch to another one either; RenChan reported "'renpy.gl2.gl2draw.GL2Draw' object has no attribute 'shader_cache'".

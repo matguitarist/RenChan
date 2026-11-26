@@ -28,17 +28,32 @@ extension AppModel {
 
     func showSaves(_ id: Game.ID) { savesToOpen = SavesRef(game: id) }
 
-    func trashSave(_ save: SaveFile) {
+    /// Moves a save to the Trash. Ren'Py also keeps a copy in the game's own game/saves (here, RenChan's copy of
+    /// the game) and brings back whichever it finds, so that copy goes too.
+    func trashSave(_ save: SaveFile, of game: Game, modded: Bool) {
         do {
-            try FileManager.default.trashItem(at: save.url, resultingItemURL: nil)
+            try Store.trash(save.url)
+            let copy = modded ? Store.moddedCopy(game.id) : Store.workingCopy(game.id)
+            let twin = copy.appending(path: "game/saves/\(save.url.lastPathComponent)")
+            if FileManager.default.fileExists(atPath: twin.path) { try FileManager.default.removeItem(at: twin) }
             log.post(.info, "Moved the save \(save.slot) to the Trash", source: "Saves")
         } catch {
             notice = String(localized: "RenChan couldn't move the save to the Trash: \(error.localizedDescription)")
         }
     }
 
-    /// Runs RenChan's save tool with the game's own Ren'Py, without a window.
+    /// Runs RenChan's save tool with the game's own Ren'Py, without a window. Runs for one game take turns,
+    /// each with its own report and log, so two of them never read each other's changes or write into one copy at once.
     func runSaveTool(_ game: Game, modded: Bool, _ arguments: (URL) -> [String]) async throws -> SaveTool.Report {
+        let previous = saveToolTurns[game.id]
+        let (turn, done) = AsyncStream<Void>.makeStream()
+        let mine = Task { for await _ in turn {} }
+        saveToolTurns[game.id] = mine
+        defer {
+            done.finish()
+            if saveToolTurns[game.id] == mine { saveToolTurns[game.id] = nil }
+        }
+        await previous?.value
         guard !playing.contains(game.id) else { throw SaveToolError(String(localized: "Quit \(game.title) first: it would write over the save.")) }
         guard let runtime = installedRuntime(for: game) else {
             throw SaveToolError(String(localized: "Play \(game.title) once first, so RenChan has its Ren'Py \(runtimeVersion(for: game))."))
@@ -50,8 +65,9 @@ extension AppModel {
         if modded { environment.merge(ModInstaller.environment(modded: true, saves: Store.moddedSaves(game.id))) { _, new in new } }
         try SaveTool.install(copy: copy)
         if Store.isOverridden { environment["HOME"] = Store.renpyHome.path }
-        let report = Store.gameFolder(game.id).appending(path: "save-tool.json")
-        try? FileManager.default.removeItem(at: report)
+        let run = UUID().uuidString.prefix(8)
+        let report = Store.gameFolder(game.id).appending(path: "save-tool-\(run).json")
+        defer { try? FileManager.default.removeItem(at: report) }
         let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: Store.gameFolder(game.id).appending(path: "save-tool.log"),
                               environment: environment, arguments: arguments(report))
         // Awaited, not run: closing the window mustn't stop Ren'Py halfway through writing a save.
@@ -80,12 +96,18 @@ extension AppModel {
             _ = try SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit, modded: modded)
             backupRevision += 1
         }
-        let changesFile = Store.gameFolder(game.id).appending(path: "save-changes.json")
+        let changesFile = Self.changesFile(game)
+        defer { try? FileManager.default.removeItem(at: changesFile) }
         try SaveTool.writeChanges(changes, to: changesFile)
         let report = try await runSaveTool(game, modded: modded) { SaveTool.setArguments(slots: saves.map(\.slot), changes: changesFile, output: $0) }
         let slots = saves.count == 1 ? "save \(saves[0].slot)" : "\(report.saves ?? 0) of \(saves.count) saves"
         log.post(.info, "Changed \(report.changed?.joined(separator: ", ") ?? "nothing") in \(game.title)'s \(slots)", source: "Saves")
         return (report.changed ?? [], report.saves ?? (report.changed?.isEmpty == false ? 1 : 0))
+    }
+
+    /// One file of changes per write: two writes never share one.
+    static func changesFile(_ game: Game) -> URL {
+        Store.gameFolder(game.id).appending(path: "save-changes-\(UUID().uuidString.prefix(8)).json")
     }
 
     /// Pins a variable to the top of the Saves window for this game, or unpins it.
@@ -114,7 +136,8 @@ extension AppModel {
 
     func writePersistent(_ changes: [String: Any], of game: Game, modded: Bool) async throws -> [String] {
         backUpBeforeEditing(game, modded: modded)
-        let changesFile = Store.gameFolder(game.id).appending(path: "save-changes.json")
+        let changesFile = Self.changesFile(game)
+        defer { try? FileManager.default.removeItem(at: changesFile) }
         try SaveTool.writeChanges(changes, to: changesFile)
         let report = try await runSaveTool(game, modded: modded) { SaveTool.persistentSetArguments(changes: changesFile, output: $0) }
         log.post(.info, "Changed \(report.changed?.joined(separator: ", ") ?? "nothing") in \(game.title)'s persistent data", source: "Saves")
@@ -226,7 +249,7 @@ struct SavesWindow: View {
             .onChange(of: modded) { reload(game) }
             .confirmationDialog(String(localized: "Move \(confirmTrash?.place ?? "") to the Trash?"), isPresented: Binding(get: { confirmTrash != nil }, set: { if !$0 { confirmTrash = nil } })) {
                 Button("Move to Trash", role: .destructive) {
-                    if let save = confirmTrash { model.trashSave(save); reload(game) }
+                    if let save = confirmTrash { model.trashSave(save, of: game, modded: modded); reload(game) }
                 }
             } message: {
                 Text("You can put it back from the Trash.")

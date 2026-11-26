@@ -157,6 +157,31 @@ extension SelfTest {
                 check("S-036 a change is backed up first, then written", changed == ["affection_mei"] && sent == #"{"affection_mei":30}"#
                       && model.backups(first.id).filter { $0.reason == .beforeEdit }.count == backupsBefore + 1, sent)
             }
+            if let game = model.game(first.id), listed.count > 1 {
+                // Two edits started together: each change reaches its own save, never the other's.
+                let runs = Store.workingCopy(first.id).appending(path: "renchan_runs.log")
+                try? FileManager.default.removeItem(at: runs)
+                async let a = try? model.writeVariables(["chapter": 7], in: listed[0], of: game, modded: false)
+                async let b = try? model.writeVariables(["met_aoi": true], in: listed[1], of: game, modded: false)
+                _ = await (a, b)
+                let lines = Set(((try? String(contentsOf: runs, encoding: .utf8)) ?? "").split(separator: "\n").map(String.init))
+                check("S-036 two edits at once each change their own save",
+                      lines == ["\(listed[0].slot) {\"chapter\":7}", "\(listed[1].slot) {\"met_aoi\":true}"], "\(lines)")
+                let leftovers = ((try? FileManager.default.contentsOfDirectory(atPath: Store.gameFolder(first.id).path)) ?? [])
+                    .filter { $0.hasPrefix("save-changes") || $0.hasPrefix("save-tool-") }
+                check("the save tool leaves no change or report files behind", leftovers.isEmpty, "\(leftovers)")
+            }
+            if let game = model.game(first.id), let folder = model.savesFolder(game, modded: false) {
+                // Ren'Py keeps a second copy of each save in the game's game/saves and brings back whichever it finds.
+                Fixtures.save("9-9", name: "Doomed", minutesAgo: 1, color: .systemGray, in: folder)
+                let twinFolder = Store.workingCopy(first.id).appending(path: "game/saves")
+                Fixtures.save("9-9", name: "Doomed", minutesAgo: 1, color: .systemGray, in: twinFolder)
+                if let doomed = SaveList.list(in: folder).first(where: { $0.slot == "9-9" }) {
+                    model.trashSave(doomed, of: game, modded: false)
+                }
+                check("a save moved to the Trash doesn't come back from the game's own copy",
+                      !SaveList.list(in: folder).contains { $0.slot == "9-9" } && !SaveList.list(in: twinFolder).contains { $0.slot == "9-9" })
+            }
         } else {
             check("S-035 the game knows its saves folder", false)
         }

@@ -45,6 +45,8 @@ final class AppModel {
     /// Games whose working copy is being made, before they start.
     var copying: [Game.ID: CopyProgress] = [:] { didSet { syncMenu() } }
     @ObservationIgnored var copyStops: [Game.ID: StopFlag] = [:]
+    /// The save-tool run each game's next run waits for.
+    @ObservationIgnored var saveToolTurns: [Game.ID: Task<Void, Never>] = [:]
     var download: DownloadState?
     /// Games waiting to play until their Ren'Py is downloaded, in the order Play was pressed.
     var waitingToPlay: [Game.ID] = []
