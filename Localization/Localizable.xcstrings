@@ -3361,6 +3361,16 @@
         }
       }
     },
+    "RenChan couldn't move the modded saves of %@ to the Trash, so it kept the game: %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan n’a pas pu placer les sauvegardes avec mods de %@ dans la corbeille, il a donc gardé le jeu : %@"
+          }
+        }
+      }
+    },
     "RenChan couldn't move the save to the Trash: %@": {
       "localizations": {
         "fr": {
@@ -3451,12 +3461,12 @@
         }
       }
     },
-    "RenChan deletes its working copy. The game you added and your saves stay where they are.": {
+    "RenChan deletes its working copy. The game you added and your saves stay where they are; saves made with mods and walkthroughs go to the Trash.": {
       "localizations": {
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "RenChan supprime sa copie de travail. Le jeu que vous avez ajouté et vos sauvegardes restent où ils sont."
+            "value": "RenChan supprime sa copie de travail. Le jeu que vous avez ajouté et vos sauvegardes restent où ils sont ; les sauvegardes avec mods et les soluces vont dans la corbeille."
           }
         }
       }
@@ -3777,6 +3787,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les sauvegardes faites dans le jeu apparaissent ici."
+          }
+        }
+      }
+    },
+    "Saves made with mods on": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sauvegardes faites avec des mods"
           }
         }
       }

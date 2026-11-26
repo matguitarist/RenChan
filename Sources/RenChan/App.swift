@@ -212,7 +212,9 @@ enum Store {
     static func moddedCopy(_ id: UUID) -> URL { gameFolder(id).appending(path: "play-modded", directoryHint: .isDirectory) }
     /// Where modded play keeps its saves, through RENPY_PATH_TO_SAVES (S-020).
     static func moddedSaves(_ id: UUID) -> URL { gameFolder(id).appending(path: "Modded Saves", directoryHint: .isDirectory) }
-    /// A game's walkthroughs (S-032). Removed with the game.
+    /// Where the mods of a game keep state between launches (S-023): outside the copies, so an update keeps it.
+    static func modState(_ id: UUID) -> URL { gameFolder(id).appending(path: "Mod State", directoryHint: .isDirectory) }
+    /// A game's walkthroughs (S-032). Go to the Trash with the game's modded saves when it's removed.
     static func walkthroughsFolder(_ id: UUID) -> URL { gameFolder(id).appending(path: "Walkthroughs", directoryHint: .isDirectory) }
     /// The mod library (S-017).
     static var modsFolder: URL { dataFolder.appending(path: "Mods", directoryHint: .isDirectory) }
@@ -234,4 +236,25 @@ enum Store {
     }
 
     static var saveRoot: URL { SaveFolder.root(home: renpyHome) }
+
+    /// Moves a file to the Trash; in a test run, to a Trash folder in the test's data folder instead,
+    /// so tests neither fill the person's Trash nor lose sight of what went there.
+    @discardableResult
+    static func trash(_ url: URL) throws -> URL? {
+        guard isOverridden else {
+            var trashed: NSURL?
+            try FileManager.default.trashItem(at: url, resultingItemURL: &trashed)
+            return trashed as URL?
+        }
+        let folder = dataFolder.appending(path: "Trash", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        var target = folder.appending(path: url.lastPathComponent)
+        var n = 2
+        while FileManager.default.fileExists(atPath: target.path) {
+            target = folder.appending(path: "\(url.lastPathComponent) \(n)")
+            n += 1
+        }
+        try FileManager.default.moveItem(at: url, to: target)
+        return target
+    }
 }

@@ -23,6 +23,8 @@ public struct SaveBackup: Identifiable, Hashable, Sendable {
     public var reason: Reason
     public var saveCount: Int
     public var size: Int64
+    /// The saves made with mods on (Modded Saves), not the game's own: a restore puts them back there.
+    public var modded = false
 
     var saves: URL { folder.appending(path: "saves", directoryHint: .isDirectory) }
 }
@@ -32,11 +34,13 @@ public enum SaveBackups {
     private struct Info: Codable {
         var date: Date
         var reason: SaveBackup.Reason
+        /// Missing in backups made before 0.9.2, which all hold the game's own saves.
+        var modded: Bool?
     }
 
     /// Copies the saves folder into a new dated backup (an APFS clone where it can).
     @discardableResult
-    public static func backUp(saves: URL, into root: URL, reason: SaveBackup.Reason = .manual, at date: Date = .now) throws -> SaveBackup {
+    public static func backUp(saves: URL, into root: URL, reason: SaveBackup.Reason = .manual, modded: Bool = false, at date: Date = .now) throws -> SaveBackup {
         guard FileManager.default.fileExists(atPath: saves.path) else { throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: saves.path]) }
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         let formatter = DateFormatter()
@@ -53,22 +57,23 @@ public enum SaveBackups {
         try FileManager.default.copyItem(at: saves, to: folder.appending(path: "saves", directoryHint: .isDirectory))
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
-        try encoder.encode(Info(date: date, reason: reason)).write(to: folder.appending(path: "backup.json"))
+        try encoder.encode(Info(date: date, reason: reason, modded: modded ? true : nil)).write(to: folder.appending(path: "backup.json"))
         return try read(folder)
     }
 
     /// Before a launch (S-038): backs up the saves when something in them is newer than the newest backup,
     /// then keeps only the newest `keep` backups made this way. Returns the backup, or nil when none was needed.
+    /// Modded and plain saves are compared and kept apart: a backup of one says nothing about the other.
     @discardableResult
-    public static func backUpBeforePlay(saves: URL, into root: URL, keep: Int = 5, at date: Date = .now) throws -> SaveBackup? {
+    public static func backUpBeforePlay(saves: URL, into root: URL, modded: Bool = false, keep: Int = 5, at date: Date = .now) throws -> SaveBackup? {
         let files = (try? FileManager.default.contentsOfDirectory(at: saves, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
         let changed = files.filter { !$0.lastPathComponent.hasPrefix(".") }
             .compactMap { (try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate }.max()
         guard let changed else { return nil }
-        let existing = list(root, measured: false)
+        let existing = list(root, measured: false).filter { $0.modded == modded }
         if let newest = existing.first, changed <= newest.date { return nil }
-        let backup = try backUp(saves: saves, into: root, reason: .beforePlay, at: date)
-        for old in list(root, measured: false).filter({ $0.reason == .beforePlay }).dropFirst(max(keep, 1)) {
+        let backup = try backUp(saves: saves, into: root, reason: .beforePlay, modded: modded, at: date)
+        for old in list(root, measured: false).filter({ $0.reason == .beforePlay && $0.modded == modded }).dropFirst(max(keep, 1)) {
             try? FileManager.default.removeItem(at: old.folder)
         }
         return backup
@@ -82,13 +87,14 @@ public enum SaveBackups {
     }
 
     /// Puts a backup's saves in place of the current ones, after backing those up (the returned backup).
+    /// `saves` must be the folder the backup came from: the modded saves for a `modded` backup.
     /// `workingSaves` is game/saves in the working copy: Ren'Py also keeps saves there and takes the newest,
     /// so it gets the same files.
     @discardableResult
     public static func restore(_ backup: SaveBackup, saves: URL, workingSaves: URL? = nil, root: URL, at date: Date = .now) throws -> SaveBackup? {
         var before: SaveBackup?
         if FileManager.default.fileExists(atPath: saves.path) {
-            before = try backUp(saves: saves, into: root, reason: .beforeRestore, at: date)
+            before = try backUp(saves: saves, into: root, reason: .beforeRestore, modded: backup.modded, at: date)
         }
         for target in [saves] + [workingSaves].compactMap({ $0 }) {
             if target != saves && !FileManager.default.fileExists(atPath: target.path) { continue }
@@ -110,6 +116,7 @@ public enum SaveBackups {
         let info = try decoder.decode(Info.self, from: Data(contentsOf: folder.appending(path: "backup.json")))
         let saves = folder.appending(path: "saves", directoryHint: .isDirectory)
         return SaveBackup(folder: folder, date: info.date, reason: info.reason,
-                          saveCount: measured ? SaveFolder.count(saves) : 0, size: measured ? ((try? FolderSize.summary(of: saves))?.allocated ?? 0) : 0)
+                          saveCount: measured ? SaveFolder.count(saves) : 0, size: measured ? ((try? FolderSize.summary(of: saves))?.allocated ?? 0) : 0,
+                          modded: info.modded ?? false)
     }
 }

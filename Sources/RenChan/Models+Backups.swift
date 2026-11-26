@@ -33,9 +33,11 @@ extension AppModel {
     /// Restores after backing up the current saves. Refused while the game plays: Ren'Py would write over it.
     func restore(_ backup: SaveBackup, for id: Game.ID) {
         confirmRestore = nil
-        guard let game = game(id), let saves = saveFolder(game), !playing.contains(id) else { return }
+        // A backup of the modded saves goes back to the modded saves, never over the game's own.
+        guard let game = game(id), let saves = savesFolder(game, modded: backup.modded), !playing.contains(id) else { return }
+        let copy = backup.modded ? Store.moddedCopy(id) : Store.workingCopy(id)
         do {
-            try SaveBackups.restore(backup, saves: saves, workingSaves: Store.workingCopy(id).appending(path: "game/saves", directoryHint: .isDirectory),
+            try SaveBackups.restore(backup, saves: saves, workingSaves: copy.appending(path: "game/saves", directoryHint: .isDirectory),
                                     root: Store.backupsFolder(id))
             backupRevision += 1
             log.post(.info, "Restored the saves of \(game.title) from \(backup.id); the replaced saves were backed up", source: "Saves")

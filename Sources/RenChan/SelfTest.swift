@@ -198,6 +198,7 @@ extension SelfTest {
         check("S-020 modded play keeps its saves apart, after one backup",
               FileManager.default.fileExists(atPath: moddedSave.path)
               && model.backups(first.id).filter { $0.reason == .beforeMods }.count == moddedBackupsBefore + 1)
+        await moddedSavesChecks(model, first: first)
         let urm = model.mods.first { $0.name == "URM" }!.id
         model.setMod(urm, enabled: false, in: first.id)
         model.play(first.id)
@@ -310,6 +311,9 @@ extension SelfTest {
             "game/options.rpy": Fixtures.options(name: "The Question", saves: "the_question-7"),
         ])
         let kept = model.game(first.id)
+        let modStateFile = Store.modState(first.id).appending(path: "bridge.json")
+        try? FileManager.default.createDirectory(at: Store.modState(first.id), withIntermediateDirectories: true)
+        try? "{\"crossed\": true}".write(to: modStateFile, atomically: true, encoding: .utf8)
         model.prepareUpdate(first.id, from: newVersion)
         check("S-013 picking a new version asks first", model.confirmUpdate?.url == newVersion && model.game(first.id)?.sourcePath == question.path)
         if let request = model.confirmUpdate { await model.applyUpdate(request) }
@@ -320,6 +324,7 @@ extension SelfTest {
               updated?.playtime == kept?.playtime && updated?.labels == kept?.labels && updated?.notes == kept?.notes
               && updated?.status == kept?.status && !model.backups(first.id).isEmpty)
         check("S-013 the old version is left as it was", digest(question) == before)
+        check("S-023 a mod's saved state outlives an update", FileManager.default.fileExists(atPath: modStateFile.path))
         model.prepareUpdate(first.id, from: newVersion)
         check("S-013 picking the same version again says so", model.confirmUpdate == nil && model.notice != nil)
         model.notice = nil
@@ -350,7 +355,12 @@ extension SelfTest {
         await watchAndImportChecks(model, first: first, shelf: shelf)
 
         // S-008 Remove a game
+        let moddedSaveDir = model.game(first.id)?.saveDirectory ?? ""
+        let hadModdedSaves = FileManager.default.fileExists(atPath: Store.moddedSaves(first.id).appending(path: moddedSaveDir).path)
         model.remove(first.id)
+        let trashed = Store.dataFolder.appending(path: "Trash/The Question/Modded Saves/\(moddedSaveDir)/1-1-LT1.save")
+        check("removing a game puts its modded saves in the Trash, not nowhere",
+              hadModdedSaves && FileManager.default.fileExists(atPath: trashed.path), trashed.path)
         check("removing deletes the working copy and keeps the original and saves",
               !FileManager.default.fileExists(atPath: copy.path) && FileManager.default.fileExists(atPath: question.path)
               && FileManager.default.fileExists(atPath: Store.saveRoot.appending(path: "the_question-7").path)

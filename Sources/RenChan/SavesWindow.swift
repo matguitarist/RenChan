@@ -46,6 +46,8 @@ extension AppModel {
         let copy = modded ? Store.moddedCopy(game.id) : Store.workingCopy(game.id)
         try WorkingCopy.prepare(base: game.baseURL, copy: copy, allowFullCopy: false)
         var environment = modded ? try prepareMods(game, copy: copy) : [:]
+        // With every mod off, prepareMods says nothing about the saves; the modded saves are still the ones to read and write.
+        if modded { environment.merge(ModInstaller.environment(modded: true, saves: Store.moddedSaves(game.id))) { _, new in new } }
         try SaveTool.install(copy: copy)
         if Store.isOverridden { environment["HOME"] = Store.renpyHome.path }
         let report = Store.gameFolder(game.id).appending(path: "save-tool.json")
@@ -75,7 +77,7 @@ extension AppModel {
     /// The same changes in several saves, after one backup: "Save to All Saves". Returns what changed and in how many saves.
     func writeVariables(_ changes: [String: Any], in saves: [SaveFile], of game: Game, modded: Bool) async throws -> (changed: [String], saves: Int) {
         if let folder = savesFolder(game, modded: modded) {
-            _ = try SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit)
+            _ = try SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit, modded: modded)
             backupRevision += 1
         }
         let changesFile = Store.gameFolder(game.id).appending(path: "save-changes.json")
@@ -129,7 +131,7 @@ extension AppModel {
 
     private func backUpBeforeEditing(_ game: Game, modded: Bool) {
         guard let folder = savesFolder(game, modded: modded), FileManager.default.fileExists(atPath: folder.path) else { return }
-        _ = try? SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit)
+        _ = try? SaveBackups.backUp(saves: folder, into: Store.backupsFolder(game.id), reason: .beforeEdit, modded: modded)
         backupRevision += 1
     }
 }

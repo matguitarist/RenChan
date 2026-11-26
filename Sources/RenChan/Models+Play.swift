@@ -126,9 +126,10 @@ extension AppModel {
     static let backupBeforePlayKey = "saves.backupBeforePlay"
 
     func backUpBeforePlay(_ game: Game) {
-        guard UserDefaults.standard.object(forKey: Self.backupBeforePlayKey) as? Bool ?? true, let saves = saveFolder(game) else { return }
+        guard UserDefaults.standard.object(forKey: Self.backupBeforePlayKey) as? Bool ?? true,
+              let saves = savesFolder(game, modded: game.hasModsOn) else { return }
         do {
-            if let backup = try SaveBackups.backUpBeforePlay(saves: saves, into: Store.backupsFolder(game.id)) {
+            if let backup = try SaveBackups.backUpBeforePlay(saves: saves, into: Store.backupsFolder(game.id), modded: game.hasModsOn) {
                 backupRevision += 1
                 log.post(.info, "Backed up \(backup.contents) of \(game.title) before playing", source: "Saves")
             }

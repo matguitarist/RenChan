@@ -47,7 +47,7 @@ struct ContentView: View {
         .confirmationDialog(removeTitle, isPresented: Binding(get: { model.confirmRemove != nil }, set: { if !$0 { model.confirmRemove = nil } })) {
             Button("Remove", role: .destructive) { if let id = model.confirmRemove { model.remove(id) } }
         } message: {
-            Text("RenChan deletes its working copy. The game you added and your saves stay where they are.")
+            Text("RenChan deletes its working copy. The game you added and your saves stay where they are; saves made with mods and walkthroughs go to the Trash.")
         }
         .confirmationDialog(copyTitle, isPresented: Binding(get: { model.confirmFullCopy != nil }, set: { if !$0 { model.confirmFullCopy = nil } })) {
             Button("Copy and Play") { model.confirmCopyAndPlay() }

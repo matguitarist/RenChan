@@ -35,6 +35,7 @@ enum Fixtures {
         # RenChan's save tool (S-036): canned answers, and the changes kept for the self-test to read.
         if [ "$4" = "renchan_saves" ]; then
           for last; do :; done
+          printf '%s' "${RENPY_PATH_TO_SAVES:-}" > "$base/renchan_last_saves_root"
           if [ "$5" = "dump" ]; then
             printf '%s' '{"variables":[{"name":"affection_mei","kind":"int","value":"12"},{"name":"bag","kind":"other","value":"list (3)"},{"name":"chapter","kind":"float","value":"2.5"},{"name":"hero","kind":"string","value":"Ana"},{"name":"met_aoi","kind":"bool","value":"true"}]}' > "$last"
           elif [ "$5" = "pdump" ]; then
@@ -230,6 +231,7 @@ enum SeedData {
             try? Data(repeating: 7, count: 4_000).write(to: saves.appending(path: "persistent"))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -86400 * 6))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforeRestore, at: Date(timeIntervalSinceNow: -86400 * 2))
+            _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforeEdit, modded: true, at: Date(timeIntervalSinceNow: -86400))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), at: Date(timeIntervalSinceNow: -7200))
             _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(first.id), reason: .beforePlay, at: Date(timeIntervalSinceNow: -3600))
             // Discover (S-028) without the network: a few results and their releases.

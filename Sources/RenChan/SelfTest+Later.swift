@@ -41,6 +41,39 @@ extension SelfTest {
         return shelf
     }
 
+    /// Saves made with mods on stay theirs: a backup of them restores into them, and the save tool
+    /// reads them even with every mod off.
+    static func moddedSavesChecks(_ model: AppModel, first: Game) async {
+        guard let game = model.game(first.id), let modded = model.savesFolder(game, modded: true),
+              let plain = model.saveFolder(game) else {
+            check("modded saves have a folder", false)
+            return
+        }
+        // A save only the game's own saves have: a restore into the wrong folder would take it away.
+        let plainOnly = plain.appending(path: "7-7-LT1.save")
+        try? FileManager.default.createDirectory(at: plain, withIntermediateDirectories: true)
+        try? "plain".write(to: plainOnly, atomically: true, encoding: .utf8)
+        let backup = try? SaveBackups.backUp(saves: modded, into: Store.backupsFolder(game.id), reason: .beforeEdit, modded: true)
+        try? "later".write(to: modded.appending(path: "9-9-LT1.save"), atomically: true, encoding: .utf8)
+        if let backup { model.restore(backup, for: game.id) }
+        check("a backup of the modded saves restores into the modded saves, not over the game's own",
+              backup?.modded == true && !FileManager.default.fileExists(atPath: modded.appending(path: "9-9-LT1.save").path)
+              && FileManager.default.fileExists(atPath: plainOnly.path) && model.backups(game.id).first?.modded == true)
+        try? FileManager.default.removeItem(at: plainOnly)
+        // Every mod off: the save tool still reads the modded saves.
+        let mods = game.mods
+        model.update(game.id) { $0.mods = $0.mods.map { var use = $0; use.enabled = false; return use } }
+        Fixtures.save("2-1", name: "With mods", minutesAgo: 1, color: .systemPurple, in: modded)
+        if let off = model.game(game.id), let save = SaveList.list(in: modded).first {
+            _ = try? await model.readVariables(save, of: off, modded: true)
+            let root = (try? String(contentsOf: Store.moddedCopy(game.id).appending(path: "renchan_last_saves_root"), encoding: .utf8)) ?? ""
+            check("with every mod off, a Modded save is read from the modded saves", root == Store.moddedSaves(game.id).path, root)
+        } else {
+            check("with every mod off, a Modded save is read from the modded saves", false, "no modded save")
+        }
+        model.update(game.id) { $0.mods = mods }
+    }
+
     /// S-035 Browse saves, S-036 change a save's variables, S-042 the gallery.
     static func savesChecks(_ model: AppModel, first: Game) async {
         // S-035 Browse saves, S-036 change a save's variables (the pretend runtime stands in for Ren'Py)

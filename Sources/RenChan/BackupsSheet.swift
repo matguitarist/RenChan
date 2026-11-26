@@ -29,10 +29,19 @@ struct SaveBackupsSheet: View {
                         TableColumn("Date") { backup in Text(backup.date, format: .dateTime.day().month().year().hour().minute()) }
                             .width(min: 150, ideal: 180)
                         TableColumn("Kind") { backup in
-                            Text(backup.reason.title)
-                                .foregroundStyle(backup.reason == .manual ? .primary : .secondary)
+                            HStack(spacing: Space.xs) {
+                                Text(backup.reason.title)
+                                    .foregroundStyle(backup.reason == .manual ? .primary : .secondary)
+                                if backup.modded {
+                                    // Restored into the modded saves, not the game's own.
+                                    Image(systemName: "puzzlepiece.extension")
+                                        .foregroundStyle(.secondary)
+                                        .help("Saves made with mods on")
+                                        .accessibilityLabel("Saves made with mods on")
+                                }
+                            }
                         }
-                        .width(min: 100, ideal: 120)
+                        .width(min: 120, ideal: 190)
                         TableColumn("Saves") { backup in
                             if backup.saveCount == 0 {
                                 // Only the persistent data (gallery, endings), before the first save.

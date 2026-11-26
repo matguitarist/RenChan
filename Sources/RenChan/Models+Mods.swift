@@ -114,7 +114,7 @@ extension AppModel {
     func removeMod(_ modID: UUID, from id: Game.ID) {
         update(id) { $0.mods.removeAll { $0.mod == modID } }
         guard !games.contains(where: { $0.mods.contains { $0.mod == modID } }), let mod = mod(modID) else { return }
-        try? FileManager.default.trashItem(at: ModLibrary.folder(mod, root: Store.modsFolder), resultingItemURL: nil)
+        _ = try? Store.trash(ModLibrary.folder(mod, root: Store.modsFolder))
         mods.removeAll { $0.id == modID }
         modsRevision += 1
         try? ModLibrary.save(mods, to: Store.modsFolder)
@@ -128,7 +128,7 @@ extension AppModel {
         let enabled = enabledMods(game)
         try ModInstaller.apply(enabled, root: Store.modsFolder, base: game.baseURL, copy: copy)
         // S-023: the renchan module mods call.
-        try ModAPI.install(copy: copy)
+        try ModAPI.install(copy: copy, state: Store.modState(game.id))
         if !game.backedUpBeforeMods {
             if let saves = saveFolder(game), FileManager.default.fileExists(atPath: saves.path) {
                 _ = try? SaveBackups.backUp(saves: saves, into: Store.backupsFolder(game.id), reason: .beforeMods)

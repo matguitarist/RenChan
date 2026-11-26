@@ -93,12 +93,27 @@ extension AppModel {
         add(panel.urls)
     }
 
-    /// Deletes RenChan's working copy (and the unpacked zip). The game that was added and its saves stay.
+    /// Deletes RenChan's working copies (and the unpacked zip). The game that was added and its saves stay;
+    /// what only RenChan's folder holds (saves made with mods on, walkthroughs, mod state) goes to the Trash.
     func remove(_ id: Game.ID) {
         confirmRemove = nil
         guard let game = game(id) else { return }
         if playing.contains(id) { stop(id) }
-        try? FileManager.default.removeItem(at: Store.gameFolder(id))
+        let folder = Store.gameFolder(id)
+        do {
+            if let kept = try RemovedGame.keepAside([Store.moddedSaves(id), Store.walkthroughsFolder(id), Store.modState(id),
+                                                     ModAPI.stateFolder(Store.moddedCopy(id))],
+                                                    title: game.title, in: folder) {
+                try Store.trash(kept)
+                log.post(.info, "Moved the modded saves, walkthroughs and mod state of \(game.title) to the Trash", source: "Library")
+            }
+        } catch {
+            // Nothing is deleted when the person's files couldn't be put somewhere safe.
+            log.post(.error, "Couldn't move the modded saves of \(game.title) to the Trash: \(error.localizedDescription)", source: "Library")
+            notice = String(localized: "RenChan couldn't move the modded saves of \(game.title) to the Trash, so it kept the game: \(error.localizedDescription)")
+            return
+        }
+        try? FileManager.default.removeItem(at: folder)
         games.removeAll { $0.id == id }
         if selection == id { selection = shownGames.first?.id }
         saveLibrary()

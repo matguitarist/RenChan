@@ -86,6 +86,11 @@ extension AppModel {
         }
         // The working copy is a clone of the old files; an unpacked old zip is RenChan's own and goes too.
         try? FileManager.default.removeItem(at: Store.workingCopy(old.id))
+        // Mod state from before 0.9.2 lives in the modded copy: it moves out first, where ModAPI.install looks for it.
+        let oldState = ModAPI.stateFolder(Store.moddedCopy(old.id))
+        if FileManager.default.fileExists(atPath: oldState.path), !FileManager.default.fileExists(atPath: Store.modState(old.id).path) {
+            try? FileManager.default.moveItem(at: oldState, to: Store.modState(old.id))
+        }
         try? FileManager.default.removeItem(at: Store.moddedCopy(old.id))
         if old.kind == .zip, let oldFolder = Self.topFolder(of: old.basePath, in: folder), oldFolder != unpacked?.lastPathComponent {
             try? FileManager.default.removeItem(at: folder.appending(path: oldFolder, directoryHint: .isDirectory))

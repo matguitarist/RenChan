@@ -31,7 +31,7 @@ It runs on Ren'Py 7.4+ (Python 2) and 8.x (Python 3): write code both can run (n
 | `renchan.menu_entry(label, fn)` | Adds a button to the Mods menu, which F8 opens in the game. |
 | `renchan.keymap(key, fn)` | Calls `fn()` on a key, such as `"K_F9"` or `"alt_K_w"`. |
 | `renchan.state(name)` | A dict kept between launches, outside the saves. |
-| `renchan.save_state(name)` | Writes that dict to RenChan's copy of the game. |
+| `renchan.save_state(name)` | Writes that dict to RenChan's folder for the game; it stays through game updates. |
 
 State lives outside saves on purpose: a save made while a mod was on still loads after the mod is turned off,
 as long as the mod didn't put its own classes into the store.

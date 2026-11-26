@@ -34,3 +34,23 @@ import Testing
     #expect(api.contains("init -999 python in renchan:") && api.contains(ModAPI.stateFolder(copy).path))
     #expect(!api.contains("f\""))
 }
+
+@Test func modStateLivesOutsideTheCopyAndOldStateMovesThere() throws {
+    let root = FileManager.default.temporaryDirectory.appending(path: "renchan-state-\(UUID().uuidString)")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let copy = root.appending(path: "play-modded")
+    try FileManager.default.createDirectory(at: copy.appending(path: "game"), withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: ModAPI.stateFolder(copy), withIntermediateDirectories: true)
+    try Data("{}".utf8).write(to: ModAPI.stateFolder(copy).appending(path: "checker.json"))
+    let state = root.appending(path: "Mod State")
+    try ModAPI.install(copy: copy, state: state)
+    #expect(FileManager.default.fileExists(atPath: state.appending(path: "checker.json").path))
+    #expect(!FileManager.default.fileExists(atPath: ModAPI.stateFolder(copy).path))
+    let api = try String(contentsOf: copy.appending(path: "game/\(ModAPI.fileName)"), encoding: .utf8)
+    #expect(api.contains(state.path))
+    // A new copy (after an update) finds the same state.
+    try FileManager.default.removeItem(at: copy)
+    try FileManager.default.createDirectory(at: copy.appending(path: "game"), withIntermediateDirectories: true)
+    try ModAPI.install(copy: copy, state: state)
+    #expect(FileManager.default.fileExists(atPath: state.appending(path: "checker.json").path))
+}

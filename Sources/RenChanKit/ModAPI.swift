@@ -30,12 +30,21 @@ public enum ModAPI {
     public static let fileName = "00_renchan_api.rpy"
     public static let version = 1
 
-    /// Where mods keep state between launches, outside saves: the copy's base folder, not game/.
+    /// Where mods kept state before 0.9.2: inside the copy, which an update deletes.
     public static func stateFolder(_ copy: URL) -> URL { copy.appending(path: "renchan_state", directoryHint: .isDirectory) }
 
-    public static func install(copy: URL) throws {
-        try FileManager.default.createDirectory(at: stateFolder(copy), withIntermediateDirectories: true)
-        try CopyScript.place(source(stateFolder: stateFolder(copy)), named: fileName, in: copy)
+    /// Writes the API into the copy. `state` is where mods keep state between launches, outside saves;
+    /// RenChan keeps it outside the copy, so a new version of the game (a new copy) keeps it.
+    /// State a mod left in the copy before is moved there once.
+    public static func install(copy: URL, state: URL? = nil) throws {
+        let state = state ?? stateFolder(copy)
+        let old = stateFolder(copy)
+        if state != old, FileManager.default.fileExists(atPath: old.path), !FileManager.default.fileExists(atPath: state.path) {
+            try FileManager.default.createDirectory(at: state.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.moveItem(at: old, to: state)
+        }
+        try FileManager.default.createDirectory(at: state, withIntermediateDirectories: true)
+        try CopyScript.place(source(stateFolder: state), named: fileName, in: copy)
     }
 
     public static func source(stateFolder: URL) -> String {

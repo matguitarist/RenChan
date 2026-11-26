@@ -1,5 +1,21 @@
 # RenChan — Fix log
 
+## 2026-11-25 Removing or updating a game lost the saves made with mods and the mods' state
+
+Symptom: after Remove from Library, every save made with mods on was gone for good, though the dialog said "your saves stay where they are". After Update Game, a mod's `renchan.state` (settings, trackers) started empty.
+Cause: RenChan kept "Modded Saves", "Walkthroughs" and the mod API's `renchan_state` inside folders it treats as its own and disposable: Remove deletes the game's whole folder, and an update deletes the modded copy that held `renchan_state`.
+Fix: `remove` moves what holds the person's files (`RemovedGame.keepAside`) to the Trash before deleting the rest, and keeps the game when that fails; `ModAPI.install(copy:state:)` keeps mod state in the game's "Mod State" folder, outside the copy, and moves old state there once. Test runs trash into the test's data folder (`Store.trash`).
+Test: `removingAGameKeepsAsideOnlyFoldersWithFiles`, `modStateLivesOutsideTheCopyAndOldStateMovesThere`; self-test "removing a game puts its modded saves in the Trash" and "a mod's saved state outlives an update".
+Rule: never keep what a person made inside a folder the app deletes and rebuilds; before deleting a folder, list what in it can't be made again and put that somewhere the person can get it back.
+
+## 2026-11-25 A backup of the modded saves was restored over the game's own saves
+
+Symptom: restoring a "Before editing a save" backup taken in the Modded Saves view replaced the regular saves with the modded ones. With every mod off, editing a save in the Modded view changed the regular save of the same slot, after backing up the modded folder.
+Cause: a game's saves have two homes (~/Library/RenPy and RenChan's Modded Saves), but a backup didn't record which one it came from, so restore always wrote to the regular one; and the save tool only pointed Ren'Py at the modded saves when `prepareMods` set it up, which it skips when no mod is on.
+Fix: `SaveBackup.modded` is written in backup.json (old backups read as regular saves), restore and its own safety backup use that home, before-play backups compare and prune each home apart, and `runSaveTool` always sets `RENPY_PATH_TO_SAVES` for modded saves. The Backups sheet marks modded backups with a puzzle piece.
+Test: `aBackupOfModdedSavesSaysSoAndOldBackupsDont`, `aNewerModdedBackupDoesntSkipTheBackupBeforePlay`; self-test "a backup of the modded saves restores into the modded saves" and "with every mod off, a Modded save is read from the modded saves" (both fail on the old code).
+Rule: when the same kind of data lives in two places, every copy of it records where it came from, and every action that reads or writes it names the place instead of falling back to the usual one.
+
 ## 2026-11-24 A damaged save could close RenChan
 
 The save reader cut each file name out of a save's zip directory without checking that the name ended inside the file, and it force-unwrapped the input of an empty deflated entry. A save cut short (Ren'Py still writing it, a full disk) could end the app as soon as the Saves window opened, since the window reads every save. The reader now rejects a name past the end of the file and returns nothing for an empty entry.
