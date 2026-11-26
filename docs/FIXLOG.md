@@ -1,5 +1,13 @@
 # RenChan — Fix log
 
+## 2026-11-25 Play started while an update was put in or the save tool wrote
+
+Symptom: pressing Play while a zipped update unpacked started the game on its old files, which the update then deleted under it. Pressing Play while Unlock All or a save change was being written let the game save over those changes.
+Cause: `play` refused only a game already playing or being copied. The update checked `playing` once when it asked, not after its long unpack, and nothing recorded that the save tool was running.
+Fix: `updatingGames` holds a game for the whole of `applyUpdate`, which also refuses if the game started meanwhile; `saveToolRuns` counts save-tool runs queued or running. `play` says why it waits in a notice.
+Test: self-test "Play waits while an update is being put in" and "Play waits while the save tool writes to the saves" (both fail without the guards).
+Rule: every long action that changes an item's files marks the item busy for its whole length, and every other action on that item checks the mark; a check made before an `await` says nothing about after it.
+
 ## 2026-11-25 Two save edits at once sent one's changes to both saves
 
 Symptom: starting a second change in the Saves window (another save, or Persistent data) while the first was still being written could write the second change into both saves, and the first change into neither. Reports could show the other run's variables.

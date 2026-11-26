@@ -47,6 +47,10 @@ final class AppModel {
     @ObservationIgnored var copyStops: [Game.ID: StopFlag] = [:]
     /// The save-tool run each game's next run waits for.
     @ObservationIgnored var saveToolTurns: [Game.ID: Task<Void, Never>] = [:]
+    /// Games whose files RenChan is changing: an update being put in, or save-tool runs queued or running.
+    /// Play waits until they're done, so a game never runs on files being replaced or saves being written.
+    var updatingGames: Set<Game.ID> = []
+    var saveToolRuns: [Game.ID: Int] = [:]
     var download: DownloadState?
     /// Games waiting to play until their Ren'Py is downloaded, in the order Play was pressed.
     var waitingToPlay: [Game.ID] = []

@@ -19,6 +19,14 @@ extension AppModel {
     /// Play: downloads the runtime first when it's missing, makes the working copy, starts Ren'Py.
     func play(_ id: Game.ID) {
         guard let game = game(id), !playing.contains(id), copying[id] == nil else { return }
+        if updatingGames.contains(id) {
+            notice = String(localized: "\(game.title) is being updated. Play it once the new version is in.")
+            return
+        }
+        if saveToolRuns[id] != nil {
+            notice = String(localized: "RenChan is writing to \(game.title)'s saves. Play it once that's done.")
+            return
+        }
         if game.pythonLine == nil {
             log.post(.warning, "\(game.title): no Ren'Py version found; trying Ren'Py \(RuntimeCatalog.python3)", source: "Play")
         }

@@ -56,6 +56,12 @@ extension AppModel {
     func applyUpdate(_ request: UpdateRequest) async -> Bool {
         confirmUpdate = nil
         guard let old = game(request.game) else { return false }
+        guard !playing.contains(old.id), copying[old.id] == nil else {
+            notice = String(localized: "Quit \(old.title) before updating it.")
+            return false
+        }
+        updatingGames.insert(old.id)
+        defer { updatingGames.remove(old.id) }
         let folder = Store.gameFolder(old.id)
         var unpacked: URL?
         let found: (base: URL, kind: SourceKind)

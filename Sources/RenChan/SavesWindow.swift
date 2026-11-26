@@ -45,6 +45,11 @@ extension AppModel {
     /// Runs RenChan's save tool with the game's own Ren'Py, without a window. Runs for one game take turns,
     /// each with its own report and log, so two of them never read each other's changes or write into one copy at once.
     func runSaveTool(_ game: Game, modded: Bool, _ arguments: (URL) -> [String]) async throws -> SaveTool.Report {
+        saveToolRuns[game.id, default: 0] += 1
+        defer {
+            saveToolRuns[game.id, default: 1] -= 1
+            if saveToolRuns[game.id] == 0 { saveToolRuns[game.id] = nil }
+        }
         let previous = saveToolTurns[game.id]
         let (turn, done) = AsyncStream<Void>.makeStream()
         let mine = Task { for await _ in turn {} }

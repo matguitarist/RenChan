@@ -163,6 +163,11 @@ extension SelfTest {
                 try? FileManager.default.removeItem(at: runs)
                 async let a = try? model.writeVariables(["chapter": 7], in: listed[0], of: game, modded: false)
                 async let b = try? model.writeVariables(["met_aoi": true], in: listed[1], of: game, modded: false)
+                for _ in 0..<100 where model.saveToolRuns[first.id] == nil { await Task.yield() }
+                model.play(first.id)
+                check("Play waits while the save tool writes to the saves", !model.playing.contains(first.id) && model.copying[first.id] == nil
+                      && model.notice != nil && model.saveToolRuns[first.id] != nil)
+                model.notice = nil
                 _ = await (a, b)
                 let lines = Set(((try? String(contentsOf: runs, encoding: .utf8)) ?? "").split(separator: "\n").map(String.init))
                 check("S-036 two edits at once each change their own save",

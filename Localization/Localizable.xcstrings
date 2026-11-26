@@ -61,6 +61,16 @@
         }
       }
     },
+    "%@ is being updated. Play it once the new version is in.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ est en cours de mise à jour. Jouez-y une fois la nouvelle version en place."
+          }
+        }
+      }
+    },
     "%@ isn't a mod RenChan can add. Choose a zip, a folder, or .rpy, .rpyc or .rpa files.": {
       "localizations": {
         "fr": {
@@ -3547,6 +3557,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RenChan télécharge depuis renpy.org la version de Ren’Py dont un jeu a besoin la première fois que vous y jouez."
+          }
+        }
+      }
+    },
+    "RenChan is writing to %@'s saves. Play it once that's done.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RenChan écrit dans les sauvegardes de %@. Jouez-y une fois que c’est terminé."
           }
         }
       }

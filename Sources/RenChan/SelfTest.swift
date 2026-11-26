@@ -363,7 +363,15 @@ extension SelfTest {
             let zip2 = root.appending(path: "Zipped-2.0-pc.zip")
             _ = try? Shell.runSync("/usr/bin/zip", ["-qr", zip2.path, "Zipped-2.0-pc"], in: zipSource)
             model.prepareUpdate(zipped.id, from: zip2)
-            if let request = model.confirmUpdate { await model.applyUpdate(request) }
+            if let request = model.confirmUpdate {
+                let updating = Task { await model.applyUpdate(request) }
+                for _ in 0..<100 where !model.updatingGames.contains(zipped.id) { await Task.yield() }
+                model.play(zipped.id)
+                check("Play waits while an update is being put in", !model.playing.contains(zipped.id) && model.copying[zipped.id] == nil
+                      && model.notice != nil && model.updatingGames.contains(zipped.id))
+                model.notice = nil
+                _ = await updating.value
+            }
             let now = model.game(zipped.id)
             check("S-013 a zip update unpacks the new zip and drops RenChan's copy of the old one",
                   now?.sourcePath == zip2.path && now?.basePath.hasSuffix("Zipped-2.0-pc") == true
