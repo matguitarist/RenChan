@@ -74,6 +74,45 @@ extension SelfTest {
         model.update(game.id) { $0.mods = mods }
     }
 
+    /// S-003: Play during another runtime's download waits its turn instead of being dropped.
+    /// The downloads are pretend: the runtimes are put in place, then the end of a download is called as renpy.org's would.
+    static func downloadQueueChecks(_ model: AppModel, root: URL) async {
+        func game(_ name: String, runtime: String) -> Game.ID? {
+            let folder = Fixtures.game("\(name)-1.0-pc", in: root, files: ["renpy/__init__.py": "version_tuple = (8, 1, 3, vc_version)\n"])
+            guard let added = model.addFolder(folder) else { return nil }
+            model.update(added.id) { $0.runtimeOverride = runtime }
+            return added.id
+        }
+        guard let first = game("Queue_One", runtime: "8.1.3"), let second = game("Queue_Two", runtime: "7.4.11"),
+              let third = game("Queue_Three", runtime: "6.99.14.3") else {
+            check("S-003 games for the download queue are added", false)
+            return
+        }
+        // A download of another version is under way.
+        model.download = DownloadState(version: "8.1.3")
+        model.play(first)
+        model.play(second)
+        check("S-003 Play during a download waits its turn instead of being dropped",
+              model.waitingToPlay == [first, second] && model.download?.version == "8.1.3")
+        Fixtures.runtime("8.1.3", folder: "py3-mac-universal", in: Store.runtimesFolder)
+        Fixtures.runtime("7.4.11", folder: "py2-mac-universal", in: Store.runtimesFolder)
+        model.downloadEnded("8.1.3", error: nil)
+        check("S-003 when the download ends, every game whose Ren'Py is in starts",
+              model.waitingToPlay.isEmpty && model.download == nil
+              && [first, second].allSatisfy { model.copying[$0] != nil || model.playing.contains($0) })
+        for id in [first, second] { await waitUntilStopped(model, id) }
+        // A failed download drops only the games that needed it, and says why.
+        model.download = DownloadState(version: "6.99.14.3")
+        model.play(third)
+        model.notice = nil
+        model.downloadEnded("6.99.14.3", error: RuntimeDownload.Failure.http(404))
+        check("S-003 a failed download drops its waiting games and says so", model.waitingToPlay.isEmpty && model.notice != nil && !model.playing.contains(third))
+        model.notice = nil
+        for id in [first, second, third] { model.remove(id) }
+        for version in ["8.1.3", "7.4.11"] { try? FileManager.default.removeItem(at: Store.runtimesFolder.appending(path: version)) }
+        model.runtimes = model.runtimeStore.installed()
+    }
+
     /// S-035 Browse saves, S-036 change a save's variables, S-042 the gallery.
     static func savesChecks(_ model: AppModel, first: Game) async {
         // S-035 Browse saves, S-036 change a save's variables (the pretend runtime stands in for Ren'Py)

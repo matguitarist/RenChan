@@ -46,6 +46,8 @@ final class AppModel {
     var copying: [Game.ID: CopyProgress] = [:] { didSet { syncMenu() } }
     @ObservationIgnored var copyStops: [Game.ID: StopFlag] = [:]
     var download: DownloadState?
+    /// Games waiting to play until their Ren'Py is downloaded, in the order Play was pressed.
+    var waitingToPlay: [Game.ID] = []
     var launchError: LaunchFailure?
     var confirmRemove: Game.ID?
     var confirmFullCopy: FullCopyRequest?
@@ -258,8 +260,6 @@ struct DownloadState: Equatable {
     var version: String
     var received: Int64 = 0
     var total: Int64?
-    /// The game to play once it's installed.
-    var then: Game.ID?
 }
 
 struct LaunchFailure: Identifiable, Equatable {

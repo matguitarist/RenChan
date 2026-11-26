@@ -292,6 +292,7 @@ extension SelfTest {
             model.launchError = nil
             model.remove(hanging.id)
         }
+        await downloadQueueChecks(model, root: root)
 
         // S-010 Details from VNDB: a cover the person chose stays when VNDB details change
         // A big PNG, as a person might pick: it's kept as a HEIC at most 1200 px.

@@ -8,6 +8,8 @@ struct DownloadSheet: View {
     let initial: DownloadState
     /// The live progress; the sheet item only carries the version.
     private var state: DownloadState { model.download ?? initial }
+    /// The games that start once their Ren'Py is in, this one's or a later download's.
+    private var waiting: [String] { model.waitingToPlay.compactMap { model.game($0)?.title } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Space.lg) {
@@ -15,6 +17,11 @@ struct DownloadSheet: View {
             Text("From renpy.org, once. Every game that plays on Ren'Py \(state.version) uses it.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if !waiting.isEmpty {
+                Text("Then RenChan starts \(waiting.formatted(.list(type: .and))).")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if let total = state.total, total > 0 {
                 ProgressView(value: Double(state.received), total: Double(total))
                 Text("\(state.received.bytesText) of \(total.bytesText)").font(.callout).foregroundStyle(.secondary).monospacedDigit()

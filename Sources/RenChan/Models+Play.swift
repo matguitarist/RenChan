@@ -211,9 +211,17 @@ extension AppModel {
 
     // MARK: Runtimes (S-003)
 
+    /// Downloads a runtime. `game` plays once its runtime is in, even when Play came during another download:
+    /// it waits its turn, and the next missing runtime downloads after this one.
     func startDownload(_ version: String, then game: Game.ID? = nil) {
-        guard download == nil else { return }
-        download = DownloadState(version: version, then: game)
+        if let game, !waitingToPlay.contains(game) { waitingToPlay.append(game) }
+        if let current = download {
+            if current.version != version {
+                log.post(.info, "Ren'Py \(version) downloads after Ren'Py \(current.version)", source: "Runtimes")
+            }
+            return
+        }
+        download = DownloadState(version: version)
         log.post(.info, "Downloading Ren'Py \(version) from renpy.org", source: "Runtimes")
         let store = runtimeStore
         downloadTask = Task {
@@ -224,30 +232,50 @@ extension AppModel {
                         self.download?.total = total
                     }
                 }
-                let size = self.download?.received ?? 0
-                self.runtimes = store.installed()
-                self.log.post(.info, "Installed Ren'Py \(version) (\(size.bytesText)); checksum matches", source: "Runtimes")
-                let next = self.download?.then
-                self.download = nil
-                if let next { self.play(next) }
-            } catch is CancellationError {
-                self.download = nil
-                self.log.post(.info, "Cancelled the Ren'Py \(version) download", source: "Runtimes")
+                self.downloadEnded(version, error: nil)
             } catch {
-                self.download = nil
-                let words: String
-                switch error {
-                case RuntimeDownload.Failure.checksumMismatch:
-                    words = String(localized: "The download of Ren'Py \(version) didn't match renpy.org's checksum, so it was deleted. Try again later.")
-                case RuntimeDownload.Failure.http(let code):
-                    words = String(localized: "renpy.org has no Ren'Py \(version) to download (error \(code)).")
-                default:
-                    words = String(localized: "Ren'Py \(version) couldn't be downloaded: \(error.localizedDescription)")
-                }
-                self.log.post(.error, "Ren'Py \(version) download failed: \(error)", source: "Runtimes")
-                self.notice = words
+                self.downloadEnded(version, error: error)
             }
         }
+    }
+
+    /// The end of a download: games whose runtime is now in start, then the next missing runtime downloads.
+    /// Cancel drops every waiting game; a failure drops only the ones that needed that version.
+    func downloadEnded(_ version: String, error: (any Error)?) {
+        let size = download?.received ?? 0
+        download = nil
+        runtimes = runtimeStore.installed()
+        switch error {
+        case nil:
+            log.post(.info, "Installed Ren'Py \(version) (\(size.bytesText)); checksum matches", source: "Runtimes")
+        case is CancellationError:
+            waitingToPlay.removeAll()
+            log.post(.info, "Cancelled the Ren'Py \(version) download", source: "Runtimes")
+            return
+        case let error?:
+            waitingToPlay.removeAll { id in game(id).map { runtimeVersion(for: $0) == version } ?? true }
+            downloadFailed(version, error)
+        }
+        let ready = waitingToPlay.filter { id in game(id).map { installedRuntime(for: $0) != nil } ?? false }
+        waitingToPlay.removeAll { id in ready.contains(id) || game(id) == nil }
+        for id in ready { play(id) }
+        if let next = waitingToPlay.first.flatMap({ game($0) }) {
+            startDownload(runtimeVersion(for: next))
+        }
+    }
+
+    private func downloadFailed(_ version: String, _ error: any Error) {
+        let words: String
+        switch error {
+        case RuntimeDownload.Failure.checksumMismatch:
+            words = String(localized: "The download of Ren'Py \(version) didn't match renpy.org's checksum, so it was deleted. Try again later.")
+        case RuntimeDownload.Failure.http(let code):
+            words = String(localized: "renpy.org has no Ren'Py \(version) to download (error \(code)).")
+        default:
+            words = String(localized: "Ren'Py \(version) couldn't be downloaded: \(error.localizedDescription)")
+        }
+        log.post(.error, "Ren'Py \(version) download failed: \(error)", source: "Runtimes")
+        notice = words
     }
 
     func cancelDownload() {

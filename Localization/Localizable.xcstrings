@@ -4321,6 +4321,16 @@
         }
       }
     },
+    "Then RenChan starts %@.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ensuite, RenChan lance %@."
+          }
+        }
+      }
+    },
     "This file isn't a zip, only %@ of text: often a download link that expired. Download the game again.": {
       "localizations": {
         "fr": {

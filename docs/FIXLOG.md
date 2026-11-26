@@ -1,5 +1,13 @@
 # RenChan — Fix log
 
+## 2026-11-25 Play did nothing while another Ren'Py was downloading
+
+Symptom: while Ren'Py 8.6.1 downloaded for one game, Play on a second game (Game › Play, Command-Return, or opening it from the Finder) did nothing, and the second game didn't start after the download either. No message said why.
+Cause: `startDownload` returned at once when a download was under way, and the download remembered one game to play after it (`DownloadState.then`), so any other Play was dropped.
+Fix: `waitingToPlay` keeps every game that pressed Play, in order. `downloadEnded` starts each game whose runtime is now in, then downloads the next missing runtime; a failure drops only the games that needed that version, and Cancel drops them all. The download sheet names the games that start afterwards.
+Test: self-test "S-003 Play during a download waits its turn instead of being dropped", "when the download ends, every game whose Ren'Py is in starts" (both fail on the old code) and "a failed download drops its waiting games and says so"; snapshot `runtime-download`.
+Rule: a request that arrives while the app is busy is queued or refused out loud, never ignored; one "then do this" slot is a queue of length one that drops the rest.
+
 ## 2026-11-25 A full copy froze RenChan, and a copy cut short was played as if complete
 
 Symptom: Play on a game from another disk, after "Copy and Play", showed the spinning cursor for as long as the copy took (minutes for a 15 GB game). Force-quitting then left a working copy that every later Play reused, and the game crashed on its missing files.

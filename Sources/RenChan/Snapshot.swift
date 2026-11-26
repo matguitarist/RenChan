@@ -65,7 +65,8 @@ enum Snapshot {
             await run.shoot("library-empty", show: { model.games = [] }, hide: { model.games = saved })
             await run.shoot("runtime-download", window: { WindowShot.mainWindow()?.attachedSheet }, show: {
                 model.download = DownloadState(version: "7.8.7", received: 61_000_000, total: 148_000_000)
-            }, hide: { model.download = nil })
+                model.waitingToPlay = Array(saved.prefix(2).map(\.id))
+            }, hide: { model.download = nil; model.waitingToPlay = [] })
             await run.shoot("launch-error", window: { WindowShot.mainWindow()?.attachedSheet }, show: {
                 model.launchError = LaunchFailure(game: saved.first?.id ?? UUID(), title: "Seven Days",
                     text: "I'm sorry, but an uncaught exception occurred.\n\nWhile running game code:\n  File \"game/script.rpy\", line 112, in script\n    $ renpy.pause(hard=True)\nTypeError: pause() got an unexpected keyword argument 'hard'\n",
