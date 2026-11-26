@@ -94,10 +94,14 @@ public struct LaunchResult: Sendable, Equatable {
     /// The end of the run's output.
     public var outputTail: String
 
-    public var failed: Bool { exitCode != 0 || traceback != nil }
+    /// The person stopped it (Stop, Remove): the signal that ended it is theirs, not the game's.
+    public var stopped = false
 
-    /// Reads what a run left in the working copy after `started`.
-    public static func read(copy: URL, outputFile: URL, exitCode: Int32, started: Date) -> LaunchResult {
+    /// An error the game wrote always counts; an exit code only when the game ended on its own.
+    public var failed: Bool { traceback != nil || (exitCode != 0 && !stopped) }
+
+    /// Reads what a run left in the working copy after `started`. `stopped`: RenChan ended it because the person asked.
+    public static func read(copy: URL, outputFile: URL, exitCode: Int32, started: Date, stopped: Bool = false) -> LaunchResult {
         var traceback: String?
         for name in ["traceback.txt", "errors.txt"] {
             let file = copy.appending(path: name)
@@ -109,7 +113,7 @@ public struct LaunchResult: Sendable, Equatable {
         }
         let output = (try? String(contentsOf: outputFile, encoding: .utf8)) ?? ""
         let tail = output.split(separator: "\n", omittingEmptySubsequences: false).suffix(40).joined(separator: "\n")
-        return LaunchResult(exitCode: exitCode, traceback: traceback, outputTail: tail)
+        return LaunchResult(exitCode: exitCode, traceback: traceback, outputTail: tail, stopped: stopped)
     }
 }
 

@@ -272,6 +272,24 @@ extension SelfTest {
             check("S-009 a crash still counts its playtime", (model.game(crash.id)?.playtime ?? 0) > 0)
             model.launchError = nil
         }
+        // Stop is the person's choice, not a crash: no error sheet, and the report says it worked.
+        let slow = Fixtures.game("Slow-1.0-pc", in: root, files: [
+            "game/script.rpy": "label start:\n    $ hang()\n",
+            "renpy/__init__.py": "version_tuple = (8, 6, 1, vc_version)\n",
+        ])
+        if let hanging = model.addFolder(slow) {
+            model.play(hanging.id)
+            for _ in 0..<50 where !model.playing.contains(hanging.id) { try? await Task.sleep(for: .milliseconds(100)) }
+            try? await Task.sleep(for: .milliseconds(500))
+            model.stop(hanging.id)
+            await waitUntilStopped(model, hanging.id)
+            check("S-004 Stop ends the game without an error sheet, and the run counts as worked",
+                  model.launchError == nil && model.game(hanging.id)?.runs.first?.outcome == .worked
+                  && model.game(hanging.id)?.runs.first?.exitCode == SIGTERM,
+                  "\(String(describing: model.game(hanging.id)?.runs.first))")
+            model.launchError = nil
+            model.remove(hanging.id)
+        }
 
         // S-010 Details from VNDB: a cover the person chose stays when VNDB details change
         // A big PNG, as a person might pick: it's kept as a HEIC at most 1200 px.

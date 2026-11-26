@@ -66,6 +66,9 @@ enum Fixtures {
         saves=$(sed -n 's/.*save_directory = "\\(.*\\)".*/\\1/p' "$base/game/options.rpy" 2>/dev/null)
         root="${RENPY_PATH_TO_SAVES:-$HOME/Library/RenPy}"
         [ -n "$saves" ] && mkdir -p "$root/$saves" && touch "$root/$saves/1-1-LT1.save"
+        if grep -q hang "$base/game/script.rpy"; then
+          sleep 30
+        fi
         if grep -q crash "$base/game/script.rpy"; then
           printf 'I am sorry, but an uncaught exception occurred.\\n\\n  File "game/script.rpy", line 2, in script\\nNameError: name '"'"'crash'"'"' is not defined\\n' > "$base/traceback.txt"
           exit 1

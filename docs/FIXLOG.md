@@ -1,5 +1,13 @@
 # RenChan — Fix log
 
+## 2026-11-25 Stopping a game showed an error and counted as a failed run
+
+Symptom: Game › Stop opened the error sheet ("quit with an error (exit 15)") with the run's output, and the compatibility report listed the run as failed on that runtime.
+Cause: Stop ends Ren'Py with SIGTERM, and `LaunchResult.failed` counted any non-zero exit as an error; `finished` had no way to know the signal came from the person.
+Fix: `stop` records the game in `stopRequested`; `finished` passes `stopped` to `LaunchResult.read`, and a stopped run fails only when the game wrote a traceback. It logs "Stopped <game>" and counts as worked.
+Test: `aStoppedGameRecordsTheSignalAsBefore` (stopped is not failed, a traceback still is); self-test "S-004 Stop ends the game without an error sheet" (fails on the old code).
+Rule: when the app ends a process itself, remember that it asked before reading the exit status; a signal the app sent is never the program's error.
+
 ## 2026-11-25 Removing or updating a game lost the saves made with mods and the mods' state
 
 Symptom: after Remove from Library, every save made with mods on was gone for good, though the dialog said "your saves stay where they are". After Update Game, a mod's `renchan.state` (settings, trackers) started empty.

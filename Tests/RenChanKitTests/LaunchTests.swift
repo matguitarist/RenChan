@@ -86,6 +86,12 @@ func digest(_ folder: URL) -> [String: Date] {
     game.stop()
     let output = game.waitSync()
     #expect(LaunchPlan.exitCode(of: output) == SIGTERM)
+    // Stopped by the person: not a failure, unless the game wrote an error first.
+    let stopped = LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: SIGTERM, started: .now, stopped: true)
+    #expect(!stopped.failed)
+    #expect(LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: SIGTERM, started: .now).failed)
+    try "I'm sorry, but an uncaught exception occurred.".write(to: copy.appending(path: "traceback.txt"), atomically: true, encoding: .utf8)
+    #expect(LaunchResult.read(copy: copy, outputFile: plan.outputFile, exitCode: SIGTERM, started: .now.addingTimeInterval(-5), stopped: true).failed)
 }
 
 @Test func runtimesAreListedWithTheirPython() {

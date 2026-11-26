@@ -67,6 +67,8 @@ final class AppModel {
     var mods: [Mod] = []
     /// The copy each running game plays from.
     var runningCopies: [Game.ID: URL] = [:]
+    /// Games the person stopped: their run ends on a signal that isn't an error.
+    var stopRequested: Set<Game.ID> = []
     /// A walkthrough window to open from code, such as snapshot mode (S-032).
     var walkthroughToOpen: WalkthroughRef?
     /// Mods opened from the Finder, waiting for their game (S-037).

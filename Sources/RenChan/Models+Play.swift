@@ -94,6 +94,7 @@ extension AppModel {
         processes[id] = nil
         runningCopies[id] = nil
         playing.remove(id)
+        let stopped = stopRequested.remove(id) != nil
         let seconds = PlaySession.end(at: .now, file: Store.sessionFile(id))
         update(id) { $0.playtime += seconds }
         guard let game = game(id) else { return }
@@ -101,7 +102,7 @@ extension AppModel {
             update(id) { $0.saveDirectory = found }
             log.post(.info, "\(game.title) keeps its saves in ~/Library/RenPy/\(found)", source: "Library")
         }
-        let result = LaunchResult.read(copy: plan.copy, outputFile: plan.outputFile, exitCode: status, started: started)
+        let result = LaunchResult.read(copy: plan.copy, outputFile: plan.outputFile, exitCode: status, started: started, stopped: stopped)
         // S-027: every run goes into the compatibility report.
         let errorLine = result.failed ? (result.traceback ?? result.outputTail).split(separator: "\n").last.map(String.init) : nil
         update(id) {
@@ -110,7 +111,7 @@ extension AppModel {
                                 filter: game.filter?.name, error: errorLine))
         }
         guard result.failed else {
-            log.post(.info, "\(game.title) quit", source: "Play")
+            log.post(.info, stopped ? "Stopped \(game.title)" : "\(game.title) quit", source: "Play")
             return
         }
         let file = ["traceback.txt", "errors.txt"].map { plan.copy.appending(path: $0) }
@@ -149,7 +150,9 @@ extension AppModel {
     }
 
     func stop(_ id: Game.ID) {
-        processes[id]?.stop()
+        guard let process = processes[id] else { return }
+        stopRequested.insert(id)
+        process.stop()
     }
 
     /// From the error sheet: play again on the game's exact Ren'Py version.
