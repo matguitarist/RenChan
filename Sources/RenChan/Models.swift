@@ -58,6 +58,8 @@ final class AppModel {
     var confirmRemove: Game.ID?
     var confirmFullCopy: FullCopyRequest?
     var confirmZip: ZipRequest?
+    /// Zips dropped together wait here for their own question.
+    var zipQueue: [ZipRequest] = []
     /// The zip being unpacked now, for the sheet that shows it.
     var unpacking: ZipRequest?
     var confirmRemoveRuntime: String?

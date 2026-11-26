@@ -54,8 +54,8 @@ struct ContentView: View {
         } message: {
             Text("The game is on another disk, so RenChan needs a full copy (\(model.confirmFullCopy?.size.bytesText ?? "")) in its own folder. The original stays as it is.")
         }
-        .confirmationDialog(zipTitle, isPresented: Binding(get: { model.confirmZip != nil }, set: { if !$0 { model.confirmZip = nil } })) {
-            Button("Unpack") { if let zip = model.confirmZip?.url { Task { await model.addZip(zip) } } }
+        .confirmationDialog(zipTitle, isPresented: Binding(get: { model.confirmZip != nil }, set: { if !$0 { model.zipAnswered() } })) {
+            Button("Unpack") { if let request = model.confirmZip { Task { await model.addZip(request.url, request: request) } } }
         } message: {
             Text(model.confirmZip?.size.map { String(localized: "RenChan unpacks it into its own folder (\($0.bytesText)). The zip stays as it is.") }
                  ?? String(localized: "RenChan unpacks it into its own folder. The zip stays as it is."))

@@ -21,12 +21,15 @@ struct FindGamesState: Equatable {
     var places: [String] = []
     /// Set when the list comes from F95Checker (S-034): how many of its games aren't on this Mac.
     var notOnThisMac: Int?
+    /// Which scan this is: a scan's results only land in the sheet that started it.
+    var scan = UUID()
 }
 
 /// Find Games on This Mac (S-030).
 extension AppModel {
     func findGames(in roots: [URL] = GameScanner.defaultRoots()) {
-        findGames = FindGamesState(places: roots.map { $0.path.replacingOccurrences(of: FileManager.default.homeDirectoryForCurrentUser.path, with: "~") })
+        let state = FindGamesState(places: roots.map { $0.path.replacingOccurrences(of: FileManager.default.homeDirectoryForCurrentUser.path, with: "~") })
+        findGames = state
         let excluded = [Store.dataFolder]
         let known = Set(games.flatMap { [$0.sourcePath, $0.basePath] }.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path })
         Task {
@@ -39,7 +42,7 @@ extension AppModel {
                                      version: VersionDetector.detect(base: located.base).version?.description)
                 }
             }.value
-            guard findGames != nil else { return }
+            guard findGames?.scan == state.scan else { return }
             findGames?.found = found
             findGames?.chosen = Set(found.map(\.url))
             findGames?.scanning = false
@@ -57,11 +60,22 @@ extension AppModel {
         findGames(in: [url])
     }
 
-    func addFoundGames() {
+    /// Reads every chosen game off the main thread, then adds them.
+    func addFoundGames() async {
         guard let state = findGames else { return }
         findGames = nil
-        for found in state.found where state.chosen.contains(found.url) {
-            guard let game = addFolder(found.url) else { continue }
+        let chosen = state.found.filter { state.chosen.contains($0.url) }
+        let inspected = await Task.detached(priority: .userInitiated) {
+            chosen.map { found in (found, Result { try AppModel.inspect(found.url) }) }
+        }.value
+        for (found, result) in inspected {
+            let game: Game
+            switch result {
+            case .success(let one): game = addInspected(one)
+            case .failure(let error):
+                log.post(.warning, "Refused \(found.url.path): \(error)", source: "Library")
+                continue
+            }
             if found.watch != nil || found.gameVersion != nil {
                 update(game.id) {
                     if let page = found.watch, $0.watch == nil { $0.watch = UpdateWatch(page: page) }
@@ -73,7 +87,7 @@ extension AppModel {
     }
 
     /// File › Import from F95Checker… (S-034): its games that are on this Mac, each watching its thread.
-    func importF95Checker(database: URL? = nil) {
+    func importF95Checker(database: URL? = nil) async {
         var file = database ?? F95Checker.defaultDatabases().first
         if file == nil {
             let panel = NSOpenPanel()
@@ -87,7 +101,7 @@ extension AppModel {
         guard let file else { return }
         let entries: [F95Checker.Entry]
         do {
-            entries = try F95Checker.read(file)
+            entries = try await Task.detached { try F95Checker.read(file) }.value
         } catch {
             notice = String(localized: "RenChan couldn't read F95Checker's library at \(file.path). Choose the db.sqlite3 in F95Checker's folder.")
             log.post(.warning, "Couldn't read \(file.path): \(error)", source: "Library")
@@ -97,9 +111,17 @@ extension AppModel {
         var found: [FoundGame] = []
         var missing = 0
         var linked = 0
-        for entry in entries {
-            let located = entry.executables.lazy.map(F95Checker.gameLocation).compactMap { url in (try? GameLocator.locate(url)).map { (url, $0.base) } }.first
-            guard let (url, base) = located else { missing += 1; continue }
+        // Where each entry's game is, and its versions: read off the main thread, a few hundred games take a while.
+        let located = await Task.detached(priority: .userInitiated) {
+            entries.map { entry -> (entry: F95Checker.Entry, url: URL, base: URL, renpy: String?, own: String?)? in
+                guard let (url, base) = entry.executables.lazy.map(F95Checker.gameLocation)
+                    .compactMap({ url in (try? GameLocator.locate(url)).map { (url, $0.base) } }).first else { return nil }
+                return (entry, url, base, VersionDetector.detect(base: base).version?.description, GameVersion.detect(base: base, source: url))
+            }
+        }.value
+        for (index, entry) in entries.enumerated() {
+            guard let place = located[index] else { missing += 1; continue }
+            let url = place.url, base = place.base
             let paths = [url, base].map { $0.resolvingSymlinksInPath().path }
             if let existing = games.first(where: { paths.contains(URL(fileURLWithPath: $0.sourcePath).resolvingSymlinksInPath().path) || paths.contains(URL(fileURLWithPath: $0.basePath).resolvingSymlinksInPath().path) }) {
                 // Already in the library: it starts watching its thread, nothing else changes.
@@ -107,8 +129,8 @@ extension AppModel {
                 continue
             }
             guard !paths.contains(where: known.contains), !found.contains(where: { $0.url == url }) else { continue }
-            found.append(FoundGame(url: url, title: entry.name, version: VersionDetector.detect(base: base).version?.description,
-                                   watch: entry.thread.absoluteString, gameVersion: GameVersion.detect(base: base, source: url) ?? entry.version))
+            found.append(FoundGame(url: url, title: entry.name, version: place.renpy,
+                                   watch: entry.thread.absoluteString, gameVersion: place.own ?? entry.version))
         }
         log.post(.info, "F95Checker: \(entries.count) games, \(found.count) to add, \(linked) already here now watch their thread, \(missing) not on this Mac", source: "Library")
         findGames = FindGamesState(scanning: false, found: found, chosen: Set(found.map(\.url)), places: [], notOnThisMac: missing)
@@ -172,7 +194,7 @@ struct FindGamesSheet: View {
                 Spacer()
                 Button("Cancel", role: .cancel) { model.findGames = nil }
                     .keyboardShortcut(.cancelAction)
-                Button(state.chosen.count == 1 ? String(localized: "Add 1 Game") : String(localized: "Add \(state.chosen.count) Games")) { model.addFoundGames() }
+                Button(state.chosen.count == 1 ? String(localized: "Add 1 Game") : String(localized: "Add \(state.chosen.count) Games")) { Task { await model.addFoundGames() } }
                     .keyboardShortcut(.defaultAction)
                     .disabled(state.scanning || state.chosen.isEmpty)
             }

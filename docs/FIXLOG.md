@@ -1,5 +1,21 @@
 # RenChan — Fix log
 
+## 2026-11-25 Dropping several zips asked about the last one only; an older scan replaced a newer one
+
+Symptom: dropping three zips on the library asked "Unpack …?" for the last one; the other two were never added and nothing said so. Choosing Look in Another Folder… while the default Find Games scan ran could show the default scan's games under the chosen folder's name.
+Cause: `confirmZip` held one zip and the drop loop overwrote it, and `addZip` read its size after the question had cleared it. A scan's result landed in whatever sheet was open, checking only that one was.
+Fix: `zipQueue` holds the other zips and `zipAnswered` asks about the next; Unpack passes its own request to `addZip`. `FindGamesState.scan` tags each scan and a result lands only in the sheet of the scan that made it.
+Test: self-test "dropping two zips asks about each in turn" and "an older Find Games scan never replaces a newer one's results" (both fail on the old code).
+Rule: a question or a result that arrives one at a time but can be asked for many times needs a queue or a tag: a single optional slot silently keeps only the last one.
+
+## 2026-11-25 Add Found Games and F95Checker import froze RenChan
+
+Symptom: adding a few hundred found games, or importing a big F95Checker library, showed the spinning cursor until every game was read.
+Cause: `addFoundGames` called `addFolder` for each game, and `importF95Checker` located every entry and read its versions, all on the main thread.
+Fix: `AppModel.inspect` reads a game (location, Ren'Py and own version, saves folder) off the main actor; `addFoundGames` and `importF95Checker` run it in a detached task and only add the results on the main thread.
+Test: self-test "Add Games closes the sheet and reads the games off the main thread".
+Rule: anything that reads the disk once per item of a list the person controls runs off the main thread, even when one item is quick.
+
 ## 2026-11-25 New Version Out for the version already installed, and itch.io file names not read
 
 Symptom: a game at 1.0 showed "New 1.0.0" (and posted a notification) when its page listed 1.0.0, and "v0.9 Final" counted as newer than 0.9. On itch.io, uploads named `Game_v0.9_pc.zip` or `Game-0.9.zip` gave no version at all.

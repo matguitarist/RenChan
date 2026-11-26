@@ -39,7 +39,7 @@ struct RenChanApp: App {
                     .keyboardShortcut("o")
                 Button("Find Games on This Mac…") { model.sidebar = .library; model.findGames() }
                     .keyboardShortcut("o", modifiers: [.command, .shift])
-                Button("Import from F95Checker…") { model.sidebar = .library; model.importF95Checker() }
+                Button("Import from F95Checker…") { model.sidebar = .library; Task { await model.importF95Checker() } }
                 Divider()
                 Button("Export Compatibility Report…") { model.exportCompatibilityReport() }
                 Button("Copy Compatibility Report") { model.copyCompatibilityReport() }

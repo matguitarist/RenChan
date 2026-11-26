@@ -88,6 +88,16 @@ extension SelfTest {
         Fixtures.game("Zipped-1.0-pc", in: zipSource, files: ["game/options.rpy": Fixtures.options(name: "Zipped", saves: "zipped-1")])
         let zip = root.appending(path: "Zipped-1.0-pc.zip")
         _ = try? Shell.runSync("/usr/bin/zip", ["-qr", zip.path, "Zipped-1.0-pc"], in: zipSource)
+        // Two zips dropped together: each is asked about in turn.
+        let zip2 = root.appending(path: "Zipped-copy.zip")
+        try? FileManager.default.copyItem(at: zip, to: zip2)
+        model.add([zip, zip2])
+        let firstAsked = model.confirmZip?.url
+        model.zipAnswered()
+        for _ in 0..<50 where model.confirmZip == nil { await Task.yield() }
+        check("dropping two zips asks about each in turn", firstAsked == zip && model.confirmZip?.url == zip2 && (model.confirmZip?.size ?? 0) > 0,
+              "\(String(describing: firstAsked)) \(String(describing: model.confirmZip))")
+        model.zipAnswered()
         model.add([zip])
         check("a zip asks before unpacking, with its size", model.confirmZip?.url == zip && (model.confirmZip?.size ?? 0) > 0)
         let fromZip = await model.addZip(zip)

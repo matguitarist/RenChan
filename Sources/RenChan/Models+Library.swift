@@ -16,34 +16,53 @@ extension AppModel {
                     log.post(.warning, "Refused \(url.path): not a zip (\(error))", source: "Library")
                     continue
                 }
-                confirmZip = ZipRequest(url: url, size: ZipImport.size(of: url))
+                let request = ZipRequest(url: url, size: ZipImport.size(of: url))
+                // Several zips: each is asked about in turn.
+                if confirmZip == nil { confirmZip = request } else if confirmZip != request, !zipQueue.contains(request) { zipQueue.append(request) }
             } else {
                 addFolder(url)
             }
         }
     }
 
+    /// What adding a game reads from disk, done in one go so it can run off the main thread.
+    struct InspectedGame: Sendable {
+        var url: URL, source: URL, base: URL, kind: SourceKind, title: String
+        var detected: VersionDetector.Result, saveDirectory: String?, gameVersion: String?
+    }
+
+    nonisolated static func inspect(_ url: URL, source: URL? = nil) throws(LocateError) -> InspectedGame {
+        let found = try GameLocator.locate(url)
+        let source = source ?? url
+        return InspectedGame(url: url, source: source, base: found.base, kind: found.kind,
+                             title: GameLocator.title(base: found.base, source: source), detected: VersionDetector.detect(base: found.base),
+                             saveDirectory: GameLocator.saveDirectory(base: found.base), gameVersion: GameVersion.detect(base: found.base, source: source))
+    }
+
+    /// Adds one game, reading it on this thread: for a drop or a test. Many games go through `addInspected`.
     @discardableResult
     func addFolder(_ url: URL, kind: SourceKind? = nil, id: UUID = UUID(), source: URL? = nil) -> Game? {
-        let found: (base: URL, kind: SourceKind)
         do {
-            found = try GameLocator.locate(url)
+            return addInspected(try Self.inspect(url, source: source), kind: kind, id: id)
         } catch {
             notice = error.message
             log.post(.warning, "Refused \(url.path): \(error)", source: "Library")
             return nil
         }
-        let source = source ?? url
+    }
+
+    @discardableResult
+    func addInspected(_ found: InspectedGame, kind: SourceKind? = nil, id: UUID = UUID()) -> Game {
+        let source = found.source, detected = found.detected
         if let existing = games.first(where: { $0.sourcePath == source.path || $0.basePath == found.base.path }) {
             selection = existing.id
             return existing
         }
-        let detected = VersionDetector.detect(base: found.base)
-        var game = Game(id: id, title: GameLocator.title(base: found.base, source: source), sourcePath: source.path,
+        var game = Game(id: id, title: found.title, sourcePath: source.path,
                         kind: kind ?? found.kind, basePath: found.base.path, version: detected.version,
                         pythonLine: detected.pythonLine, versionSource: detected.source,
-                        saveDirectory: GameLocator.saveDirectory(base: found.base))
-        game.gameVersion = GameVersion.detect(base: found.base, source: source)
+                        saveDirectory: found.saveDirectory)
+        game.gameVersion = found.gameVersion
         games.append(game)
         saveLibrary()
         selection = game.id
@@ -54,10 +73,19 @@ extension AppModel {
     }
 
     /// Unpacks a zip into the game's own folder in RenChan's data, then adds it. The zip is left as it is.
-    @discardableResult
-    func addZip(_ zip: URL) async -> Game? {
-        let request = confirmZip ?? ZipRequest(url: zip)
+    /// The zip question was answered (Unpack or Cancel): the next dropped zip, if any, is asked about.
+    func zipAnswered() {
         confirmZip = nil
+        guard !zipQueue.isEmpty else { return }
+        let next = zipQueue.removeFirst()
+        // A new question once the last one has gone away.
+        Task { confirmZip = next }
+    }
+
+    /// Unpacks a zip; `request` is what the question showed, so its size is still known after the question closes.
+    @discardableResult
+    func addZip(_ zip: URL, request: ZipRequest? = nil) async -> Game? {
+        let request = request ?? ZipRequest(url: zip, size: ZipImport.size(of: zip))
         if let existing = games.first(where: { $0.sourcePath == zip.path }) {
             selection = existing.id
             return existing

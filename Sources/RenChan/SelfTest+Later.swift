@@ -29,6 +29,16 @@ extension SelfTest {
         try? FileManager.default.removeItem(at: shelf)
         Fixtures.game("Lantern_Night-1.0-pc", in: shelf, files: ["renpy/__init__.py": ""])
         Fixtures.game("Old Letters.app/Contents/Resources/autorun", in: shelf, files: [:])
+        // A second scan started before the first ends shows only its own results.
+        let empty = shelf.appending(path: "empty", directoryHint: .isDirectory)
+        try? FileManager.default.createDirectory(at: empty, withIntermediateDirectories: true)
+        model.findGames(in: [shelf, Store.dataFolder])
+        model.findGames(in: [empty])
+        for _ in 0..<50 where model.findGames?.scanning == true { try? await Task.sleep(for: .milliseconds(100)) }
+        try? await Task.sleep(for: .milliseconds(800))
+        check("an older Find Games scan never replaces a newer one's results",
+              model.findGames?.found.isEmpty == true && model.findGames?.places.first?.hasSuffix("empty") == true, "\(model.findGames?.found.map(\.title) ?? [])")
+        try? FileManager.default.removeItem(at: empty)
         model.findGames(in: [shelf, Store.dataFolder])
         for _ in 0..<50 where model.findGames?.scanning == true { try? await Task.sleep(for: .milliseconds(100)) }
         check("S-030 finds a game folder and a Mac build on this Mac",
@@ -36,7 +46,10 @@ extension SelfTest {
         let before030 = model.games.count
         let lantern = Set(model.findGames?.found.filter { $0.title == "Lantern Night 1.0" }.map(\.url) ?? [])
         model.findGames?.chosen = lantern
-        model.addFoundGames()
+        let adding = Task { await model.addFoundGames() }
+        for _ in 0..<50 where model.findGames != nil { await Task.yield() }
+        check("Add Games closes the sheet and reads the games off the main thread", model.findGames == nil && model.games.count == before030)
+        await adding.value
         check("S-030 Add Games adds only the chosen ones", model.games.count == before030 + 1 && model.findGames == nil)
         return shelf
     }
@@ -216,10 +229,10 @@ extension SelfTest {
             INSERT INTO games VALUES (77, 'Far Away', '1.0', '["/Volumes/Nowhere/FarAway/FarAway.exe"]');
             """])
         let dbBefore = try? Data(contentsOf: db)
-        model.importF95Checker(database: db)
+        await model.importF95Checker(database: db)
         check("S-034 lists F95Checker's games that are on this Mac",
               model.findGames?.found.map(\.title) == ["Night Ferry"] && model.findGames?.notOnThisMac == 1, "\(String(describing: model.findGames))")
-        model.addFoundGames()
+        await model.addFoundGames()
         let ferry = model.games.first { $0.sourcePath.hasSuffix("Night_Ferry-0.3-pc") }
         check("S-034 an imported game watches its F95zone thread",
               ferry?.watch?.page == "https://f95zone.to/threads/4242/" && ferry?.gameVersion == "0.3" && (try? Data(contentsOf: db)) == dbBefore)
