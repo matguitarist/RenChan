@@ -239,7 +239,9 @@ struct GameActions: View {
     let game: Game
 
     var body: some View {
-        if model.playing.contains(game.id) {
+        if model.copying[game.id] != nil {
+            Button("Cancel Copy") { model.stop(game.id) }
+        } else if model.playing.contains(game.id) {
             Button("Stop") { model.stop(game.id) }
         } else {
             Button("Play") { model.play(game.id) }

@@ -98,7 +98,7 @@ extension AppModel {
     func remove(_ id: Game.ID) {
         confirmRemove = nil
         guard let game = game(id) else { return }
-        if playing.contains(id) { stop(id) }
+        if playing.contains(id) || copying[id] != nil { stop(id) }
         let folder = Store.gameFolder(id)
         do {
             if let kept = try RemovedGame.keepAside([Store.moddedSaves(id), Store.walkthroughsFolder(id), Store.modState(id),

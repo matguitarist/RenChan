@@ -124,6 +124,8 @@ extension SelfTest {
         guard let first = added else { return }
         let before = digest(question)
         model.play(first.id)
+        check("Play makes the working copy in the background, without blocking", model.copying[first.id] != nil && !model.playing.contains(first.id))
+        for _ in 0..<100 where model.copying[first.id] != nil { try? await Task.sleep(for: .milliseconds(50)) }
         check("Play starts the game", model.playing.contains(first.id))
         await waitUntilStopped(model, first.id)
         let copy = Store.workingCopy(first.id)
@@ -406,6 +408,8 @@ extension SelfTest {
     }
 
     static func waitUntilStopped(_ model: AppModel, _ id: UUID) async {
+        // A first launch makes its copy before it plays.
+        for _ in 0..<100 where model.copying[id] != nil { try? await Task.sleep(for: .milliseconds(50)) }
         for _ in 0..<100 where model.playing.contains(id) {
             try? await Task.sleep(for: .milliseconds(100))
         }

@@ -23,6 +23,7 @@ struct GameDetails: View {
                         Spacer(minLength: 0)
                         playButton
                     }
+                    if let progress = model.copying[game.id] { copyProgress(progress) }
                     Cover(game: game)
                         .aspectRatio(Cover.ratio, contentMode: .fit)
                         .frame(width: 180)
@@ -123,9 +124,29 @@ struct GameDetails: View {
         .task(id: game.vndb?.id) { if let id = game.vndb?.id { model.loadReleases(id) } }
     }
 
+    /// The copy made before a first launch: a bar with how far a full copy got, or a spinner for a clone.
+    private func copyProgress(_ progress: CopyProgress) -> some View {
+        VStack(alignment: .leading, spacing: Space.xs) {
+            if let fraction = progress.fraction {
+                ProgressView(value: fraction)
+                Text("Copying the game: \(progress.copied.bytesText) of \(progress.total.bytesText)")
+                    .font(.callout).foregroundStyle(.secondary).monospacedDigit()
+            } else {
+                HStack(spacing: Space.sm) {
+                    ProgressView().controlSize(.small)
+                    Text("Preparing the game…").font(.callout).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private var playButton: some View {
-        if model.playing.contains(game.id) {
+        if model.copying[game.id] != nil {
+            Button("Cancel Copy", systemImage: "xmark") { model.stop(game.id) }
+                .controlSize(.large)
+                .help("Stop copying the game; nothing half-copied is kept (Command-Period)")
+        } else if model.playing.contains(game.id) {
             Button("Stop", systemImage: "stop.fill") { model.stop(game.id) }
                 .controlSize(.large)
                 .help("Quit the game (Command-Period)")

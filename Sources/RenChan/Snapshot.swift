@@ -56,6 +56,12 @@ enum Snapshot {
             }
             await run.shoot("library-filtered", show: { model.filter = LibraryFilter(labels: ["Romance"]) }, hide: { model.filter = LibraryFilter() })
             let saved = model.games
+            if let first = model.selection ?? saved.first?.id {
+                await run.shoot("library-copying", show: {
+                    model.selection = first
+                    model.copying[first] = CopyProgress(total: 15_200_000_000, copied: 6_300_000_000, full: true)
+                }, hide: { model.copying[first] = nil })
+            }
             await run.shoot("library-empty", show: { model.games = [] }, hide: { model.games = saved })
             await run.shoot("runtime-download", window: { WindowShot.mainWindow()?.attachedSheet }, show: {
                 model.download = DownloadState(version: "7.8.7", received: 61_000_000, total: 148_000_000)

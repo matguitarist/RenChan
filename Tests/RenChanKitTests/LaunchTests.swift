@@ -116,3 +116,29 @@ func digest(_ folder: URL) -> [String: Date] {
     #expect(SaveFolder.changed(since: started.addingTimeInterval(-1), root: root) == ["MyGame-123"])
     #expect(SaveFolder.count(mine) == 1)
 }
+
+@Test func aCopyCutShortIsNeverTakenForAFinishedOne() throws {
+    let root = Fixture.folder()
+    let original = Fixture.game(at: root.appending(path: "Big"), files: Dictionary(uniqueKeysWithValues: (0..<12).map { ("game/images/\($0).png", String(repeating: "x", count: 100)) }))
+    let copy = root.appending(path: "Games/one/play")
+    let staging = WorkingCopy.staging(for: copy)
+    // Cancel after the first file: nothing is left, neither the copy nor its staging folder.
+    var files = 0
+    #expect(throws: CancellationError.self) {
+        try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: true, clone: false, stop: { files > 0 }, copied: { _ in files += 1 })
+    }
+    #expect(!FileManager.default.fileExists(atPath: copy.path) && !FileManager.default.fileExists(atPath: staging.path))
+    // What a force-quit leaves (a staging folder with game/ and little else) is thrown away, not reused.
+    try FileManager.default.createDirectory(at: staging.appending(path: "game"), withIntermediateDirectories: true)
+    var bytes: Int64 = 0
+    let outcome = try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: true, clone: false, stop: { false }, copied: { bytes += $0 })
+    #expect(outcome == .copied && bytes > 0 && !FileManager.default.fileExists(atPath: staging.path))
+    let listed = { (folder: URL) in Set(FileManager.default.subpaths(atPath: folder.path) ?? []) }
+    #expect(listed(copy) == listed(original))
+    #expect(try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: true) == .reused)
+    // No full copy unless the person allowed it.
+    try FileManager.default.removeItem(at: copy)
+    #expect(throws: WorkingCopy.Failure.self) {
+        try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: false, clone: false, stop: { false }, copied: { _ in })
+    }
+}

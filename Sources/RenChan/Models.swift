@@ -6,6 +6,7 @@ import LogKitUI
 import Observation
 import ProcessKit
 import RenChanKit
+import Synchronization
 
 /// The app's state: the library, runtimes, what is selected and playing, and the open sheets.
 /// Actions live in Models+Library.swift and Models+Play.swift.
@@ -41,6 +42,9 @@ final class AppModel {
     @ObservationIgnored var processes: [Game.ID: Shell.RunningCommand] = [:]
     @ObservationIgnored var downloadTask: Task<Void, Never>?
     var playing: Set<Game.ID> = [] { didSet { syncMenu() } }
+    /// Games whose working copy is being made, before they start.
+    var copying: [Game.ID: CopyProgress] = [:] { didSet { syncMenu() } }
+    @ObservationIgnored var copyStops: [Game.ID: StopFlag] = [:]
     var download: DownloadState?
     var launchError: LaunchFailure?
     var confirmRemove: Game.ID?
@@ -227,7 +231,8 @@ final class AppModel {
 
     private func syncMenu() {
         MenuState.shared.selection = selection
-        MenuState.shared.selectionPlaying = selection.map { playing.contains($0) } ?? false
+        // Copying counts as playing: Play waits, and Stop (Command-Period) cancels the copy.
+        MenuState.shared.selectionPlaying = selection.map { playing.contains($0) || copying[$0] != nil } ?? false
     }
 }
 
@@ -265,6 +270,22 @@ struct LaunchFailure: Identifiable, Equatable {
     var tracebackFile: URL?
     /// The game's exact Ren'Py version, offered when it differs from the runtime that failed.
     var exactVersion: String?
+}
+
+/// A working copy being made: a clone (no size to show) or a full copy, with bytes copied so far.
+struct CopyProgress: Equatable {
+    var total: Int64
+    var copied: Int64 = 0
+    var full: Bool
+
+    var fraction: Double? { full && total > 0 ? min(Double(copied) / Double(total), 1) : nil }
+}
+
+/// Set from the main thread, read by a copy running elsewhere.
+nonisolated final class StopFlag: Sendable {
+    private let value = Mutex(false)
+    func set() { value.withLock { $0 = true } }
+    var isSet: Bool { value.withLock { $0 } }
 }
 
 struct FullCopyRequest: Identifiable, Equatable {

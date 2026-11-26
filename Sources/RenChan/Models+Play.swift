@@ -18,7 +18,7 @@ extension AppModel {
 
     /// Play: downloads the runtime first when it's missing, makes the working copy, starts Ren'Py.
     func play(_ id: Game.ID) {
-        guard let game = game(id), !playing.contains(id) else { return }
+        guard let game = game(id), !playing.contains(id), copying[id] == nil else { return }
         if game.pythonLine == nil {
             log.post(.warning, "\(game.title): no Ren'Py version found; trying Ren'Py \(RuntimeCatalog.python3)", source: "Play")
         }
@@ -30,7 +30,9 @@ extension AppModel {
         let copy = playCopy(game)
         let hasCopy = FileManager.default.fileExists(atPath: copy.appending(path: "game").path)
         if !hasCopy, !FileClone.sameVolume(game.baseURL, copy), confirmFullCopy?.id != id {
-            confirmFullCopy = FullCopyRequest(id: id, size: (try? FolderSize.summary(of: game.baseURL))?.allocated ?? 0)
+            // Measured off the main thread: a big game on a slow disk takes a while to add up.
+            let base = game.baseURL
+            Task { confirmFullCopy = FullCopyRequest(id: id, size: await FolderSize.allocated(of: base)) }
             return
         }
         launch(game, on: runtime, allowFullCopy: confirmFullCopy?.id == id)
@@ -45,10 +47,48 @@ extension AppModel {
     /// The plain copy, or the modded one when any mod is on.
     func playCopy(_ game: Game) -> URL { game.hasModsOn ? Store.moddedCopy(game.id) : Store.workingCopy(game.id) }
 
+    /// Makes the working copy off the main thread when there isn't one yet, then starts the game.
     private func launch(_ game: Game, on runtime: Runtime, allowFullCopy: Bool) {
         let copy = playCopy(game)
+        guard !FileManager.default.fileExists(atPath: copy.appending(path: "game").path) else {
+            start(game, on: runtime, copy: copy, outcome: .reused)
+            return
+        }
+        let id = game.id, base = game.baseURL, flag = StopFlag()
+        copyStops[id] = flag
+        copying[id] = CopyProgress(total: allowFullCopy ? (confirmFullCopy?.size ?? 0) : 0, full: allowFullCopy)
+        Task {
+            let result = await Task.detached { () -> Result<WorkingCopy.Outcome, any Error> in
+                var copied: Int64 = 0
+                var shown = Date.distantPast
+                return Result {
+                    try WorkingCopy.prepare(base: base, copy: copy, allowFullCopy: allowFullCopy, stop: { flag.isSet }) { bytes in
+                        copied += bytes
+                        // A few updates a second, not one per file.
+                        guard Date.now.timeIntervalSince(shown) > 0.25 else { return }
+                        shown = .now
+                        let total = copied
+                        Task { @MainActor in self.copying[id]?.copied = total }
+                    }
+                }
+            }.value
+            copying[id] = nil
+            copyStops[id] = nil
+            switch result {
+            case .success(let outcome):
+                guard let game = self.game(id) else { return }
+                start(game, on: runtime, copy: copy, outcome: outcome)
+            case .failure(let error) where error is CancellationError:
+                log.post(.info, "Stopped copying \(game.title); nothing was left half-copied", source: "Play")
+            case .failure(let error):
+                log.post(.error, "Couldn't start \(game.title): \(error.localizedDescription)", source: "Play")
+                notice = String(localized: "RenChan couldn't start \(game.title): \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func start(_ game: Game, on runtime: Runtime, copy: URL, outcome: WorkingCopy.Outcome) {
         do {
-            let outcome = try WorkingCopy.prepare(base: game.baseURL, copy: copy, allowFullCopy: allowFullCopy)
             if outcome != .reused { log.post(.info, "Made a working copy of \(game.title) (\(outcome == .cloned ? "APFS clone" : "full copy"))", source: "Play") }
             // S-014: the filter file goes in the copy only, and comes out when the filter is off.
             let tier = try FilterLoader.install(game.filter, runtime: runtime.version, copy: copy, custom: customFilters)
@@ -150,6 +190,11 @@ extension AppModel {
     }
 
     func stop(_ id: Game.ID) {
+        // While the copy is made, Stop cancels it.
+        if let flag = copyStops[id] {
+            flag.set()
+            return
+        }
         guard let process = processes[id] else { return }
         stopRequested.insert(id)
         process.stop()

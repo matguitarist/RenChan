@@ -821,6 +821,16 @@
         }
       }
     },
+    "Cancel Copy": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annuler la copie"
+          }
+        }
+      }
+    },
     "Change Page…": {
       "localizations": {
         "fr": {
@@ -1127,6 +1137,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copier « %@ » pour y jouer ?"
+          }
+        }
+      }
+    },
+    "Copying the game: %@ of %@": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copie du jeu : %@ sur %@"
           }
         }
       }
@@ -2911,6 +2931,16 @@
         }
       }
     },
+    "Preparing the game…": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparation du jeu…"
+          }
+        }
+      }
+    },
     "Preview of the accent color": {
       "localizations": {
         "fr": {
@@ -4117,6 +4147,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ne plus suivre"
+          }
+        }
+      }
+    },
+    "Stop copying the game; nothing half-copied is kept (Command-Period)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrêter la copie du jeu, sans rien garder d’une copie inachevée (Commande-Point)"
           }
         }
       }

@@ -1,5 +1,13 @@
 # RenChan — Fix log
 
+## 2026-11-25 A full copy froze RenChan, and a copy cut short was played as if complete
+
+Symptom: Play on a game from another disk, after "Copy and Play", showed the spinning cursor for as long as the copy took (minutes for a 15 GB game). Force-quitting then left a working copy that every later Play reused, and the game crashed on its missing files.
+Cause: `launch` ran `WorkingCopy.prepare` on the main thread, and `play` measured the game's size there too. FileKit's `FileClone.copy` writes straight into the target, `game/` first, and only cleans up when it throws; `prepare` took any copy with a `game/` folder as finished.
+Fix: `WorkingCopy.prepare` makes the copy in a hidden `.<name>.partial` folder and renames it only when complete, throws away a leftover one, and can be stopped between files. The app makes the copy in a detached task with progress under the cover, Cancel Copy (and Command-Period) stops it, and the size for the question is measured off the main thread.
+Test: `aCopyCutShortIsNeverTakenForAFinishedOne`; self-test "Play makes the working copy in the background, without blocking"; snapshot `library-copying`.
+Rule: build anything that takes more than an instant to make under a temporary name and rename it into place when done, so its final name means "complete"; and never do disk work proportional to the person's data on the main thread.
+
 ## 2026-11-25 Stopping a game showed an error and counted as a failed run
 
 Symptom: Game › Stop opened the error sheet ("quit with an error (exit 15)") with the run's output, and the compatibility report listed the run as failed on that runtime.

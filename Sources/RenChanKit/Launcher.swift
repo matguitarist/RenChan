@@ -20,17 +20,47 @@ public enum WorkingCopy {
         }
     }
 
-    /// Makes `copy` from `base` unless it exists. A clone needs one volume; `allowFullCopy` permits a real copy.
+    /// Makes `copy` from `base` unless it exists. A clone needs one volume; `allowFullCopy` permits a real copy,
+    /// which reports each file's size to `copied` and ends with `CancellationError` when `stop` says so.
+    /// The copy is made in a hidden folder beside it and renamed only once complete, so a copy that was cut short
+    /// (a force-quit, a full disk, Cancel) is never taken for a finished one.
     @discardableResult
-    public static func prepare(base: URL, copy: URL, allowFullCopy: Bool) throws -> Outcome {
+    public static func prepare(base: URL, copy: URL, allowFullCopy: Bool,
+                               stop: () -> Bool = { Task.isCancelled }, copied: (Int64) -> Void = { _ in }) throws -> Outcome {
+        try prepare(base: base, copy: copy, allowFullCopy: allowFullCopy, clone: true, stop: stop, copied: copied)
+    }
+
+    /// Where a copy is made before it's complete.
+    public static func staging(for copy: URL) -> URL {
+        copy.deletingLastPathComponent().appending(path: ".\(copy.lastPathComponent).partial", directoryHint: .isDirectory)
+    }
+
+    /// `clone: false` makes a real copy even on one volume, for tests.
+    static func prepare(base: URL, copy: URL, allowFullCopy: Bool, clone: Bool,
+                        stop: () -> Bool, copied: (Int64) -> Void) throws -> Outcome {
         if FileManager.default.fileExists(atPath: copy.appending(path: "game").path) { return .reused }
-        // A copy without game/ is what's left of a stopped one: it goes, and a new one is made.
+        // A copy without game/ is what's left of a stopped one, and so is a staging folder: both go.
         try? FileManager.default.removeItem(at: copy)
+        let staging = staging(for: copy)
+        try? FileManager.default.removeItem(at: staging)
         do {
-            switch try FileClone.clone(base, to: copy, fallback: allowFullCopy ? .copy : .none) {
-            case .cloned: return .cloned
-            case .copied: return .copied
+            var outcome = Outcome.cloned
+            do {
+                guard clone else { throw FileClone.Failure.cannotClone(.ENOTSUP) }
+                try FileClone.clone(base, to: staging, fallback: .none)
+            } catch FileClone.Failure.cannotClone(let reason) {
+                guard allowFullCopy else { throw FileClone.Failure.cannotClone(reason) }
+                try FileManager.default.createDirectory(at: staging.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try FileClone.copy(base.resolvingSymlinksInPath(), to: staging, stop: stop, copied: copied)
+                outcome = .copied
             }
+            do {
+                try FileManager.default.moveItem(at: staging, to: copy)
+            } catch {
+                try? FileManager.default.removeItem(at: staging)
+                throw error
+            }
+            return outcome
         } catch let failure as FileClone.Failure {
             throw Failure.cannotClone(path: base.path, reason: failure.reason)
         } catch let error as POSIXError {
