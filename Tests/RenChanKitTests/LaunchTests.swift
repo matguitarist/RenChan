@@ -142,3 +142,18 @@ func digest(_ folder: URL) -> [String: Date] {
         try WorkingCopy.prepare(base: original, copy: copy, allowFullCopy: false, clone: false, stop: { false }, copied: { _ in })
     }
 }
+
+@Test func aGamesRuntimeMenuOffersItsOwnVersionAndInstalledOnesOfItsLine() {
+    // A Python 3 game made with 8.1.3: Automatic is 8.6.1, its own 8.1.3, and other installed 8.x, newest first.
+    let py3 = RuntimeCatalog.choices(version: RenPyVersion("8.1.3"), pythonLine: .python3, override: nil,
+                                     installed: ["7.8.7", "8.3.7", "8.6.1", "8.1.3", "8.0.3"])
+    #expect(py3 == RuntimeChoices(automatic: "8.6.1", exact: "8.1.3", others: ["8.3.7", "8.0.3"]))
+    // A Python 2 game never gets an 8.x runtime offered.
+    let py2 = RuntimeCatalog.choices(version: RenPyVersion("7.5.3"), pythonLine: .python2, override: nil, installed: ["8.6.1", "7.6.3"])
+    #expect(py2 == RuntimeChoices(automatic: "7.8.7", exact: "7.5.3", others: ["7.6.3"]))
+    // A version picked before stays listed, even when it's no longer installed, so the menu can show it and go back.
+    let picked = RuntimeCatalog.choices(version: RenPyVersion("8.1.3"), pythonLine: .python3, override: "8.2.0", installed: [])
+    #expect(picked.others == ["8.2.0"])
+    // Exact and automatic are the same: no separate exact entry.
+    #expect(RuntimeCatalog.choices(version: RenPyVersion("8.6.1"), pythonLine: .python3, override: nil, installed: []).exact == nil)
+}

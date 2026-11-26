@@ -24,6 +24,14 @@ enum Snapshot {
             await run.shoot("library-list", show: { model.layout = .list }, hide: { model.layout = .grid })
             await run.shoot("game-details", show: { model.showInspector = true }, hide: {})
             // The Language picker sits low in the inspector, so this one scrolls to it.
+            await run.shoot("game-runtime", show: {
+                let id = model.games.first { $0.title == "The Question" }?.id
+                model.selection = id; model.showInspector = true; model.inspectorScroll = "runtime"
+                if let id { model.update(id) { $0.runtimeOverride = "8.3.7" } }
+            }, hide: {
+                if let id = model.games.first(where: { $0.title == "The Question" })?.id { model.update(id) { $0.runtimeOverride = nil } }
+                model.inspectorScroll = nil; model.selection = model.games.first?.id
+            })
             await run.shoot("game-language", show: { model.selection = model.games.first { $0.title == "The Question" }?.id; model.showInspector = true; model.inspectorScroll = "language" },
                         hide: { model.inspectorScroll = nil; model.selection = model.games.first?.id })
             await run.shoot("game-mods", show: { model.selection = model.games.count > 1 ? model.games[1].id : nil; model.showInspector = true },

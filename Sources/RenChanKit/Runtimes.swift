@@ -21,6 +21,15 @@ public struct Runtime: Identifiable, Hashable, Sendable {
 }
 
 /// Which runtime plays which game, and where to get it (docs/research/runtime.md).
+/// A game's runtime menu (see `RuntimeCatalog.choices`).
+public struct RuntimeChoices: Equatable, Sendable {
+    /// What RenChan picks with no choice made; nil when the game's Python line is unknown.
+    public var automatic: String?
+    /// The version the game was made with, when it differs from `automatic`.
+    public var exact: String?
+    public var others: [String]
+}
+
 public enum RuntimeCatalog {
     /// Every Python 2 game from 7.4 on plays on the last 7.x, native on Apple silicon.
     public static let python2 = "7.8.7"
@@ -52,6 +61,23 @@ public enum RuntimeCatalog {
         guard let version else { return nil }
         let exact = downloadName(version)
         return exact == chosen ? nil : exact
+    }
+
+    /// What a game's runtime menu offers: RenChan's own pick, the version the game was made with, and other
+    /// installed runtimes of the same Python line, newest first. A chosen version stays listed even when it's gone.
+    public static func choices(version: RenPyVersion?, pythonLine: PythonLine?, override: String?, installed: [String]) -> RuntimeChoices {
+        let automatic = choose(version: version, pythonLine: pythonLine)
+        let exact = automatic.flatMap { exactAlternative(version: version, chosen: $0) }
+        let line = pythonLine ?? version?.pythonLine
+        var seen = Set([automatic, exact].compactMap { $0 })
+        var others: [String] = []
+        for candidate in installed + [override].compactMap({ $0 }) where !seen.contains(candidate) {
+            seen.insert(candidate)
+            let sameLine = line == nil || RenPyVersion(candidate)?.pythonLine == line
+            if sameLine || candidate == override { others.append(candidate) }
+        }
+        others.sort { (RenPyVersion($0) ?? RenPyVersion("0")!) > (RenPyVersion($1) ?? RenPyVersion("0")!) }
+        return RuntimeChoices(automatic: automatic, exact: exact, others: others)
     }
 
     public static func archiveURL(_ version: String) -> URL {

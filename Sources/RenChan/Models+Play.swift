@@ -200,6 +200,18 @@ extension AppModel {
         process.stop()
     }
 
+    /// The game's runtime menu: nil goes back to RenChan's own pick, which also undoes Try Exact Version.
+    func setRuntime(_ version: String?, for id: Game.ID) {
+        guard let game = game(id), game.runtimeOverride != version else { return }
+        update(id) { $0.runtimeOverride = version }
+        log.post(.info, version.map { "\(game.title) plays on Ren'Py \($0) from now on" }
+                        ?? "\(game.title) plays on Ren'Py \(runtimeVersion(for: self.game(id) ?? game)) again, RenChan's own pick", source: "Play")
+    }
+
+    func runtimeChoices(_ game: Game) -> RuntimeChoices {
+        RuntimeCatalog.choices(version: game.version, pythonLine: game.pythonLine, override: game.runtimeOverride, installed: runtimes.map(\.version))
+    }
+
     /// From the error sheet: play again on the game's exact Ren'Py version.
     func tryExactVersion(_ failure: LaunchFailure) {
         launchError = nil

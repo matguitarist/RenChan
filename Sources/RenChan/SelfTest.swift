@@ -273,6 +273,14 @@ extension SelfTest {
             check("the exact version is offered", model.launchError?.exactVersion == "7.4.11")
             check("S-009 a crash still counts its playtime", (model.game(crash.id)?.playtime ?? 0) > 0)
             model.launchError = nil
+            // Try Exact Version can be undone: the inspector's runtime menu goes back to Automatic.
+            model.update(crash.id) { $0.runtimeOverride = "7.4.11" }
+            let offered = model.runtimeChoices(model.game(crash.id)!)
+            model.setRuntime(nil, for: crash.id)
+            check("S-004 a game's runtime can be picked and set back to Automatic",
+                  offered.exact == "7.4.11" && offered.automatic == RuntimeCatalog.python2
+                  && model.game(crash.id)?.runtimeOverride == nil && model.runtimeVersion(for: model.game(crash.id)!) == RuntimeCatalog.python2,
+                  "\(offered)")
         }
         // Stop is the person's choice, not a crash: no error sheet, and the report says it worked.
         let slow = Fixtures.game("Slow-1.0-pc", in: root, files: [

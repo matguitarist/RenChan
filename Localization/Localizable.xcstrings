@@ -641,6 +641,26 @@
         }
       }
     },
+    "Automatic": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatique"
+          }
+        }
+      }
+    },
+    "Automatic (Ren'Py %@)": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatique (Ren’Py %@)"
+          }
+        }
+      }
+    },
     "Automatic Updates": {
       "localizations": {
         "fr": {
@@ -3271,6 +3291,16 @@
         }
       }
     },
+    "Ren'Py %@, the version it was made with": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ren’Py %@, la version avec laquelle il a été fait"
+          }
+        }
+      }
+    },
     "Ren'Py Only": {
       "localizations": {
         "fr": {
@@ -4187,6 +4217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Système (%@)"
+          }
+        }
+      }
+    },
+    "The Ren'Py this game plays on. Automatic is RenChan's pick; another one downloads the first time you play.": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La version de Ren’Py sur laquelle tourne ce jeu. Automatique est le choix de RenChan ; une autre se télécharge la première fois que vous jouez."
           }
         }
       }

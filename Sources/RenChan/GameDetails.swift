@@ -80,10 +80,11 @@ struct GameDetails: View {
                 LabeledContent("Python", value: game.pythonLine?.title ?? String(localized: "Unknown"))
                 LabeledContent("Plays on") {
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text("Ren'Py \(model.runtimeVersion(for: game))")
+                        runtimePicker
                         Text(runtimeNote).font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                .id("runtime")
                 RunAndDevToolsRows(game: game)
             }
             Section("Files") {
@@ -162,6 +163,26 @@ struct GameDetails: View {
     private var savesTitle: String {
         let count = model.saveCount(game) ?? 0
         return count == 1 ? String(localized: "1 Save") : String(localized: "\(count) Saves")
+    }
+
+    /// Automatic is RenChan's pick; the others are the version the game was made with and installed runtimes.
+    private var runtimePicker: some View {
+        let choices = model.runtimeChoices(game)
+        return Picker("Plays on", selection: Binding(get: { game.runtimeOverride ?? "" },
+                                                     set: { model.setRuntime($0.isEmpty ? nil : $0, for: game.id) })) {
+            Text(choices.automatic.map { String(localized: "Automatic (Ren'Py \($0))") } ?? String(localized: "Automatic")).tag("")
+            if let exact = choices.exact {
+                Text("Ren'Py \(exact), the version it was made with").tag(exact)
+            }
+            ForEach(choices.others, id: \.self) { version in
+                Text(verbatim: "Ren'Py \(version)").tag(version)
+            }
+        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .fixedSize()
+        .disabled(model.playing.contains(game.id) || model.copying[game.id] != nil)
+        .help("The Ren'Py this game plays on. Automatic is RenChan's pick; another one downloads the first time you play.")
     }
 
     private var runtimeNote: String {
