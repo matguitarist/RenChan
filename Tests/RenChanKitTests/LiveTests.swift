@@ -46,6 +46,54 @@ struct Live {
         #expect(try await !VNDB.search("", renpyOnly: true).isEmpty)
     }
 
+    /// S-015 on Ren'Py 7.4.6 to 8.1 (the camera tier): a game started with no filter is left as it is, and a filter
+    /// picked while it plays shows within seconds. Before the fix the loader wasn't in the copy, so nothing changed.
+    @Test(arguments: ["7.6.3", "8.1.3"])
+    func aFilterPickedDuringPlayShowsOnOlderRenPy(version: String) async throws {
+        if Self.store.runtime(version) == nil {
+            try await RuntimeDownload.install(version, into: Self.store) { _, _ in }
+        }
+        let runtime = try #require(Self.store.runtime(version))
+        let root = Fixture.folder()
+        let copy = root.appending(path: "play")
+        let first = root.appending(path: "first.png"), second = root.appending(path: "second.png")
+        let grayState = root.appending(path: "gray-state.json")
+        FilterLoader.update(FilterSetting(filter: .grayscale), custom: [], copy: root)
+        try FileManager.default.moveItem(at: FilterLoader.liveFile(root), to: grayState)
+        Fixture.game(at: copy, files: ["game/script.rpy": """
+        label start:
+            scene expression Solid("#ff0000")
+            pause 1.0
+            $ renpy.screenshot("\(first.path)")
+            $ open("\(FilterLoader.liveFile(copy).path)", "w").write(open("\(grayState.path)").read())
+            pause 2.5
+            $ renpy.screenshot("\(second.path)")
+            $ renpy.quit()
+        """])
+        #expect(try FilterLoader.install(nil, runtime: version, copy: copy) == .camera)
+        let plan = LaunchPlan(runtime: runtime, copy: copy, outputFile: root.appending(path: "run.log"),
+                              environment: ["HOME": root.appending(path: "home").path])
+        let process = try plan.start()
+        let deadline = Date().addingTimeInterval(60)
+        while process.isRunning && Date() < deadline { try await Task.sleep(for: .milliseconds(200)) }
+        if process.isRunning { process.stop() }
+        let log = (try? String(contentsOf: plan.outputFile, encoding: .utf8)) ?? ""
+        func center(_ url: URL) throws -> (r: Int, g: Int, b: Int) {
+            let source = try #require(CGImageSourceCreateWithURL(url as CFURL, nil), "no screenshot; log: \(log.suffix(1500))")
+            let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
+            var pixel = [UInt8](repeating: 0, count: 4)
+            let context = try #require(CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                                                 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(image, in: CGRect(x: -image.width / 2, y: -image.height / 2, width: image.width, height: image.height))
+            return (Int(pixel[0]), Int(pixel[1]), Int(pixel[2]))
+        }
+        let before = try center(first)
+        #expect(before.r > 200 && before.g < 40 && before.b < 40, "\(version) with no filter yet: \(before)")
+        let after = try center(second)
+        #expect(abs(after.r - after.g) < 12 && abs(after.g - after.b) < 12 && after.r < 120, "\(version) after picking Grayscale live: \(after)")
+        #expect((FilterLoader.lastError(copy: copy) ?? "").isEmpty, "\(FilterLoader.lastError(copy: copy) ?? "")")
+    }
+
     /// S-014: Grayscale on a red screen gives gray, on the 7.x and the 8.x runtime. Ren'Py takes its own screenshot.
     @Test(arguments: [RuntimeCatalog.python2, RuntimeCatalog.python3])
     func aFilterChangesWhatTheGameShows(version: String) async throws {

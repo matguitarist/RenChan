@@ -1,5 +1,13 @@
 # RenChan — Fix log
 
+## 2026-11-25 Picking a filter while the game ran did nothing on Ren'Py 7.4.6 to 8.1
+
+Symptom: on games that run on Ren'Py 7.4.6–7.6 or 8.0–8.1, choosing a filter in the inspector during play changed nothing, while the inspector said "Changes show in the game within a second". A game started with a filter couldn't switch to another one either; RenChan reported "'renpy.gl2.gl2draw.GL2Draw' object has no attribute 'shader_cache'".
+Cause: two things. On this "camera" tier the loader went into the copy only when a filter was set at launch, so a game started without one had nothing reading the state file. And the loader checked a new filter with `renpy.display.draw.shader_cache`, which is public only from 8.2 and 7.7; before that it's a private Cython attribute, so every live switch failed the check and kept the old filter.
+Fix: `FilterLoader.install` puts the loader in on every tier that can draw a filter. On the camera tier it leaves the game's own camera alone until a filter is picked, which a periodic callback notices within half a second. The check finds Ren'Py's `ShaderCache` once among Python's objects when the attribute is private.
+Test: Live `aFilterPickedDuringPlayShowsOnOlderRenPy` on real 7.6.3 and 8.1.3 (fails on the old code); `theLoaderUsesLayerTransformsOrCamera` and `theFilterCanChangeWhileTheGamePlays` updated for the new rule; `aFilterChangesWhatTheGameShows` still passes on 7.8.7 and 8.6.1.
+Rule: test a feature on every runtime tier it claims to support, not only the newest; an engine's internals (here a private attribute) differ between versions, so reach them with a fallback and a test per version.
+
 ## 2026-11-25 Play did nothing while another Ren'Py was downloading
 
 Symptom: while Ren'Py 8.6.1 downloaded for one game, Play on a second game (Game › Play, Command-Return, or opening it from the Finder) did nothing, and the second game didn't start after the download either. No message said why.

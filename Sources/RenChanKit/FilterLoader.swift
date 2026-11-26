@@ -77,14 +77,15 @@ public enum FilterLoader {
         return text.isEmpty ? nil : text
     }
 
-    /// Puts the loader in `copy` for a runtime, or removes it (and its compiled .rpyc). On 7.7+ and 8.2+ it goes in
-    /// even with no filter, so one can be picked while the game runs; it draws nothing extra until then. On the camera
-    /// tier it goes in only with a filter. Returns the tier used, or .unsupported when the loader is out.
+    /// Puts the loader in `copy` for a runtime, or removes it (and its compiled .rpyc). It goes in on every runtime
+    /// that can draw a filter, even with no filter, so one can be picked while the game runs. Until then it draws
+    /// nothing extra, and on the camera tier it leaves the game's own camera alone. Returns the tier used,
+    /// or .unsupported when the loader is out.
     @discardableResult
     public static func install(_ setting: FilterSetting?, runtime: String, copy: URL, custom: [CustomFilter] = []) throws -> FilterTier {
         let tier = FilterTier.forRuntime(runtime)
         let passes = passes(setting, custom: custom)
-        let wanted = tier == .layerTransforms || (tier == .camera && setting != nil && passes != nil)
+        let wanted = tier != .unsupported
         guard wanted else {
             CopyScript.remove(named: fileName, from: copy)
             for url in [liveFile(copy), errorFile(copy)] { try? FileManager.default.removeItem(at: url) }
@@ -117,12 +118,33 @@ public enum FilterLoader {
             """
         case .camera, .unsupported:
             apply = """
+                    # The game's own camera stays its own until a filter is picked; from then on RenChan's is set
+                    # again at each interaction, since scene and the game's camera statements clear it.
                     def renchan_filter_camera():
                         try:
-                            renpy.show_layer_at(renchan_filter_transforms, layer="master", reset=False, camera=True)
+                            if renchan_filter["passes"] or renchan_filter["shown"]:
+                                renchan_filter["shown"] = True
+                                renpy.show_layer_at(renchan_filter_transforms, layer="master", reset=False, camera=True)
                         except Exception:
                             pass
                     config.interact_callbacks.append(renchan_filter_camera)
+
+                    # Before the camera is set, nothing reads the state file: check it twice a second, and redraw
+                    # once a filter is picked so it shows within a second, as on newer Ren'Py.
+                    def renchan_filter_poll():
+                        try:
+                            if renchan_filter["shown"]:
+                                return
+                            now = renchan_time.time()
+                            if now - renchan_filter["checked"] < 0.5:
+                                return
+                            renchan_filter["checked"] = now
+                            renchan_filter_read(True)
+                            if renchan_filter["passes"]:
+                                renpy.restart_interaction()
+                        except Exception:
+                            pass
+                    config.periodic_callbacks.append(renchan_filter_poll)
             """
         }
         return #"""
@@ -135,7 +157,7 @@ public enum FilterLoader {
                     import json as renchan_json
                     import os as renchan_os
                     renchan_filter = {"checked": 0.0, "mtime": None, "strength": 0.0, "key": None,
-                                      "passes": [], "count": 0, "path": "\#(literal(liveFile))", "error": "\#(literal(errorFile))"}
+                                      "passes": [], "count": 0, "shown": False, "path": "\#(literal(liveFile))", "error": "\#(literal(errorFile))"}
                     # Declares RenChan's uniform at init, so filters registered later can use it.
                     renpy.register_shader("renchan.base", variables="""
                         uniform float u_renchan_strength;
@@ -154,6 +176,25 @@ public enum FilterLoader {
                             renpy.register_shader(name, variables=variables, fragment_functions=functions, fragment_300=body)
                         else:
                             renpy.register_shader(name, variables=variables, fragment_300=body)
+
+                    # Ren'Py's shader cache: a public attribute from 8.2 and 7.7; before that a private one, found once
+                    # among Python's objects. None when it can't be found: the shader then compiles when it's drawn.
+                    def renchan_filter_cache():
+                        cache = getattr(renpy.display.draw, "shader_cache", None)
+                        if cache is not None:
+                            return cache
+                        if "cache" not in renchan_filter:
+                            renchan_filter["cache"] = None
+                            try:
+                                import gc
+                                from renpy.gl2.gl2shadercache import ShaderCache
+                                for item in gc.get_objects():
+                                    if isinstance(item, ShaderCache):
+                                        renchan_filter["cache"] = item
+                                        break
+                            except Exception:
+                                pass
+                        return renchan_filter["cache"]
 
                     def renchan_filter_read(compile_now):
                         st = renchan_filter
@@ -192,14 +233,15 @@ public enum FilterLoader {
                                 # Ren'Py compiles a shader when it first draws it; a mistake there would stop the game.
                                 # Compiling here instead keeps the last filter and reports the mistake to RenChan.
                                 # Pinned, Ren'Py 8.6 reports the shader's own error instead of retrying it in an older GLSL.
-                                cache = renpy.display.draw.shader_cache
+                                cache = renchan_filter_cache()
                                 pinned = getattr(cache, "pinned", None)
                                 if pinned is not None:
                                     cache.pinned = True
                                 try:
                                     # Ren'Py draws a mesh with renpy.texture, whose vertex shader writes v_tex_coord.
                                     for name in names:
-                                        cache.get((name, "renpy.texture"))
+                                        if cache is not None:
+                                            cache.get((name, "renpy.texture"))
                                 finally:
                                     if pinned is not None:
                                         cache.pinned = pinned

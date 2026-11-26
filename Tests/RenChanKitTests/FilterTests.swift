@@ -20,11 +20,16 @@ import Testing
     #expect(modern.contains("config.layer_transforms[None]") && modern.contains(live.path) && modern.contains(error.path))
     #expect(modern.contains("renchan_filter_slot(0, None)") && modern.contains("renchan_filter_slot(1, \"master\")"))
     #expect(modern.contains(#"config.layer_transforms["master"]"#))
-    #expect(modern.contains("init 999 python:") && modern.contains("except Exception") && modern.contains("draw.shader_cache"))
+    #expect(modern.contains("init 999 python:") && modern.contains("except Exception") && modern.contains(#"getattr(renpy.display.draw, "shader_cache", None)"#))
+    // Before 8.2 and 7.7 the cache is private: it's found among Python's objects, so a new filter is still checked first.
+    #expect(modern.contains("from renpy.gl2.gl2shadercache import ShaderCache"))
     // Ren'Py draws a filter with renpy.texture, the vertex shader that writes v_tex_coord; checking it alone fails.
     #expect(modern.contains(#"cache.get((name, "renpy.texture"))"#))
     let older = FilterLoader.source(tier: .camera, liveFile: live, errorFile: error)
     #expect(older.contains("camera=True") && !older.contains("layer_transforms") && older.contains(#"renchan_filter_slot(0, "*")"#))
+    // On the camera tier the game's own camera is left alone until a filter is picked, which a periodic check notices.
+    #expect(older.contains(#"if renchan_filter["passes"] or renchan_filter["shown"]:"#) && older.contains("config.periodic_callbacks.append(renchan_filter_poll)"))
+    #expect(!modern.contains("periodic_callbacks"))
     // No f-strings or other Python 3 only syntax: 7.x runs Python 2.
     #expect(!modern.contains("f\"") && !older.contains("f\""))
     for filter in ScreenFilter.allCases { #expect(!filter.fragment.isEmpty) }
@@ -64,14 +69,17 @@ private func liveState(_ copy: URL) throws -> LiveState {
     try "compiled".write(to: compiled, atomically: true, encoding: .utf8)
     #expect(try FilterLoader.install(nil, runtime: "8.6.1", copy: copy) == .layerTransforms)
     #expect(try liveState(copy).passes.isEmpty && FileManager.default.fileExists(atPath: file.path))
-    // The camera tier gets the loader only with a filter, and takes it out (with its .rpyc) without one.
-    #expect(try FilterLoader.install(nil, runtime: "8.1.3", copy: copy) == .unsupported)
+    // The camera tier gets the loader without a filter too, so one can be picked while the game runs (it used to
+    // go in only with a filter, and a filter picked during play did nothing on 7.4.6 to 8.1).
+    #expect(try FilterLoader.install(nil, runtime: "8.1.3", copy: copy) == .camera)
+    #expect(FileManager.default.fileExists(atPath: file.path))
+    #expect(try liveState(copy).passes.isEmpty)
+    #expect(try FilterLoader.install(FilterSetting(filter: .crt), runtime: "8.1.3", copy: copy) == .camera)
+    // A runtime too old for filters gets no loader: it's taken out with its .rpyc and its state.
+    try "compiled".write(to: compiled, atomically: true, encoding: .utf8)
+    #expect(try FilterLoader.install(FilterSetting(filter: .crt), runtime: "7.3.5", copy: copy) == .unsupported)
     #expect(!FileManager.default.fileExists(atPath: file.path) && !FileManager.default.fileExists(atPath: compiled.path))
     #expect(!FileManager.default.fileExists(atPath: FilterLoader.liveFile(copy).path))
-    #expect(try FilterLoader.install(FilterSetting(filter: .crt), runtime: "8.1.3", copy: copy) == .camera)
-    // A runtime too old for filters gets no file either.
-    #expect(try FilterLoader.install(FilterSetting(filter: .crt), runtime: "7.3.5", copy: copy) == .unsupported)
-    #expect(!FileManager.default.fileExists(atPath: file.path))
     // What Ren'Py reports for a shader it couldn't compile.
     #expect(FilterLoader.lastError(copy: copy) == nil)
     try "0:3: syntax error".write(to: FilterLoader.errorFile(copy), atomically: true, encoding: .utf8)
